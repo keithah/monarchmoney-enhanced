@@ -4,7 +4,7 @@ Python library for accessing [Monarch Money](https://www.monarchmoney.com/referr
 
 ## 🙏 Acknowledgments
 
-Huge shoutout to [hammem](https://github.com/hammem) for originally starting this project! This is simply a fork of his hard work to continue development and fix critical authentication issues.
+Huge shoutout to [hammem](https://github.com/hammem) for originally starting this project! This is simply a fork of [his hard work](https://github.com/hammem/monarchmoney) to continue development and fix critical authentication issues.
 
 ## ✨ Recent Updates
 
