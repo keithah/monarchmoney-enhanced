@@ -2,6 +2,10 @@
 
 Python library for accessing [Monarch Money](https://www.monarchmoney.com/referral/jtfazovwp9) data.
 
+## 🙏 Acknowledgments
+
+Huge shoutout to [hammem](https://github.com/hammem) for originally starting this project! This is simply a fork of his hard work to continue development and fix critical authentication issues.
+
 ## ✨ Recent Updates
 
 This fork includes **significant improvements** to fix authentication issues:
