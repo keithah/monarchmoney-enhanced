@@ -4,6 +4,7 @@ import getpass
 import json
 import os
 import pickle
+import random
 import time
 import uuid
 from datetime import datetime, date, timedelta
@@ -38,6 +39,40 @@ class MonarchMoneyEndpoints(object):
     @classmethod
     def getAccountBalanceHistoryUploadEndpoint(cls) -> str:
         return cls.BASE_URL + "/account-balance-history/upload/"
+
+
+async def retry_with_backoff(func, max_retries=3, base_delay=1.0, max_delay=60.0):
+    """
+    Retry function with exponential backoff for rate limiting and network errors.
+    """
+    for attempt in range(max_retries + 1):
+        try:
+            return await func()
+        except Exception as e:
+            error_str = str(e)
+            
+            # Don't retry authentication errors
+            if any(code in error_str for code in ["401", "403", "Unauthorized", "Forbidden"]):
+                raise
+            
+            # Don't retry on final attempt
+            if attempt == max_retries:
+                raise
+            
+            # Calculate delay with exponential backoff and jitter
+            if "429" in error_str or "Too Many Requests" in error_str:
+                # Longer delay for rate limiting
+                delay = min(base_delay * (2 ** attempt) + random.uniform(0, 1), max_delay)
+                print(f"Rate limited. Retrying in {delay:.1f}s... (attempt {attempt + 1}/{max_retries})")
+            elif any(code in error_str for code in ["500", "502", "503", "504"]):
+                # Shorter delay for server errors
+                delay = min(base_delay * (1.5 ** attempt) + random.uniform(0, 0.5), max_delay / 2)
+                print(f"Server error. Retrying in {delay:.1f}s... (attempt {attempt + 1}/{max_retries})")
+            else:
+                # Don't retry other errors
+                raise
+                
+            await asyncio.sleep(delay)
 
 
 class RequireMFAException(Exception):
@@ -2796,11 +2831,14 @@ class MonarchMoney(object):
         variables: Dict[str, Any] = {},
     ) -> Dict[str, Any]:
         """
-        Makes a GraphQL call to Monarch Money's API.
+        Makes a GraphQL call to Monarch Money's API with retry logic.
         """
-        return await self._get_graphql_client().execute_async(
-            graphql_query, variable_values=variables, operation_name=operation
-        )
+        async def _execute():
+            return await self._get_graphql_client().execute_async(
+                graphql_query, variable_values=variables, operation_name=operation
+            )
+        
+        return await retry_with_backoff(_execute)
 
     def save_session(self, filename: Optional[str] = None) -> None:
         """
@@ -2857,24 +2895,30 @@ class MonarchMoney(object):
         if mfa_secret_key:
             data["totp"] = oathtool.generate_otp(mfa_secret_key)
 
-        async with ClientSession(headers=self._headers) as session:
-            async with session.post(
-                MonarchMoneyEndpoints.getLoginEndpoint(), json=data
-            ) as resp:
-                if resp.status == 403:
-                    raise RequireMFAException("Multi-Factor Auth Required")
-                elif resp.status == 404:
-                    # REST endpoint not found, try GraphQL authentication
-                    await self._login_user_graphql(email, password, mfa_secret_key, session)
-                    return
-                elif resp.status != 200:
-                    raise LoginFailedException(
-                        f"HTTP Code {resp.status}: {resp.reason}"
-                    )
+        async def _attempt_login():
+            async with ClientSession(headers=self._headers) as session:
+                async with session.post(
+                    MonarchMoneyEndpoints.getLoginEndpoint(), json=data
+                ) as resp:
+                    if resp.status == 403:
+                        raise RequireMFAException("Multi-Factor Auth Required")
+                    elif resp.status == 404:
+                        # REST endpoint not found, try GraphQL authentication
+                        await self._login_user_graphql(email, password, mfa_secret_key, session)
+                        return
+                    elif resp.status == 429:
+                        # Rate limited - will be retried by retry_with_backoff
+                        raise Exception(f"HTTP Code {resp.status}: Too Many Requests")
+                    elif resp.status != 200:
+                        raise LoginFailedException(
+                            f"HTTP Code {resp.status}: {resp.reason}"
+                        )
 
-                response = await resp.json()
-                self.set_token(response["token"])
-                self._headers["Authorization"] = f"Token {self._token}"
+                    response = await resp.json()
+                    self.set_token(response["token"])
+                    self._headers["Authorization"] = f"Token {self._token}"
+        
+        await retry_with_backoff(_attempt_login)
 
     async def _login_user_graphql(
         self, email: str, password: str, mfa_secret_key: Optional[str], session: ClientSession
@@ -3052,32 +3096,38 @@ class MonarchMoney(object):
             # Likely TOTP from authenticator app
             data["totp"] = code
 
-        async with ClientSession(headers=self._headers) as session:
-            async with session.post(
-                MonarchMoneyEndpoints.getLoginEndpoint(), json=data
-            ) as resp:
-                if resp.status == 404:
-                    # REST endpoint not found, try GraphQL authentication with MFA code
-                    await self._mfa_graphql(email, password, code, session)
-                    return
-                elif resp.status != 200:
-                    try:
-                        response = await resp.json()
-                        if "detail" in response:
-                            error_message = response["detail"]
-                            raise RequireMFAException(error_message)
-                        elif "error_code" in response:
-                            error_message = response["error_code"]
-                        else:
-                            error_message = f"Unrecognized error message: '{response}'"
-                        raise LoginFailedException(error_message)
-                    except:
-                        raise LoginFailedException(
-                            f"HTTP Code {resp.status}: {resp.reason}\nRaw response: {resp.text}"
-                        )
-                response = await resp.json()
-                self.set_token(response["token"])
-                self._headers["Authorization"] = f"Token {self._token}"
+        async def _attempt_mfa():
+            async with ClientSession(headers=self._headers) as session:
+                async with session.post(
+                    MonarchMoneyEndpoints.getLoginEndpoint(), json=data
+                ) as resp:
+                    if resp.status == 404:
+                        # REST endpoint not found, try GraphQL authentication with MFA code
+                        await self._mfa_graphql(email, password, code, session)
+                        return
+                    elif resp.status == 429:
+                        # Rate limited - will be retried by retry_with_backoff
+                        raise Exception(f"HTTP Code {resp.status}: Too Many Requests")
+                    elif resp.status != 200:
+                        try:
+                            response = await resp.json()
+                            if "detail" in response:
+                                error_message = response["detail"]
+                                raise RequireMFAException(error_message)
+                            elif "error_code" in response:
+                                error_message = response["error_code"]
+                            else:
+                                error_message = f"Unrecognized error message: '{response}'"
+                            raise LoginFailedException(error_message)
+                        except:
+                            raise LoginFailedException(
+                                f"HTTP Code {resp.status}: {resp.reason}\nRaw response: {resp.text}"
+                            )
+                    response = await resp.json()
+                    self.set_token(response["token"])
+                    self._headers["Authorization"] = f"Token {self._token}"
+        
+        await retry_with_backoff(_attempt_mfa)
 
     def _get_graphql_client(self) -> Client:
         """
