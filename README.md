@@ -1,6 +1,16 @@
 # Monarch Money
 
-Python library for accessing [Monarch Money](https://www.monarchmoney.com/referral/ngam2i643l) data.
+Python library for accessing [Monarch Money](https://www.monarchmoney.com/referral/jtfazovwp9) data.
+
+## ✨ Recent Updates
+
+This fork includes **significant improvements** to fix authentication issues:
+
+- **🔧 Fixed 404 Login Errors**: Automatic GraphQL fallback when REST endpoints return 404
+- **🛡️ Enhanced Authentication**: Proper headers (device-uuid, Origin) and email OTP support  
+- **🔄 Retry Logic**: Exponential backoff for rate limiting and transient errors
+- **🧪 Test Suite**: Comprehensive test coverage with 38 passing tests
+- **🚀 CI/CD Pipeline**: Automated testing across Python 3.8-3.12
 
 # Installation
 
@@ -8,7 +18,7 @@ Python library for accessing [Monarch Money](https://www.monarchmoney.com/referr
 
 Clone this repository from Git
 
-`git clone https://github.com/hammem/monarchmoney.git`
+`git clone https://github.com/keithah/monarchmoney.git`
 
 ## Via `pip`
 
@@ -51,6 +61,8 @@ try:
 except RequireMFAException:
         await mm.multi_factor_authenticate(email, password, multi_factor_code)
 ```
+
+**Note**: The library automatically detects whether your MFA code is an email OTP (6 digits) or TOTP from an authenticator app, and uses the appropriate authentication field.
 
 Alternatively, you can provide the MFA Secret Key. The MFA Secret Key is found when setting up the MFA in Monarch Money by going to Settings -> Security -> Enable MFA -> and copy the "Two-factor text code". Then provide it in the login() method:
 ```python
@@ -137,16 +149,69 @@ As of writing this README, the following methods are supported:
 - `update_account` - updates settings and/or balance of the provided account id
 - `upload_account_balance_history` - uploads account history csv file for a given account
 
+# Development & Testing
+
+## Running Tests
+
+This project includes a comprehensive test suite. To run tests:
+
+```bash
+# Install test dependencies
+pip install pytest pytest-asyncio pytest-cov
+
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=monarchmoney --cov-report=term-missing
+
+# Run specific test categories
+pytest -m "api"          # API method tests
+pytest -m "auth"         # Authentication tests
+pytest -m "unit"         # Unit tests
+```
+
+## Test Categories
+
+- **Authentication Tests**: Login, MFA, session management, header validation
+- **API Method Tests**: Account/transaction retrieval, GraphQL execution, error handling
+- **Integration Tests**: End-to-end functionality and field detection
+- **Retry Logic Tests**: Rate limiting, exponential backoff, error handling
+
+## CI/CD
+
+This project uses GitHub Actions for continuous integration:
+
+- **Multi-Python Testing**: Supports Python 3.8 through 3.12
+- **Code Quality**: Automated linting with flake8, formatting with black, import sorting with isort
+- **Coverage Reporting**: Integrated with Codecov for test coverage tracking
+
 # Contributing
 
 Any and all contributions -- code, documentation, feature requests, feedback -- are welcome!
 
-If you plan to submit up a pull request, you can expect a timely review.  There aren't any strict requirements around the environment you'll need.  Please ensure you do the following:
+If you plan to submit up a pull request, you can expect a timely review.  Please ensure you do the following:
 
   - Configure your IDE or manually run [Black](https://github.com/psf/black) to auto-format the code.
-  - Ensure you run the unit tests in this project!
+  - Ensure you run the unit tests in this project: `pytest`
     
 Actions are configured in this repo to run against all PRs and merges which will block them if a unit test fails or Black throws an error.
+
+# Troubleshooting
+
+## Authentication Issues
+
+If you're experiencing login problems, this fork includes several fixes:
+
+**404 Login Errors**: The library automatically falls back to GraphQL authentication if REST endpoints return 404.
+
+**403 Forbidden Errors**: Ensure you're using the latest version which includes proper browser headers (device-uuid, Origin, User-Agent).
+
+**MFA Problems**: The library automatically detects email OTP vs authenticator app codes:
+- 6-digit numeric codes are treated as email OTP
+- Other formats are treated as TOTP from authenticator apps
+
+**Rate Limiting**: Built-in retry logic with exponential backoff handles temporary rate limits automatically.
 
 # FAQ
 
@@ -155,6 +220,15 @@ Actions are configured in this repo to run against all PRs and merges which will
 If you currently use Google or 'Continue with Google' to access your Monarch account, you'll need to set a password to leverage this API.  You can set a password on your Monarch account by going to your [security settings](https://app.monarchmoney.com/settings/security).  
 
 Don't forget to use a password unique to your Monarch account and to enable multi-factor authentication!
+
+**What's different in this fork?**
+
+This fork fixes several critical authentication issues that were causing 404 and 403 errors:
+- Added GraphQL fallback for authentication endpoints
+- Fixed HTTP headers to match browser requests
+- Improved MFA field detection (email OTP vs TOTP)
+- Added comprehensive retry logic
+- Includes full test suite and CI/CD pipeline
 
 # Projects Using This Library
 
