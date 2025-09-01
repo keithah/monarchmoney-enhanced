@@ -124,6 +124,8 @@ class MonarchMoney(object):
 
     def set_token(self, token: str) -> None:
         self._token = token
+        if self._headers is not None:
+            self._headers["Authorization"] = f"Token {token}"
 
     async def interactive_login(
         self, use_saved_session: bool = True, save_session: bool = True
@@ -3133,7 +3135,7 @@ class MonarchMoney(object):
         """
         Creates a correctly configured GraphQL client for connecting to Monarch Money.
         """
-        if self._headers is None:
+        if not self._token or "Authorization" not in self._headers:
             raise LoginFailedException(
                 "Make sure you call login() first or provide a session token!"
             )
