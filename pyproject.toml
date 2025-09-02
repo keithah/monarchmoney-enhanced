@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "monarchmoney-enhanced"
+version = "0.2.1"
+description = "Enhanced Monarch Money API for Python with authentication fixes"
+readme = "README.md"
+authors = [
+    {name = "keithah", email = "keithah@users.noreply.github.com"}
+]
+license = {text = "MIT"}
+keywords = ["monarch money", "financial", "money", "personal finance"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Office/Business :: Financial"
+]
+dependencies = [
+    "aiohttp>=3.8.4",
+    "gql>=3.4",
+    "oathtool>=2.3.1"
+]
+
+[project.urls]
+Homepage = "https://github.com/keithah/monarchmoney-enhanced"
+Repository = "https://github.com/keithah/monarchmoney-enhanced"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["monarchmoney*"]
