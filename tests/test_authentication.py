@@ -15,7 +15,9 @@ class TestLogin:
 
     @pytest.mark.asyncio
     @pytest.mark.auth
-    @pytest.mark.skip(reason="Authentication tests need better mocking - real API calls failing")
+    @pytest.mark.skip(
+        reason="Authentication tests need better mocking - real API calls failing"
+    )
     async def test_successful_login(
         self, mock_successful_login_response, sample_credentials, tmp_path
     ):
@@ -44,7 +46,9 @@ class TestLogin:
 
     @pytest.mark.asyncio
     @pytest.mark.auth
-    @pytest.mark.skip(reason="Authentication tests need better mocking - real API calls failing")
+    @pytest.mark.skip(
+        reason="Authentication tests need better mocking - real API calls failing"
+    )
     async def test_login_requires_mfa(
         self, mock_mfa_required_response, sample_credentials, tmp_path
     ):
@@ -83,7 +87,9 @@ class TestLogin:
 
     @pytest.mark.asyncio
     @pytest.mark.auth
-    @pytest.mark.skip(reason="Authentication tests need better mocking - real API calls failing")
+    @pytest.mark.skip(
+        reason="Authentication tests need better mocking - real API calls failing"
+    )
     async def test_login_with_rate_limiting(
         self, mock_rate_limit_response, sample_credentials, tmp_path
     ):
@@ -101,7 +107,9 @@ class TestLogin:
         with patch("monarchmoney.monarchmoney.ClientSession") as mock_session_class:
             mock_session = AsyncMock()
             # First call returns rate limit, second succeeds
-            mock_session.post = AsyncMock(side_effect=[mock_rate_limit_response, mock_success])
+            mock_session.post = AsyncMock(
+                side_effect=[mock_rate_limit_response, mock_success]
+            )
             mock_session.__aenter__ = AsyncMock(return_value=mock_session)
             mock_session.__aexit__ = AsyncMock(return_value=None)
             mock_session_class.return_value = mock_session
@@ -120,7 +128,9 @@ class TestMFA:
 
     @pytest.mark.asyncio
     @pytest.mark.auth
-    @pytest.mark.skip(reason="Authentication tests need better mocking - real API calls failing")
+    @pytest.mark.skip(
+        reason="Authentication tests need better mocking - real API calls failing"
+    )
     async def test_mfa_with_email_otp(
         self, mock_successful_login_response, sample_credentials, tmp_path
     ):
@@ -156,7 +166,9 @@ class TestMFA:
 
     @pytest.mark.asyncio
     @pytest.mark.auth
-    @pytest.mark.skip(reason="Authentication tests need better mocking - real API calls failing")
+    @pytest.mark.skip(
+        reason="Authentication tests need better mocking - real API calls failing"
+    )
     async def test_mfa_with_totp(
         self, mock_successful_login_response, sample_credentials, tmp_path
     ):
@@ -196,7 +208,9 @@ class TestGraphQLFallback:
 
     @pytest.mark.asyncio
     @pytest.mark.auth
-    @pytest.mark.skip(reason="Authentication tests need better mocking - real API calls failing")
+    @pytest.mark.skip(
+        reason="Authentication tests need better mocking - real API calls failing"
+    )
     async def test_login_404_triggers_graphql_fallback(
         self, sample_credentials, tmp_path
     ):
@@ -236,7 +250,9 @@ class TestGraphQLFallback:
 
     @pytest.mark.asyncio
     @pytest.mark.auth
-    @pytest.mark.skip(reason="Authentication tests need better mocking - real API calls failing")
+    @pytest.mark.skip(
+        reason="Authentication tests need better mocking - real API calls failing"
+    )
     async def test_mfa_404_triggers_graphql_fallback(
         self, sample_credentials, tmp_path
     ):
