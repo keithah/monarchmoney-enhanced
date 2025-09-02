@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased] - 2025-09-01
+## [0.2.0] - 2025-09-02
 
 ### 🔧 Fixed
 - **Authentication 404 Errors**: Added automatic GraphQL fallback when REST endpoints return 404
@@ -23,6 +23,8 @@ All notable changes to this project will be documented in this file.
 - **CI/CD Pipeline**: GitHub Actions workflow with multi-Python version testing (3.8-3.12)
 - **Code Quality**: Automated linting (flake8), formatting (black), and import sorting (isort)
 - **Coverage Reporting**: Integrated with Codecov for test coverage tracking
+- **User Profile API**: New `get_me()` method to retrieve user information (timezone, email, name, MFA status)
+- **Merchants API**: New `get_merchants()` method to retrieve merchant data with transaction counts
 
 ### 🛡️ Enhanced
 - **Browser Compatibility**: Updated User-Agent to match Chrome browser
