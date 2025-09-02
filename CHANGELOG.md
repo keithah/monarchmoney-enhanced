@@ -10,6 +10,13 @@ All notable changes to this project will be documented in this file.
 ### ✨ Added  
 - **Transaction Amount Filtering**: Added `is_credit` and `abs_amount_range` parameters to `get_transactions()` for filtering by credit/debit and amount ranges ([PR #148](https://github.com/hammem/monarchmoney/pull/148))
 - **Holdings Management**: Added `get_security_details()`, `create_manual_holding()`, `create_manual_holding_by_ticker()`, and `delete_manual_holding()` methods for programmatic investment holdings management ([PR #151](https://github.com/hammem/monarchmoney/pull/151))
+- **Transaction Rules**: Added comprehensive transaction rules functionality:
+  - `get_transaction_rules()` - Get all configured rules
+  - `create_transaction_rule()` - Create new rules with conditions and actions
+  - `update_transaction_rule()` - Update existing rules
+  - `delete_transaction_rule()` - Delete rules
+  - `reorder_transaction_rules()` - Change rule priority order
+  - `create_categorization_rule()` - Helper method for merchant-based categorization rules
 
 ## [0.2.1] - 2025-09-02
 

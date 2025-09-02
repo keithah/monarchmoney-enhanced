@@ -1965,6 +1965,274 @@ class MonarchMoney(object):
 
         return True
 
+    async def get_transaction_rules(self) -> Dict[str, Any]:
+        """
+        Gets all transaction rules configured in the account.
+        Rules are returned in their priority order.
+        """
+        query = gql(
+            """
+            query GetTransactionRules {
+                transactionRules {
+                    id
+                    priority
+                    enabled
+                    conditions {
+                        field
+                        operation
+                        value
+                        __typename
+                    }
+                    actions {
+                        type
+                        value
+                        categoryId
+                        merchantName
+                        note
+                        tagIds
+                        __typename
+                    }
+                    createdAt
+                    updatedAt
+                    __typename
+                }
+            }
+            """
+        )
+
+        return await self.gql_call(
+            operation="GetTransactionRules",
+            graphql_query=query,
+        )
+
+    async def create_transaction_rule(
+        self,
+        conditions: List[Dict[str, Any]],
+        actions: List[Dict[str, Any]],
+        enabled: bool = True,
+        priority: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        """
+        Creates a new transaction rule.
+        
+        :param conditions: List of conditions that must be met for the rule to apply
+            Example: [{"field": "merchant", "operation": "contains", "value": "Sentris Network LLC"}]
+        :param actions: List of actions to perform when conditions are met
+            Example: [{"type": "set_category", "categoryId": "123"}, {"type": "set_merchant", "value": "Sentris"}]
+        :param enabled: Whether the rule is active (default True)
+        :param priority: Rule priority/order (lower numbers = higher priority). If None, adds to end.
+        """
+        query = gql(
+            """
+            mutation CreateTransactionRule($input: CreateTransactionRuleInput!) {
+                createTransactionRule(input: $input) {
+                    rule {
+                        id
+                        priority
+                        enabled
+                        __typename
+                    }
+                    errors {
+                        message
+                        code
+                        __typename
+                    }
+                    __typename
+                }
+            }
+            """
+        )
+
+        variables = {
+            "input": {
+                "conditions": conditions,
+                "actions": actions,
+                "enabled": enabled,
+            }
+        }
+        
+        if priority is not None:
+            variables["input"]["priority"] = priority
+
+        return await self.gql_call(
+            operation="CreateTransactionRule",
+            graphql_query=query,
+            variables=variables,
+        )
+
+    async def update_transaction_rule(
+        self,
+        rule_id: str,
+        conditions: Optional[List[Dict[str, Any]]] = None,
+        actions: Optional[List[Dict[str, Any]]] = None,
+        enabled: Optional[bool] = None,
+        priority: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        """
+        Updates an existing transaction rule.
+        
+        :param rule_id: The ID of the rule to update
+        :param conditions: New conditions (if provided)
+        :param actions: New actions (if provided)
+        :param enabled: New enabled state (if provided)
+        :param priority: New priority/order (if provided)
+        """
+        query = gql(
+            """
+            mutation UpdateTransactionRule($input: UpdateTransactionRuleInput!) {
+                updateTransactionRule(input: $input) {
+                    rule {
+                        id
+                        priority
+                        enabled
+                        __typename
+                    }
+                    errors {
+                        message
+                        code
+                        __typename
+                    }
+                    __typename
+                }
+            }
+            """
+        )
+
+        variables = {"input": {"id": rule_id}}
+        
+        if conditions is not None:
+            variables["input"]["conditions"] = conditions
+        if actions is not None:
+            variables["input"]["actions"] = actions
+        if enabled is not None:
+            variables["input"]["enabled"] = enabled
+        if priority is not None:
+            variables["input"]["priority"] = priority
+
+        return await self.gql_call(
+            operation="UpdateTransactionRule",
+            graphql_query=query,
+            variables=variables,
+        )
+
+    async def delete_transaction_rule(self, rule_id: str) -> bool:
+        """
+        Deletes a transaction rule.
+        
+        :param rule_id: The ID of the rule to delete
+        :return: True if successfully deleted
+        """
+        query = gql(
+            """
+            mutation DeleteTransactionRule($id: ID!) {
+                deleteTransactionRule(id: $id) {
+                    deleted
+                    errors {
+                        message
+                        code
+                        __typename
+                    }
+                    __typename
+                }
+            }
+            """
+        )
+
+        variables = {"id": rule_id}
+
+        response = await self.gql_call(
+            operation="DeleteTransactionRule",
+            graphql_query=query,
+            variables=variables,
+        )
+
+        if not response["deleteTransactionRule"]["deleted"]:
+            raise RequestFailedException(str(response["deleteTransactionRule"]["errors"]))
+
+        return True
+
+    async def reorder_transaction_rules(self, rule_ids: List[str]) -> Dict[str, Any]:
+        """
+        Reorders transaction rules by providing a list of rule IDs in the desired order.
+        
+        :param rule_ids: List of rule IDs in the desired priority order
+        """
+        query = gql(
+            """
+            mutation ReorderTransactionRules($ruleIds: [ID!]!) {
+                reorderTransactionRules(ruleIds: $ruleIds) {
+                    success
+                    errors {
+                        message
+                        code
+                        __typename
+                    }
+                    __typename
+                }
+            }
+            """
+        )
+
+        variables = {"ruleIds": rule_ids}
+
+        return await self.gql_call(
+            operation="ReorderTransactionRules",
+            graphql_query=query,
+            variables=variables,
+        )
+
+    async def create_categorization_rule(
+        self,
+        merchant_contains: str,
+        category_name: str,
+        enabled: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Helper method to create a rule that categorizes transactions based on merchant name.
+        
+        :param merchant_contains: Text that must be contained in the merchant name
+        :param category_name: Name of the category to apply (e.g., "Shared - Telco")
+        :return: The created rule
+        
+        Example:
+            mm.create_categorization_rule(
+                merchant_contains="Sentris Network LLC",
+                category_name="Shared - Telco"
+            )
+        """
+        # First, get all categories to find the category ID
+        categories_response = await self.get_transaction_categories()
+        categories = categories_response.get("categories", [])
+        
+        # Find the category by name
+        category = None
+        for cat in categories:
+            full_name = f"{cat['group']['name']} - {cat['name']}"
+            if full_name == category_name or cat['name'] == category_name:
+                category = cat
+                break
+        
+        if not category:
+            raise ValueError(f"Category '{category_name}' not found")
+        
+        # Create the rule
+        conditions = [{
+            "field": "merchant",
+            "operation": "contains",
+            "value": merchant_contains
+        }]
+        
+        actions = [{
+            "type": "set_category",
+            "categoryId": category['id']
+        }]
+        
+        return await self.create_transaction_rule(
+            conditions=conditions,
+            actions=actions,
+            enabled=enabled
+        )
+
     async def get_transaction_categories(self) -> Dict[str, Any]:
         """
         Gets all the categories configured in the account.
