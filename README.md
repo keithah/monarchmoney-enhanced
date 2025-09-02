@@ -158,6 +158,8 @@ As of writing this README, the following methods are supported:
 - `update_account` - updates settings and/or balance of the provided account id
 - `upload_account_balance_history` - uploads account history csv file for a given account
 
+For a complete mapping of GraphQL operations and implementation status, see [GRAPHQL.md](GRAPHQL.md).
+
 # Development & Testing
 
 ## Running Tests
