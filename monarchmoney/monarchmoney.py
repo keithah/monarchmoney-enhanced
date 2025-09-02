@@ -2957,6 +2957,7 @@ class MonarchMoney(object):
             url=MonarchMoneyEndpoints.getGraphQL(),
             headers={"Content-Type": "application/json"},
             timeout=self._timeout,
+            ssl=True,
         )
         client = Client(transport=transport, fetch_schema_from_transport=False)
 
@@ -3032,6 +3033,7 @@ class MonarchMoney(object):
             url=MonarchMoneyEndpoints.getGraphQL(),
             headers={"Content-Type": "application/json"},
             timeout=self._timeout,
+            ssl=True,
         )
         client = Client(transport=transport, fetch_schema_from_transport=False)
 
@@ -3143,6 +3145,7 @@ class MonarchMoney(object):
             url=MonarchMoneyEndpoints.getGraphQL(),
             headers=self._headers,
             timeout=self._timeout,
+            ssl=True,
         )
         return Client(
             transport=transport,

@@ -140,3 +140,23 @@ class TestFieldDetection:
         assert "totp" in test_data2
         assert test_data2["totp"] == "abc123"
         assert "email_otp" not in test_data2
+
+
+class TestSecurityConfiguration:
+    """Test security-related configurations."""
+    
+    def test_ssl_verification_enabled(self):
+        """Test that SSL certificate verification is enabled."""
+        from unittest.mock import patch, MagicMock
+        
+        mm = MonarchMoney(token="test_token")
+        
+        with patch('monarchmoney.monarchmoney.AIOHTTPTransport') as mock_transport:
+            mock_transport.return_value = MagicMock()
+            
+            mm._get_graphql_client()
+            
+            # Verify SSL was enabled in transport creation
+            mock_transport.assert_called()
+            call_kwargs = mock_transport.call_args[1]
+            assert call_kwargs.get('ssl') is True
