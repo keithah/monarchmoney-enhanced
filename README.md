@@ -158,6 +158,13 @@ As of writing this README, the following methods are supported:
 - `update_account` - updates settings and/or balance of the provided account id
 - `upload_account_balance_history` - uploads account history csv file for a given account
 
+## Session Management Methods
+
+- `validate_session` - validates current session by making a lightweight API call
+- `is_session_stale` - checks if session needs validation based on elapsed time  
+- `ensure_valid_session` - ensures session is valid, validating if stale
+- `get_session_info` - gets session metadata (creation time, last validation, staleness)
+
 For a complete mapping of GraphQL operations and implementation status, see [GRAPHQL.md](GRAPHQL.md).
 
 # Development & Testing

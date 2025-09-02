@@ -2,12 +2,18 @@
 Unit tests for MonarchMoney authentication methods.
 """
 
+import pickle
+import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 from monarchmoney import MonarchMoney
-from monarchmoney.monarchmoney import LoginFailedException, RequireMFAException
+from monarchmoney.monarchmoney import (
+    LoginFailedException,
+    RequireMFAException,
+    RequestFailedException,
+)
 
 
 class TestLogin:
@@ -334,6 +340,87 @@ class TestSessionManagement:
 
         mm.delete_session()
         assert not session_file.exists()
+
+    def test_session_info_no_token(self):
+        """Test get_session_info with no token."""
+        mm = MonarchMoney()
+        info = mm.get_session_info()
+
+        assert info["valid"] is False
+        assert info["message"] == "No session token"
+
+    def test_session_info_with_token(self, tmp_path):
+        """Test get_session_info with valid token."""
+        session_file = tmp_path / "test_session.pickle"
+        mm = MonarchMoney(session_file=str(session_file))
+        mm.set_token("test_token")
+
+        info = mm.get_session_info()
+
+        assert info["valid"] is True
+        assert info["token_present"] is True
+        assert info["created_at"] is not None
+        assert info["last_validated"] is not None
+        assert info["session_age_seconds"] is not None
+        assert info["time_since_validation_seconds"] is not None
+        assert "is_stale" in info
+        assert info["validation_interval_seconds"] == 3600
+
+    def test_is_session_stale(self, tmp_path):
+        """Test session staleness detection."""
+        session_file = tmp_path / "test_session.pickle"
+        mm = MonarchMoney(session_file=str(session_file))
+
+        # No validation timestamp - should be stale
+        assert mm.is_session_stale() is True
+
+        # Set token (initializes timestamps)
+        mm.set_token("test_token")
+        assert mm.is_session_stale() is False
+
+        # Manually set old validation timestamp
+        mm._session_last_validated = time.time() - 7200  # 2 hours ago
+        assert mm.is_session_stale() is True
+
+    @pytest.mark.asyncio
+    async def test_ensure_valid_session_no_token(self):
+        """Test ensure_valid_session with no token."""
+        mm = MonarchMoney()
+
+        with pytest.raises(RequestFailedException, match="No session token available"):
+            await mm.ensure_valid_session()
+
+    def test_enhanced_session_format(self, tmp_path):
+        """Test saving and loading enhanced session format."""
+        session_file = tmp_path / "test_session.pickle"
+
+        # Save enhanced session
+        mm1 = MonarchMoney(session_file=str(session_file))
+        mm1.set_token("test_token_12345")
+        mm1.save_session()
+
+        # Load in new instance
+        mm2 = MonarchMoney(session_file=str(session_file))
+        mm2.load_session()
+
+        assert mm2.token == "test_token_12345"
+        assert mm2._session_created_at is not None
+        assert mm2._session_last_validated is not None
+
+    def test_legacy_session_compatibility(self, tmp_path):
+        """Test loading legacy session format."""
+        session_file = tmp_path / "legacy_session.pickle"
+
+        # Create legacy format session
+        with open(session_file, "wb") as fh:
+            pickle.dump({"token": "legacy_token"}, fh)
+
+        # Load with new code
+        mm = MonarchMoney(session_file=str(session_file))
+        mm.load_session()
+
+        assert mm.token == "legacy_token"
+        assert mm._headers["Authorization"] == "Token legacy_token"
 
 
 class TestHeaderGeneration:

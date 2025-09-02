@@ -118,6 +118,11 @@ class MonarchMoney(object):
         self._token = token
         self._timeout = timeout
 
+        # Session metadata for validation and refresh
+        self._session_created_at: Optional[float] = None
+        self._session_last_validated: Optional[float] = None
+        self._session_validation_interval = 3600  # Validate every hour
+
     @property
     def timeout(self) -> int:
         """The timeout, in seconds, for GraphQL calls."""
@@ -135,6 +140,12 @@ class MonarchMoney(object):
         self._token = token
         if self._headers is not None:
             self._headers["Authorization"] = f"Token {token}"
+
+        # Initialize session metadata when token is set
+        current_time = time.time()
+        if not self._session_created_at:
+            self._session_created_at = current_time
+        self._session_last_validated = current_time
 
     async def interactive_login(
         self, use_saved_session: bool = True, save_session: bool = True
@@ -3371,13 +3382,19 @@ class MonarchMoney(object):
 
     def save_session(self, filename: Optional[str] = None) -> None:
         """
-        Saves the auth token needed to access a Monarch Money account.
+        Saves the auth token and session metadata needed to access a Monarch Money account.
+        Includes timestamp for session validation and expiration tracking.
         """
         if filename is None:
             filename = self._session_file
         filename = os.path.abspath(filename)
 
-        session_data = {"token": self._token}
+        session_data = {
+            "token": self._token,
+            "created_at": time.time(),
+            "last_validated": time.time(),
+            "version": "0.2.2",
+        }
 
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         with open(filename, "wb") as fh:
@@ -3386,13 +3403,27 @@ class MonarchMoney(object):
     def load_session(self, filename: Optional[str] = None) -> None:
         """
         Loads pre-existing auth token from a Python pickle file.
+        Supports both legacy format (token only) and new format (with metadata).
         """
         if filename is None:
             filename = self._session_file
 
         with open(filename, "rb") as fh:
             data = pickle.load(fh)
-            self.set_token(data["token"])
+
+            # Handle legacy session format (just token string or {"token": "..."})
+            if isinstance(data, str):
+                self.set_token(data)
+            elif isinstance(data, dict) and "token" in data:
+                self.set_token(data["token"])
+                # Store session metadata if available
+                if "created_at" in data:
+                    self._session_created_at = data["created_at"]
+                if "last_validated" in data:
+                    self._session_last_validated = data["last_validated"]
+            else:
+                raise ValueError("Invalid session file format")
+
             self._headers["Authorization"] = f"Token {self._token}"
 
     def delete_session(self, filename: Optional[str] = None) -> None:
@@ -3404,6 +3435,95 @@ class MonarchMoney(object):
 
         if os.path.exists(filename):
             os.remove(filename)
+
+    async def validate_session(self) -> bool:
+        """
+        Validates the current session by making a lightweight API call.
+
+        Returns:
+            True if session is valid, False if invalid/expired
+        """
+        if not self._token:
+            return False
+
+        try:
+            # Use get_me() as a lightweight validation call
+            await self.get_me()
+
+            # Update last validated timestamp
+            self._session_last_validated = time.time()
+
+            # Save updated session metadata
+            if self._session_file:
+                self.save_session()
+
+            return True
+        except Exception:
+            # Session is invalid
+            return False
+
+    def is_session_stale(self) -> bool:
+        """
+        Checks if the session needs validation based on time elapsed.
+
+        Returns:
+            True if session should be validated, False if recently validated
+        """
+        if not self._session_last_validated:
+            return True
+
+        elapsed = time.time() - self._session_last_validated
+        return elapsed > self._session_validation_interval
+
+    async def ensure_valid_session(self) -> None:
+        """
+        Ensures the session is valid, validating if stale or refreshing if invalid.
+
+        Raises:
+            RequestFailedException: If session is invalid and cannot be refreshed
+        """
+        if not self._token:
+            raise RequestFailedException(
+                "No session token available. Please login first."
+            )
+
+        # Check if validation is needed
+        if self.is_session_stale():
+            is_valid = await self.validate_session()
+            if not is_valid:
+                raise RequestFailedException(
+                    "Session has expired. Please login again or use refresh_session() if credentials are available."
+                )
+
+    def get_session_info(self) -> Dict[str, Any]:
+        """
+        Gets information about the current session.
+
+        Returns:
+            Dictionary with session metadata including creation time, last validation, and staleness
+        """
+        if not self._token:
+            return {"valid": False, "message": "No session token"}
+
+        current_time = time.time()
+        session_age = None
+        if self._session_created_at:
+            session_age = current_time - self._session_created_at
+
+        time_since_validation = None
+        if self._session_last_validated:
+            time_since_validation = current_time - self._session_last_validated
+
+        return {
+            "valid": bool(self._token),
+            "token_present": bool(self._token),
+            "created_at": self._session_created_at,
+            "last_validated": self._session_last_validated,
+            "session_age_seconds": session_age,
+            "time_since_validation_seconds": time_since_validation,
+            "is_stale": self.is_session_stale(),
+            "validation_interval_seconds": self._session_validation_interval,
+        }
 
     async def _login_user(
         self, email: str, password: str, mfa_secret_key: Optional[str]
