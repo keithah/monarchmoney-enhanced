@@ -7,10 +7,10 @@ install:
 	pip install .
 
 twine:
-	twine upload dist/monarchmoney*
+	twine upload dist/monarchmoney_enhanced*
 
 uninstall:
-	pip uninstall monarchmoney
+	pip uninstall monarchmoney-enhanced
 
 clean:
-	rm -fR build dist monarchmoney.egg-info monarchmoney/__pycache__ *.json
+	rm -fR build dist monarchmoney_enhanced.egg-info monarchmoney/__pycache__ *.json
