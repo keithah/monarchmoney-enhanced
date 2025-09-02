@@ -43,6 +43,7 @@ This document maps the MonarchMoney GraphQL API operations and their implementat
 | `Web_DeleteCategory` | `delete_transaction_category()` | ✅ | Delete a transaction category |
 | `ManageGetCategoryGroups` | `get_transaction_category_groups()` | ✅ | Get category groups |
 | `Web_CreateCategory` | `create_transaction_category()` | ✅ | Create new transaction category |
+| `Web_UpdateCategory` | `update_transaction_category()` | ✅ | Update existing transaction category |
 | `Common_CreateTransactionTag` | `create_transaction_tag()` | ✅ | Create new transaction tag |
 | `GetHouseholdTransactionTags` | `get_transaction_tags()` | ✅ | Get all transaction tags |
 | `Web_SetTransactionTags` | `set_transaction_tags()` | ✅ | Set tags on transactions |
@@ -65,6 +66,8 @@ This document maps the MonarchMoney GraphQL API operations and their implementat
 | `GetGoals` | `get_goals()` | ✅ | Get financial goals and targets with progress tracking |
 | **Net Worth & Analytics** | | | |
 | `GetNetWorthHistory` | `get_net_worth_history()` | ✅ | Get net worth tracking over time with breakdown |
+| **Bills & Payments** | | | |
+| `GetBills` | `get_bills()` | ✅ | Get upcoming bills and payments with due dates |
 
 ## Not Yet Implemented
 
@@ -72,7 +75,6 @@ Based on analysis of hammem's repository and common financial API patterns, thes
 
 | Operation | Potential Method | Priority | Description |
 |-----------|------------------|----------|-------------|
-| `GetBills` | `get_bills()` | High | Upcoming bills and payments |
 | `CreateGoal` | `create_goal()` | Medium | Create new financial goal |
 | `UpdateGoal` | `update_goal()` | Medium | Update existing goal |
 | `DeleteGoal` | `delete_goal()` | Medium | Delete financial goal |

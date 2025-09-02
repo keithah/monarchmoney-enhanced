@@ -32,6 +32,8 @@ All notable changes to this project will be documented in this file.
   - `get_session_info()` - provides session metadata and status
 - **Goals Management**: Added `get_goals()` method to retrieve financial goals and targets with progress tracking
 - **Net Worth Tracking**: Added `get_net_worth_history()` method for net worth analysis over time with customizable timeframes
+- **Bills Management**: Added `get_bills()` method to retrieve upcoming bills and payments with due dates
+- **Category Updates**: Added `update_transaction_category()` method to update category names, icons, and settings without deletion
 
 ### 🔧 Enhanced
 - **Session Format**: Enhanced session files with metadata (creation time, validation timestamps, version)

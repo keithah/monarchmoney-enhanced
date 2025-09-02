@@ -1,0 +1,21 @@
+{
+    "updateCategory": {
+        "errors": [],
+        "category": {
+            "id": "123",
+            "name": "Updated Category Name",
+            "icon": "💰",
+            "group": {
+                "id": "456",
+                "name": "Income",
+                "__typename": "CategoryGroup"
+            },
+            "rolloverEnabled": true,
+            "rolloverType": "monthly",
+            "rolloverStartMonth": "2025-01-01",
+            "order": 1,
+            "__typename": "Category"
+        },
+        "__typename": "UpdateCategoryPayload"
+    }
+}

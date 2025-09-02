@@ -1,0 +1,82 @@
+{
+    "bills": [
+        {
+            "id": "rec_bill_1",
+            "name": "Electric Bill",
+            "amount": -125.50,
+            "dueDate": "2025-09-15",
+            "isPast": false,
+            "transactionId": null,
+            "merchant": {
+                "id": "merchant_1",
+                "name": "City Electric Company",
+                "__typename": "Merchant"
+            },
+            "category": {
+                "id": "cat_utilities",
+                "name": "Utilities",
+                "icon": "⚡",
+                "__typename": "Category"
+            },
+            "account": {
+                "id": "acc_checking",
+                "displayName": "Main Checking",
+                "logoUrl": "https://example.com/bank-logo.png",
+                "__typename": "Account"
+            },
+            "__typename": "RecurringTransactionItem"
+        },
+        {
+            "id": "rec_bill_2", 
+            "name": "Internet Service",
+            "amount": -89.99,
+            "dueDate": "2025-09-20",
+            "isPast": false,
+            "transactionId": null,
+            "merchant": {
+                "id": "merchant_2",
+                "name": "Fiber Internet Co",
+                "__typename": "Merchant"
+            },
+            "category": {
+                "id": "cat_utilities",
+                "name": "Utilities", 
+                "icon": "🌐",
+                "__typename": "Category"
+            },
+            "account": {
+                "id": "acc_checking",
+                "displayName": "Main Checking",
+                "logoUrl": "https://example.com/bank-logo.png",
+                "__typename": "Account"
+            },
+            "__typename": "RecurringTransactionItem"
+        },
+        {
+            "id": "rec_bill_3",
+            "name": "Mortgage Payment",
+            "amount": -2150.00,
+            "dueDate": "2025-10-01",
+            "isPast": false,
+            "transactionId": null,
+            "merchant": {
+                "id": "merchant_3",
+                "name": "Home Mortgage Bank",
+                "__typename": "Merchant"
+            },
+            "category": {
+                "id": "cat_housing",
+                "name": "Housing",
+                "icon": "🏠",
+                "__typename": "Category"
+            },
+            "account": {
+                "id": "acc_checking",
+                "displayName": "Main Checking",
+                "logoUrl": "https://example.com/bank-logo.png",
+                "__typename": "Account"
+            },
+            "__typename": "RecurringTransactionItem"
+        }
+    ]
+}

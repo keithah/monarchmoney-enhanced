@@ -282,6 +282,50 @@ class TestMonarchMoney(unittest.IsolatedAsyncioTestCase):
             "Expected first net worth to be 95000.50",
         )
 
+    @patch.object(Client, "execute_async")
+    async def test_update_transaction_category(self, mock_execute_async):
+        """
+        Test the update_transaction_category method.
+        """
+        mock_execute_async.return_value = TestMonarchMoney.loadTestData(
+            filename="update_transaction_category.json",
+        )
+        result = await self.monarch_money.update_transaction_category(
+            category_id="123", name="Updated Category Name", icon="💰"
+        )
+        mock_execute_async.assert_called_once()
+        self.assertIsNotNone(result, "Expected result to not be None")
+        self.assertEqual(
+            result["updateCategory"]["category"]["name"],
+            "Updated Category Name",
+            "Expected category name to be updated",
+        )
+
+    @patch.object(Client, "execute_async")
+    async def test_get_bills(self, mock_execute_async):
+        """
+        Test the get_bills method.
+        """
+        mock_execute_async.return_value = TestMonarchMoney.loadTestData(
+            filename="get_bills.json",
+        )
+        result = await self.monarch_money.get_bills(
+            start_date="2025-09-01", end_date="2025-10-31"
+        )
+        mock_execute_async.assert_called_once()
+        self.assertIsNotNone(result, "Expected result to not be None")
+        self.assertEqual(len(result["bills"]), 3, "Expected 3 bills")
+        self.assertEqual(
+            result["bills"][0]["name"],
+            "Electric Bill",
+            "Expected first bill to be 'Electric Bill'",
+        )
+        self.assertEqual(
+            result["bills"][0]["amount"],
+            -125.50,
+            "Expected first bill amount to be -125.50",
+        )
+
     async def test_login(self):
         """
         Test the login method with empty values for email and password.

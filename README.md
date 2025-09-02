@@ -127,6 +127,7 @@ As of writing this README, the following methods are supported:
 - `get_budgets` — all the budgets and the corresponding actual amounts
 - `get_goals` - gets all financial goals and targets with progress tracking
 - `get_net_worth_history` - gets net worth tracking over time with breakdown by timeframe
+- `get_bills` - gets upcoming bills and payments with due dates and amounts
 - `get_subscription_details` - gets the Monarch Money account's status (e.g. paid or trial)
 - `get_recurring_transactions` - gets the future recurring transactions, including merchant and account details
 - `get_transactions_summary` - gets the transaction summary data from the transactions page
@@ -146,6 +147,7 @@ As of writing this README, the following methods are supported:
 - `delete_transaction_category` - deletes a category for transactions
 - `delete_transaction_categories` - deletes a list of transaction categories for transactions
 - `create_transaction_category` - creates a category for transactions
+- `update_transaction_category` - updates an existing transaction category (name, icon, group, rollover settings)
 - `request_accounts_refresh` - requests a synchronization / refresh of all accounts linked to Monarch Money. This is a **non-blocking call**. If the user wants to check on the status afterwards, they must call `is_accounts_refresh_complete`.
 - `request_accounts_refresh_and_wait` - requests a synchronization / refresh of all accounts linked to Monarch Money. This is a **blocking call** and will not return until the refresh is complete or no longer running.
 - `create_transaction` - creates a transaction with the given attributes

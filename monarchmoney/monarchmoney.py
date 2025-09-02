@@ -2560,6 +2560,97 @@ class MonarchMoney(object):
             variables=variables,
         )
 
+    async def update_transaction_category(
+        self,
+        category_id: str,
+        name: Optional[str] = None,
+        icon: Optional[str] = None,
+        group_id: Optional[str] = None,
+        rollover_enabled: Optional[bool] = None,
+        rollover_type: Optional[str] = None,
+        rollover_start_month: Optional[datetime] = None,
+    ) -> Dict[str, Any]:
+        """
+        Updates an existing transaction category.
+
+        :param category_id: The ID of the category to update
+        :param name: New name for the category
+        :param icon: New icon for the category (unicode string or emoji)
+        :param group_id: New group ID for the category
+        :param rollover_enabled: Whether rollover should be enabled
+        :param rollover_type: The budget rollover type
+        :param rollover_start_month: The datetime of the rollover start month
+        """
+        query = gql(
+            """
+            mutation Web_UpdateCategory($input: UpdateCategoryInput!) {
+                updateCategory(input: $input) {
+                    errors {
+                        ...PayloadErrorFields
+                        __typename
+                    }
+                    category {
+                        id
+                        ...CategoryFormFields
+                        __typename
+                    }
+                    __typename
+                }
+            }
+
+            fragment PayloadErrorFields on PayloadError {
+                fieldErrors {
+                    field
+                    messages
+                    __typename
+                }
+                message
+                code
+                __typename
+            }
+
+            fragment CategoryFormFields on Category {
+                id
+                name
+                icon
+                group {
+                    id
+                    name
+                    __typename
+                }
+                rolloverEnabled
+                rolloverType
+                rolloverStartMonth
+                order
+                __typename
+            }
+            """
+        )
+
+        # Build input with only provided parameters
+        input_data = {"id": category_id}
+
+        if name is not None:
+            input_data["name"] = name
+        if icon is not None:
+            input_data["icon"] = icon
+        if group_id is not None:
+            input_data["group"] = group_id
+        if rollover_enabled is not None:
+            input_data["rolloverEnabled"] = rollover_enabled
+        if rollover_type is not None:
+            input_data["rolloverType"] = rollover_type
+        if rollover_start_month is not None:
+            input_data["rolloverStartMonth"] = rollover_start_month.strftime("%Y-%m-%d")
+
+        variables = {"input": input_data}
+
+        return await self.gql_call(
+            operation="Web_UpdateCategory",
+            graphql_query=query,
+            variables=variables,
+        )
+
     async def create_transaction_tag(self, name: str, color: str) -> Dict[str, Any]:
         """
         Creates a new transaction tag.
@@ -3432,6 +3523,71 @@ class MonarchMoney(object):
 
         return await self.gql_call(
             "Web_GetUpcomingRecurringTransactionItems", query, variables
+        )
+
+    async def get_bills(
+        self,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        limit: int = 100,
+    ) -> Dict[str, Any]:
+        """
+        Get upcoming bills and payments.
+
+        :param start_date: Start date in "yyyy-mm-dd" format (defaults to today)
+        :param end_date: End date in "yyyy-mm-dd" format (defaults to 30 days from now)
+        :param limit: Maximum number of bills to return
+        """
+        query = gql(
+            """
+            query GetBills($startDate: Date!, $endDate: Date!, $limit: Int!) {
+              bills: upcomingRecurringTransactionItems(
+                startDate: $startDate,
+                endDate: $endDate,
+                limit: $limit
+              ) {
+                id
+                name: description
+                amount
+                dueDate: date
+                isPast
+                transactionId
+                merchant {
+                  id
+                  name
+                  __typename
+                }
+                category {
+                  id
+                  name
+                  icon
+                  __typename
+                }
+                account {
+                  id
+                  displayName
+                  logoUrl
+                  __typename
+                }
+                __typename
+              }
+            }
+            """
+        )
+
+        # Set default dates if not provided
+        if not start_date:
+            start_date = datetime.now().strftime("%Y-%m-%d")
+
+        if not end_date:
+            end_date = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
+
+        variables = {"startDate": start_date, "endDate": end_date, "limit": limit}
+
+        return await self.gql_call(
+            operation="GetBills",
+            graphql_query=query,
+            variables=variables,
         )
 
     def _get_current_date(self) -> str:
