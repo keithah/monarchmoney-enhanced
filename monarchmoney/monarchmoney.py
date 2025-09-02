@@ -901,7 +901,7 @@ class MonarchMoney(object):
     async def get_security_details(self, ticker: str) -> Dict[str, Any]:
         """
         Get security details including the securityId needed for manual holdings.
-        
+
         :param ticker: The stock ticker symbol to search for
         """
         query = gql(
@@ -922,11 +922,7 @@ class MonarchMoney(object):
             """
         )
 
-        variables = {
-            "search": ticker,
-            "limit": 5,
-            "orderByPopularity": True
-        }
+        variables = {"search": ticker, "limit": 5, "orderByPopularity": True}
 
         return await self.gql_call(
             operation="SecuritySearch",
@@ -942,7 +938,7 @@ class MonarchMoney(object):
     ) -> Dict[str, Any]:
         """
         Create a manual holding for an investment account.
-        
+
         :param account_id: The account ID to add the holding to
         :param security_id: The security ID for the holding
         :param quantity: The quantity/number of shares
@@ -989,7 +985,7 @@ class MonarchMoney(object):
     ) -> Dict[str, Any]:
         """
         Create a manual holding using a stock ticker symbol.
-        
+
         :param account_id: The account ID to add the holding to
         :param ticker: The stock ticker symbol (e.g., 'AAPL', 'MSFT')
         :param quantity: The quantity/number of shares
@@ -998,24 +994,36 @@ class MonarchMoney(object):
             security_response = await self.get_security_details(ticker)
             securities = security_response.get("securities", [])
 
-            security = next((sec for sec in securities if sec.get("ticker") == ticker), None)
+            security = next(
+                (sec for sec in securities if sec.get("ticker") == ticker), None
+            )
 
             if not security:
-                return {"errors": [{"message": f"Security not found for ticker: {ticker}"}]}
+                return {
+                    "errors": [{"message": f"Security not found for ticker: {ticker}"}]
+                }
 
             security_id = security.get("id")
             if not security_id:
-                return {"errors": [{"message": f"Security ID not found for ticker: {ticker}"}]}
+                return {
+                    "errors": [
+                        {"message": f"Security ID not found for ticker: {ticker}"}
+                    ]
+                }
 
             return await self.create_manual_holding(account_id, security_id, quantity)
 
         except Exception as e:
-            return {"errors": [{"message": f"Failed to create holding for {ticker}: {str(e)}"}]}
+            return {
+                "errors": [
+                    {"message": f"Failed to create holding for {ticker}: {str(e)}"}
+                ]
+            }
 
     async def delete_manual_holding(self, holding_id: str) -> bool:
         """
         Delete a manual holding.
-        
+
         :param holding_id: The ID of the holding to delete
         :return: True if successfully deleted
         """
@@ -1686,6 +1694,28 @@ class MonarchMoney(object):
             graphql_query=query,
         )
 
+    async def get_transactions_summary_card(self) -> Dict[str, Any]:
+        """
+        Gets transactions summary card data from the account.
+        This provides total transaction count information that may differ
+        from get_transactions_summary due to different filtering logic.
+        """
+        query = gql(
+            """
+            query Web_GetTransactionsSummaryCard {
+              transactionsSummaryCard {
+                totalCount
+                __typename
+              }
+            }
+            """
+        )
+
+        return await self.gql_call(
+            operation="Web_GetTransactionsSummaryCard",
+            graphql_query=query,
+        )
+
     async def get_transactions(
         self,
         limit: int = DEFAULT_RECORD_LIMIT,
@@ -1725,8 +1755,8 @@ class MonarchMoney(object):
         :param imported_from_mint: a bool to filter for whether the transactions were imported from mint.
         :param synced_from_institution: a bool to filter for whether the transactions were synced from an institution.
         :param is_credit: a bool to filter for credit transactions (positive amounts) vs debit transactions (negative amounts).
-        :param abs_amount_range: a tuple of optional floats to filter by absolute amount range. 
-            Format: (min_amount, max_amount) where either value can be None. 
+        :param abs_amount_range: a tuple of optional floats to filter by absolute amount range.
+            Format: (min_amount, max_amount) where either value can be None.
             Example: (10.0, None) for amounts >= $10, (None, 100.0) for amounts <= $100.
         """
 
@@ -1838,7 +1868,9 @@ class MonarchMoney(object):
 
         if abs_amount_range is not None:
             if len(abs_amount_range) != 2:
-                raise ValueError("abs_amount_range must be a tuple of exactly 2 elements")
+                raise ValueError(
+                    "abs_amount_range must be a tuple of exactly 2 elements"
+                )
             min_amount, max_amount = abs_amount_range
             if min_amount is not None:
                 variables["filters"]["absAmountGte"] = min_amount
@@ -2014,7 +2046,7 @@ class MonarchMoney(object):
     ) -> Dict[str, Any]:
         """
         Creates a new transaction rule.
-        
+
         :param conditions: List of conditions that must be met for the rule to apply
             Example: [{"field": "merchant", "operation": "contains", "value": "Sentris Network LLC"}]
         :param actions: List of actions to perform when conditions are met
@@ -2050,7 +2082,7 @@ class MonarchMoney(object):
                 "enabled": enabled,
             }
         }
-        
+
         if priority is not None:
             variables["input"]["priority"] = priority
 
@@ -2070,7 +2102,7 @@ class MonarchMoney(object):
     ) -> Dict[str, Any]:
         """
         Updates an existing transaction rule.
-        
+
         :param rule_id: The ID of the rule to update
         :param conditions: New conditions (if provided)
         :param actions: New actions (if provided)
@@ -2099,7 +2131,7 @@ class MonarchMoney(object):
         )
 
         variables = {"input": {"id": rule_id}}
-        
+
         if conditions is not None:
             variables["input"]["conditions"] = conditions
         if actions is not None:
@@ -2118,7 +2150,7 @@ class MonarchMoney(object):
     async def delete_transaction_rule(self, rule_id: str) -> bool:
         """
         Deletes a transaction rule.
-        
+
         :param rule_id: The ID of the rule to delete
         :return: True if successfully deleted
         """
@@ -2147,14 +2179,16 @@ class MonarchMoney(object):
         )
 
         if not response["deleteTransactionRule"]["deleted"]:
-            raise RequestFailedException(str(response["deleteTransactionRule"]["errors"]))
+            raise RequestFailedException(
+                str(response["deleteTransactionRule"]["errors"])
+            )
 
         return True
 
     async def reorder_transaction_rules(self, rule_ids: List[str]) -> Dict[str, Any]:
         """
         Reorders transaction rules by providing a list of rule IDs in the desired order.
-        
+
         :param rule_ids: List of rule IDs in the desired priority order
         """
         query = gql(
@@ -2189,11 +2223,11 @@ class MonarchMoney(object):
     ) -> Dict[str, Any]:
         """
         Helper method to create a rule that categorizes transactions based on merchant name.
-        
+
         :param merchant_contains: Text that must be contained in the merchant name
         :param category_name: Name of the category to apply (e.g., "Shared - Telco")
         :return: The created rule
-        
+
         Example:
             mm.create_categorization_rule(
                 merchant_contains="Sentris Network LLC",
@@ -2203,34 +2237,27 @@ class MonarchMoney(object):
         # First, get all categories to find the category ID
         categories_response = await self.get_transaction_categories()
         categories = categories_response.get("categories", [])
-        
+
         # Find the category by name
         category = None
         for cat in categories:
             full_name = f"{cat['group']['name']} - {cat['name']}"
-            if full_name == category_name or cat['name'] == category_name:
+            if full_name == category_name or cat["name"] == category_name:
                 category = cat
                 break
-        
+
         if not category:
             raise ValueError(f"Category '{category_name}' not found")
-        
+
         # Create the rule
-        conditions = [{
-            "field": "merchant",
-            "operation": "contains",
-            "value": merchant_contains
-        }]
-        
-        actions = [{
-            "type": "set_category",
-            "categoryId": category['id']
-        }]
-        
+        conditions = [
+            {"field": "merchant", "operation": "contains", "value": merchant_contains}
+        ]
+
+        actions = [{"type": "set_category", "categoryId": category["id"]}]
+
         return await self.create_transaction_rule(
-            conditions=conditions,
-            actions=actions,
-            enabled=enabled
+            conditions=conditions, actions=actions, enabled=enabled
         )
 
     async def get_transaction_categories(self) -> Dict[str, Any]:
