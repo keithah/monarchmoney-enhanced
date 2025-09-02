@@ -7,7 +7,7 @@ import pickle
 import random
 import time
 import uuid
-from datetime import datetime, date, timedelta
+from datetime import date, datetime, timedelta
 from typing import Any, Dict, List, Optional, Union
 
 import oathtool
@@ -50,28 +50,37 @@ async def retry_with_backoff(func, max_retries=3, base_delay=1.0, max_delay=60.0
             return await func()
         except Exception as e:
             error_str = str(e)
-            
+
             # Don't retry authentication errors
-            if any(code in error_str for code in ["401", "403", "Unauthorized", "Forbidden"]):
+            if any(
+                code in error_str
+                for code in ["401", "403", "Unauthorized", "Forbidden"]
+            ):
                 raise
-            
+
             # Don't retry on final attempt
             if attempt == max_retries:
                 raise
-            
+
             # Calculate delay with exponential backoff and jitter
             if "429" in error_str or "Too Many Requests" in error_str:
                 # Longer delay for rate limiting
-                delay = min(base_delay * (2 ** attempt) + random.uniform(0, 1), max_delay)
-                print(f"Rate limited. Retrying in {delay:.1f}s... (attempt {attempt + 1}/{max_retries})")
+                delay = min(base_delay * (2**attempt) + random.uniform(0, 1), max_delay)
+                print(
+                    f"Rate limited. Retrying in {delay:.1f}s... (attempt {attempt + 1}/{max_retries})"
+                )
             elif any(code in error_str for code in ["500", "502", "503", "504"]):
                 # Shorter delay for server errors
-                delay = min(base_delay * (1.5 ** attempt) + random.uniform(0, 0.5), max_delay / 2)
-                print(f"Server error. Retrying in {delay:.1f}s... (attempt {attempt + 1}/{max_retries})")
+                delay = min(
+                    base_delay * (1.5**attempt) + random.uniform(0, 0.5), max_delay / 2
+                )
+                print(
+                    f"Server error. Retrying in {delay:.1f}s... (attempt {attempt + 1}/{max_retries})"
+                )
             else:
                 # Don't retry other errors
                 raise
-                
+
             await asyncio.sleep(delay)
 
 
@@ -96,7 +105,7 @@ class MonarchMoney(object):
     ) -> None:
         self._headers = {
             "Accept": "application/json",
-            "Client-Platform": "web", 
+            "Client-Platform": "web",
             "Content-Type": "application/json",
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
             "device-uuid": str(uuid.uuid4()),
@@ -139,7 +148,7 @@ class MonarchMoney(object):
             await self.multi_factor_authenticate(
                 email, passwd, input("Two Factor Code: ")
             )
-        
+
         # Save session consistently regardless of MFA requirement
         if save_session:
             self.save_session(self._session_file)
@@ -2889,11 +2898,12 @@ class MonarchMoney(object):
         """
         Makes a GraphQL call to Monarch Money's API with retry logic.
         """
+
         async def _execute():
             return await self._get_graphql_client().execute_async(
                 graphql_query, variable_values=variables, operation_name=operation
             )
-        
+
         return await retry_with_backoff(_execute)
 
     def save_session(self, filename: Optional[str] = None) -> None:
@@ -2960,7 +2970,9 @@ class MonarchMoney(object):
                         raise RequireMFAException("Multi-Factor Auth Required")
                     elif resp.status == 404:
                         # REST endpoint not found, try GraphQL authentication
-                        await self._login_user_graphql(email, password, mfa_secret_key, session)
+                        await self._login_user_graphql(
+                            email, password, mfa_secret_key, session
+                        )
                         return
                     elif resp.status == 429:
                         # Rate limited - will be retried by retry_with_backoff
@@ -2973,16 +2985,21 @@ class MonarchMoney(object):
                     response = await resp.json()
                     self.set_token(response["token"])
                     self._headers["Authorization"] = f"Token {self._token}"
-        
+
         await retry_with_backoff(_attempt_login)
 
     async def _login_user_graphql(
-        self, email: str, password: str, mfa_secret_key: Optional[str], session: ClientSession
+        self,
+        email: str,
+        password: str,
+        mfa_secret_key: Optional[str],
+        session: ClientSession,
     ) -> None:
         """
         Performs GraphQL-based login when REST endpoint is not available.
         """
-        mutation = gql("""
+        mutation = gql(
+            """
             mutation Login($email: String!, $password: String!, $totp: String) {
                 login(email: $email, password: $password, totp: $totp) {
                     token
@@ -2996,12 +3013,10 @@ class MonarchMoney(object):
                     }
                 }
             }
-        """)
+        """
+        )
 
-        variables = {
-            "email": email,
-            "password": password
-        }
+        variables = {"email": email, "password": password}
 
         if mfa_secret_key:
             variables["totp"] = oathtool.generate_otp(mfa_secret_key)
@@ -3017,19 +3032,24 @@ class MonarchMoney(object):
 
         try:
             result = await client.execute_async(mutation, variable_values=variables)
-            
+
             # Handle GraphQL-level errors
             if "errors" in result and result["errors"]:
                 error_messages = [str(error) for error in result["errors"]]
-                if any("mfa" in msg.lower() or "totp" in msg.lower() for msg in error_messages):
+                if any(
+                    "mfa" in msg.lower() or "totp" in msg.lower()
+                    for msg in error_messages
+                ):
                     raise RequireMFAException("Multi-Factor Auth Required")
-                raise LoginFailedException(f"GraphQL Login Error: {'; '.join(error_messages)}")
-            
+                raise LoginFailedException(
+                    f"GraphQL Login Error: {'; '.join(error_messages)}"
+                )
+
             # Handle login-specific errors
             login_data = result.get("login", {})
             if not login_data:
                 raise LoginFailedException("No login data in GraphQL response")
-                
+
             login_errors = login_data.get("errors", [])
             if login_errors:
                 error_msgs = []
@@ -3041,14 +3061,14 @@ class MonarchMoney(object):
                     else:
                         error_msgs.append(str(err))
                 raise LoginFailedException(f"Login failed: {'; '.join(error_msgs)}")
-            
+
             token = login_data.get("token")
             if not token:
                 raise LoginFailedException("No token received from GraphQL login")
-                
+
             self.set_token(token)
             self._headers["Authorization"] = f"Token {self._token}"
-            
+
         except Exception as e:
             if isinstance(e, (RequireMFAException, LoginFailedException)):
                 raise
@@ -3060,7 +3080,8 @@ class MonarchMoney(object):
         """
         Performs GraphQL-based MFA authentication when REST endpoint is not available.
         """
-        mutation = gql("""
+        mutation = gql(
+            """
             mutation Login($email: String!, $password: String!, $totp: String) {
                 login(email: $email, password: $password, totp: $totp) {
                     token
@@ -3074,13 +3095,10 @@ class MonarchMoney(object):
                     }
                 }
             }
-        """)
+        """
+        )
 
-        variables = {
-            "email": email,
-            "password": password,
-            "totp": code
-        }
+        variables = {"email": email, "password": password, "totp": code}
 
         # Create a temporary GraphQL client without authentication
         transport = AIOHTTPTransport(
@@ -3093,17 +3111,19 @@ class MonarchMoney(object):
 
         try:
             result = await client.execute_async(mutation, variable_values=variables)
-            
+
             # Handle GraphQL-level errors
             if "errors" in result and result["errors"]:
                 error_messages = [str(error) for error in result["errors"]]
-                raise LoginFailedException(f"GraphQL MFA Error: {'; '.join(error_messages)}")
-            
+                raise LoginFailedException(
+                    f"GraphQL MFA Error: {'; '.join(error_messages)}"
+                )
+
             # Handle login-specific errors
             login_data = result.get("login", {})
             if not login_data:
                 raise LoginFailedException("No login data in GraphQL MFA response")
-                
+
             login_errors = login_data.get("errors", [])
             if login_errors:
                 error_msgs = []
@@ -3115,14 +3135,14 @@ class MonarchMoney(object):
                     else:
                         error_msgs.append(str(err))
                 raise LoginFailedException(f"MFA failed: {'; '.join(error_msgs)}")
-            
+
             token = login_data.get("token")
             if not token:
                 raise LoginFailedException("No token received from GraphQL MFA login")
-                
+
             self.set_token(token)
             self._headers["Authorization"] = f"Token {self._token}"
-            
+
         except Exception as e:
             if isinstance(e, LoginFailedException):
                 raise
@@ -3136,7 +3156,7 @@ class MonarchMoney(object):
         Uses GraphQL authentication as fallback if REST endpoint fails.
         """
         # Try email_otp field first (for email OTP codes)
-        # Fall back to totp field (for authenticator app codes)  
+        # Fall back to totp field (for authenticator app codes)
         data = {
             "username": email,
             "password": password,
@@ -3145,7 +3165,7 @@ class MonarchMoney(object):
             "supports_email_otp": True,
             "supports_recaptcha": True,
         }
-        
+
         # Add the MFA code - try email_otp first, then totp
         if len(code) == 6 and code.isdigit():
             # Likely email OTP (6 digits)
@@ -3175,7 +3195,9 @@ class MonarchMoney(object):
                             elif "error_code" in response:
                                 error_message = response["error_code"]
                             else:
-                                error_message = f"Unrecognized error message: '{response}'"
+                                error_message = (
+                                    f"Unrecognized error message: '{response}'"
+                                )
                             raise LoginFailedException(error_message)
                         except:
                             raise LoginFailedException(
@@ -3184,7 +3206,7 @@ class MonarchMoney(object):
                     response = await resp.json()
                     self.set_token(response["token"])
                     self._headers["Authorization"] = f"Token {self._token}"
-        
+
         await retry_with_backoff(_attempt_mfa)
 
     def _get_graphql_client(self) -> Client:

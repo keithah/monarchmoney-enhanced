@@ -1,8 +1,11 @@
 """
 Pytest configuration and fixtures for MonarchMoney tests.
 """
+
+from unittest.mock import AsyncMock
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock
+
 from monarchmoney import MonarchMoney
 
 
@@ -21,36 +24,35 @@ def mock_successful_login_response():
         "id": "12345",
         "email": "test@example.com",
         "name": "Test User",
-        "household": {
-            "id": "household_123",
-            "name": "Test Household"
-        }
+        "household": {"id": "household_123", "name": "Test Household"},
     }
 
 
 @pytest.fixture
 def mock_mfa_required_response():
     """Mock response that requires MFA."""
+
     class MockResponse:
         status = 403
         reason = "Forbidden"
-        
+
         async def json(self):
             return {"detail": "Multi-Factor Auth Required"}
-    
+
     return MockResponse()
 
 
 @pytest.fixture
 def mock_rate_limit_response():
     """Mock 429 rate limit response."""
+
     class MockResponse:
         status = 429
         reason = "Too Many Requests"
-        
+
         async def json(self):
             return {"detail": "Rate limit exceeded"}
-    
+
     return MockResponse()
 
 
@@ -66,22 +68,19 @@ def mock_accounts_response():
                 "type": {"name": "checking", "display": "Checking"},
                 "subtype": {"name": "checking", "display": "Checking"},
                 "isHidden": False,
-                "includeInNetWorth": True
+                "includeInNetWorth": True,
             },
             {
-                "id": "account_2", 
+                "id": "account_2",
                 "displayName": "Test Savings",
                 "currentBalance": 5000.00,
                 "type": {"name": "savings", "display": "Savings"},
                 "subtype": {"name": "savings", "display": "Savings"},
                 "isHidden": False,
-                "includeInNetWorth": True
-            }
+                "includeInNetWorth": True,
+            },
         ],
-        "householdPreferences": {
-            "id": "prefs_123",
-            "accountGroupOrder": []
-        }
+        "householdPreferences": {"id": "prefs_123", "accountGroupOrder": []},
     }
 
 
@@ -97,16 +96,16 @@ def mock_transactions_response():
                     "amount": -25.50,
                     "date": "2024-01-15",
                     "description": "Coffee Shop",
-                    "account": {"id": "account_1", "displayName": "Test Checking"}
+                    "account": {"id": "account_1", "displayName": "Test Checking"},
                 },
                 {
                     "id": "txn_2",
                     "amount": -12.99,
-                    "date": "2024-01-14", 
+                    "date": "2024-01-14",
                     "description": "Lunch",
-                    "account": {"id": "account_1", "displayName": "Test Checking"}
-                }
-            ]
+                    "account": {"id": "account_1", "displayName": "Test Checking"},
+                },
+            ],
         }
     }
 
@@ -126,5 +125,5 @@ def sample_credentials():
     return {
         "email": "test@example.com",
         "password": "test_password",
-        "mfa_code": "123456"
+        "mfa_code": "123456",
     }

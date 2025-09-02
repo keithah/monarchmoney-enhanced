@@ -1,5 +1,4 @@
 import asyncio
-import os
 import json
 
 from monarchmoney import MonarchMoney

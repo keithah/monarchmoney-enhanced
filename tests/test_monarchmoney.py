@@ -1,10 +1,11 @@
+import json
 import os
 import pickle
 import unittest
 from unittest.mock import patch
 
-import json
 from gql import Client
+
 from monarchmoney import MonarchMoney
 from monarchmoney.monarchmoney import LoginFailedException
 
