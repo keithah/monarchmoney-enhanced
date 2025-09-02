@@ -26,7 +26,9 @@ Clone this repository from Git
 
 ## Via `pip`
 
-`pip install monarchmoney`
+`pip install monarchmoney-enhanced`
+
+**Note**: This package is published as `monarchmoney-enhanced` on PyPI to distinguish it from the original `monarchmoney` package while maintaining the same Python import structure.
 # Instantiate & Login
 
 There are two ways to use this library: interactive and non-interactive.

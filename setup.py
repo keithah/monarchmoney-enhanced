@@ -5,9 +5,9 @@ from setuptools import setup
 install_requires = open("requirements.txt", "r").read().split("\n")
 
 setup(
-    name="monarchmoney",
+    name="monarchmoney-enhanced",
     version="0.2.0",
-    description="Monarch Money API for Python",
+    description="Enhanced Monarch Money API for Python with authentication fixes",
     long_description=open("README.md", "r").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/keithah/monarchmoney",

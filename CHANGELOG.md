@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [0.2.0] - 2025-09-02
 
+**Package Renamed**: Published as `monarchmoney-enhanced` on PyPI to distinguish from the original `monarchmoney` package while maintaining the same import structure.
+
 ### 🔧 Fixed
 - **Authentication 404 Errors**: Added automatic GraphQL fallback when REST endpoints return 404
 - **Authentication 403 Errors**: Fixed missing HTTP headers (device-uuid, Origin, User-Agent)
