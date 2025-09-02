@@ -160,3 +160,30 @@ class TestSecurityConfiguration:
             mock_transport.assert_called()
             call_kwargs = mock_transport.call_args[1]
             assert call_kwargs.get('ssl') is True
+
+
+class TestInteractiveLogin:
+    """Test interactive login session handling."""
+    
+    def test_session_saving_consistency(self, tmp_path):
+        """Test that interactive_login saves session regardless of MFA."""
+        from unittest.mock import patch, AsyncMock
+        
+        session_file = tmp_path / "test_session.pickle"
+        mm = MonarchMoney(session_file=str(session_file))
+        
+        # Mock the underlying login to succeed without MFA
+        with patch.object(mm, 'login', new_callable=AsyncMock) as mock_login:
+            mock_login.return_value = None  # Successful login
+            mm.set_token("mock_token")  # Simulate successful authentication
+            
+            # Mock user inputs
+            with patch('builtins.input', return_value="test@example.com"), \
+                 patch('getpass.getpass', return_value="password"):
+                
+                # Call the actual interactive_login method
+                import asyncio
+                asyncio.run(mm.interactive_login(save_session=True))
+                
+                # Verify session file was created
+                assert session_file.exists()

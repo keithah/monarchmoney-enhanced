@@ -139,8 +139,10 @@ class MonarchMoney(object):
             await self.multi_factor_authenticate(
                 email, passwd, input("Two Factor Code: ")
             )
-            if save_session:
-                self.save_session(self._session_file)
+        
+        # Save session consistently regardless of MFA requirement
+        if save_session:
+            self.save_session(self._session_file)
 
     async def login(
         self,
