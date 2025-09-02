@@ -8,7 +8,7 @@ import random
 import time
 import uuid
 from datetime import date, datetime, timedelta
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import oathtool
 from aiohttp import ClientSession, FormData
@@ -1543,9 +1543,9 @@ class MonarchMoney(object):
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
         search: str = "",
-        category_ids: List[str] = [],
-        account_ids: List[str] = [],
-        tag_ids: List[str] = [],
+        category_ids: Optional[List[str]] = None,
+        account_ids: Optional[List[str]] = None,
+        tag_ids: Optional[List[str]] = None,
         has_attachments: Optional[bool] = None,
         has_notes: Optional[bool] = None,
         hidden_from_reports: Optional[bool] = None,
@@ -1553,6 +1553,8 @@ class MonarchMoney(object):
         is_recurring: Optional[bool] = None,
         imported_from_mint: Optional[bool] = None,
         synced_from_institution: Optional[bool] = None,
+        is_credit: Optional[bool] = None,
+        abs_amount_range: Optional[Tuple[Optional[float], Optional[float]]] = None,
     ) -> Dict[str, Any]:
         """
         Gets transaction data from the account.
@@ -1572,6 +1574,10 @@ class MonarchMoney(object):
         :param is_recurring: a bool to filter for whether the transactions are recurring.
         :param imported_from_mint: a bool to filter for whether the transactions were imported from mint.
         :param synced_from_institution: a bool to filter for whether the transactions were synced from an institution.
+        :param is_credit: a bool to filter for credit transactions (positive amounts) vs debit transactions (negative amounts).
+        :param abs_amount_range: a tuple of optional floats to filter by absolute amount range. 
+            Format: (min_amount, max_amount) where either value can be None. 
+            Example: (10.0, None) for amounts >= $10, (None, 100.0) for amounts <= $100.
         """
 
         query = gql(
@@ -1649,9 +1655,9 @@ class MonarchMoney(object):
             "orderBy": "date",
             "filters": {
                 "search": search,
-                "categories": category_ids,
-                "accounts": account_ids,
-                "tags": tag_ids,
+                "categories": category_ids or [],
+                "accounts": account_ids or [],
+                "tags": tag_ids or [],
             },
         }
 
@@ -1676,6 +1682,18 @@ class MonarchMoney(object):
 
         if synced_from_institution is not None:
             variables["filters"]["syncedFromInstitution"] = synced_from_institution
+
+        if is_credit is not None:
+            variables["filters"]["isCredit"] = is_credit
+
+        if abs_amount_range is not None:
+            if len(abs_amount_range) != 2:
+                raise ValueError("abs_amount_range must be a tuple of exactly 2 elements")
+            min_amount, max_amount = abs_amount_range
+            if min_amount is not None:
+                variables["filters"]["absAmountGte"] = min_amount
+            if max_amount is not None:
+                variables["filters"]["absAmountLte"] = max_amount
 
         if start_date and end_date:
             variables["filters"]["startDate"] = start_date

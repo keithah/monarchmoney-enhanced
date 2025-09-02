@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased] - 2025-09-02
+
+### 🔧 Fixed
+- **Mutable Default Arguments**: Fixed get_transactions method parameters to use None instead of empty lists, preventing shared state issues ([PR #147](https://github.com/hammem/monarchmoney/pull/147))
+
+### ✨ Added  
+- **Transaction Amount Filtering**: Added `is_credit` and `abs_amount_range` parameters to `get_transactions()` for filtering by credit/debit and amount ranges ([PR #148](https://github.com/hammem/monarchmoney/pull/148))
+
 ## [0.2.1] - 2025-09-02
 
 **Package Renamed**: Published as `monarchmoney-enhanced` on PyPI to distinguish from the original `monarchmoney` package while maintaining the same import structure.
