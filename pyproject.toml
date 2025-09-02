@@ -32,3 +32,10 @@ Repository = "https://github.com/keithah/monarchmoney-enhanced"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["monarchmoney*"]
+
+[tool.black]
+line-length = 88
+
+[tool.isort]
+profile = "black"
+line_length = 88
