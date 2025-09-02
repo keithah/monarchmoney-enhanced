@@ -236,8 +236,3 @@ This fork fixes several critical authentication issues that were causing 404 and
 - Added comprehensive retry logic
 - Includes full test suite and CI/CD pipeline
 
-# Projects Using This Library
-
-*Disclaimer: These projects are neither affiliated nor endorsed by the `monarchmoney` project.*
-
-- [monarch-money-amazon-connector](https://github.com/elsell/monarch-money-amazon-connector): Automate annotating and tagging Amazon transactions (ALPHA)
