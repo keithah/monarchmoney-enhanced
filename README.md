@@ -22,7 +22,7 @@ This fork includes **significant improvements** to fix authentication issues:
 
 Clone this repository from Git
 
-`git clone https://github.com/keithah/monarchmoney.git`
+`git clone https://github.com/keithah/monarchmoney-enhanced.git`
 
 ## Via `pip`
 

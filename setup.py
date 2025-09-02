@@ -6,11 +6,11 @@ install_requires = open("requirements.txt", "r").read().split("\n")
 
 setup(
     name="monarchmoney-enhanced",
-    version="0.2.0",
+    version="0.2.1",
     description="Enhanced Monarch Money API for Python with authentication fixes",
     long_description=open("README.md", "r").read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/keithah/monarchmoney",
+    url="https://github.com/keithah/monarchmoney-enhanced",
     author="keithah",
     author_email="keithah@users.noreply.github.com",
     license="MIT",
