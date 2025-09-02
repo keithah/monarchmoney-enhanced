@@ -21,6 +21,24 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-${{ matrix.python-version }}-
+          ${{ runner.os }}-pip-
+    
+    - name: Cache pytest cache
+      uses: actions/cache@v3
+      with:
+        path: .pytest_cache
+        key: ${{ runner.os }}-pytest-${{ matrix.python-version }}-${{ hashFiles('**/*.py') }}
+        restore-keys: |
+          ${{ runner.os }}-pytest-${{ matrix.python-version }}-
+          ${{ runner.os }}-pytest-
+    
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -48,6 +66,23 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: "3.11"
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-lint-3.11-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-lint-3.11-
+          ${{ runner.os }}-pip-
+    
+    - name: Cache Black cache
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/black
+        key: ${{ runner.os }}-black-${{ hashFiles('**/*.py') }}
+        restore-keys: |
+          ${{ runner.os }}-black-
     
     - name: Install linting dependencies
       run: |
