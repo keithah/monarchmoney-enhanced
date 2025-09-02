@@ -256,6 +256,58 @@ class MonarchMoney(object):
             graphql_query=query,
         )
 
+    async def get_me(self) -> Dict[str, Any]:
+        """
+        Gets the current user's profile information including timezone, email, name, and authentication status.
+        """
+        query = gql(
+            """
+            query Common_GetMe {
+                me {
+                    id
+                    email
+                    name
+                    birthday
+                    timezone
+                    profilePicture {
+                        id
+                        url
+                        __typename
+                    }
+                    hasPassword
+                    hasMfaEnabled
+                    __typename
+                }
+            }
+            """
+        )
+        return await self.gql_call(
+            operation="Common_GetMe",
+            graphql_query=query,
+        )
+
+    async def get_merchants(self) -> Dict[str, Any]:
+        """
+        Gets the list of merchants that have transactions in the Monarch Money account.
+        """
+        query = gql(
+            """
+            query GetMerchants {
+                merchants {
+                    id
+                    name
+                    logoUrl
+                    transactionsCount
+                    __typename
+                }
+            }
+            """
+        )
+        return await self.gql_call(
+            operation="GetMerchants",
+            graphql_query=query,
+        )
+
     async def get_account_type_options(self) -> Dict[str, Any]:
         """
         Retrieves a list of available account types and their subtypes.

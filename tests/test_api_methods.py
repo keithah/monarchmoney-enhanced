@@ -31,12 +31,108 @@ class TestAccountMethods:
     
     @pytest.mark.asyncio
     @pytest.mark.api
+    async def test_get_me(self, mock_monarch):
+        """Test fetching user profile information."""
+        mock_me_response = {
+            "me": {
+                "id": "user123",
+                "email": "test@example.com",
+                "name": "Test User",
+                "birthday": "1990-01-01",
+                "timezone": "America/New_York",
+                "profilePicture": {
+                    "id": "pic123",
+                    "url": "https://example.com/pic.jpg",
+                    "__typename": "ProfilePicture"
+                },
+                "hasPassword": True,
+                "hasMfaEnabled": False,
+                "__typename": "User"
+            }
+        }
+        
+        with patch.object(mock_monarch, 'gql_call', new_callable=AsyncMock) as mock_gql_call:
+            mock_gql_call.return_value = mock_me_response
+            
+            user_info = await mock_monarch.get_me()
+            
+            assert user_info == mock_me_response
+            assert user_info["me"]["email"] == "test@example.com"
+            assert user_info["me"]["name"] == "Test User"
+            assert user_info["me"]["timezone"] == "America/New_York"
+            assert user_info["me"]["hasPassword"] is True
+            assert user_info["me"]["hasMfaEnabled"] is False
+            
+            # Verify the correct operation was called
+            mock_gql_call.assert_called_once()
+            call_args = mock_gql_call.call_args
+            assert call_args[1]["operation"] == "Common_GetMe"
+    
+    @pytest.mark.asyncio
+    @pytest.mark.api
     async def test_get_accounts_requires_auth(self):
         """Test that get_accounts requires authentication."""
         mm = MonarchMoney()  # No token set
         
         with pytest.raises(LoginFailedException, match="Make sure you call login"):
             await mm.get_accounts()
+    
+    @pytest.mark.asyncio
+    @pytest.mark.api
+    async def test_get_me_requires_auth(self):
+        """Test that get_me requires authentication."""
+        mm = MonarchMoney()  # No token set
+        
+        with pytest.raises(LoginFailedException, match="Make sure you call login"):
+            await mm.get_me()
+    
+    @pytest.mark.asyncio
+    @pytest.mark.api
+    async def test_get_merchants(self, mock_monarch):
+        """Test fetching merchants."""
+        mock_merchants_response = {
+            "merchants": [
+                {
+                    "id": "merchant1",
+                    "name": "Amazon",
+                    "logoUrl": "https://example.com/amazon.png",
+                    "transactionsCount": 25,
+                    "__typename": "Merchant"
+                },
+                {
+                    "id": "merchant2", 
+                    "name": "Starbucks",
+                    "logoUrl": "https://example.com/starbucks.png",
+                    "transactionsCount": 12,
+                    "__typename": "Merchant"
+                }
+            ]
+        }
+        
+        with patch.object(mock_monarch, 'gql_call', new_callable=AsyncMock) as mock_gql_call:
+            mock_gql_call.return_value = mock_merchants_response
+            
+            merchants = await mock_monarch.get_merchants()
+            
+            assert merchants == mock_merchants_response
+            assert len(merchants["merchants"]) == 2
+            assert merchants["merchants"][0]["name"] == "Amazon"
+            assert merchants["merchants"][1]["name"] == "Starbucks"
+            assert merchants["merchants"][0]["transactionsCount"] == 25
+            
+            # Verify the correct operation was called
+            mock_gql_call.assert_called_once()
+            call_args = mock_gql_call.call_args
+            assert call_args[1]["operation"] == "GetMerchants"
+    
+    @pytest.mark.asyncio
+    @pytest.mark.api
+    async def test_get_merchants_requires_auth(self):
+        """Test that get_merchants requires authentication."""
+        mm = MonarchMoney()  # No token set
+        
+        with pytest.raises(LoginFailedException, match="Make sure you call login"):
+            await mm.get_merchants()
 
 
 class TestTransactionMethods:

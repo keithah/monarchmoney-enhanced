@@ -116,6 +116,8 @@ As of writing this README, the following methods are supported:
 ## Non-Mutating Methods
 
 - `get_accounts` - gets all the accounts linked to Monarch Money
+- `get_me` - gets the current user's profile information (timezone, email, name, MFA status)
+- `get_merchants` - gets the list of merchants that have transactions in the account
 - `get_account_holdings` - gets all of the securities in a brokerage or similar type of account
 - `get_account_type_options` - all account types and their subtypes available in Monarch Money- 
 - `get_account_history` - gets all daily account history for the specified account
