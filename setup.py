@@ -6,11 +6,7 @@ try:
     install_requires = open("requirements.txt", "r").read().split("\n")
     install_requires = [req.strip() for req in install_requires if req.strip()]
 except FileNotFoundError:
-    install_requires = [
-        "aiohttp>=3.8.4",
-        "gql>=3.4",
-        "oathtool>=2.3.1"
-    ]
+    install_requires = ["aiohttp>=3.8.4", "gql>=3.4", "oathtool>=2.3.1"]
 
 setup(
     name="monarchmoney-enhanced",
