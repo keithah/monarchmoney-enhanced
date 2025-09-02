@@ -1,0 +1,6 @@
+include requirements.txt
+include README.md
+include LICENSE
+include CHANGELOG.md
+recursive-include monarchmoney *.py
+recursive-include tests *.py
