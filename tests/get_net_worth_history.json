@@ -1,0 +1,44 @@
+{
+    "netWorthHistory": [
+        {
+            "date": "2024-09-01",
+            "totalAssets": 125000.50,
+            "netWorth": 95000.50,
+            "change": 2500.00,
+            "changePercent": 2.7,
+            "__typename": "AggregateSnapshot"
+        },
+        {
+            "date": "2024-10-01", 
+            "totalAssets": 127500.25,
+            "netWorth": 97500.25,
+            "change": 2499.75,
+            "changePercent": 2.6,
+            "__typename": "AggregateSnapshot"
+        },
+        {
+            "date": "2024-11-01",
+            "totalAssets": 130000.00,
+            "netWorth": 100000.00,
+            "change": 2499.75,
+            "changePercent": 2.6,
+            "__typename": "AggregateSnapshot"
+        },
+        {
+            "date": "2024-12-01",
+            "totalAssets": 132750.15,
+            "netWorth": 102750.15,
+            "change": 2750.15,
+            "changePercent": 2.8,
+            "__typename": "AggregateSnapshot"
+        },
+        {
+            "date": "2025-01-01",
+            "totalAssets": 135200.30,
+            "netWorth": 105200.30,
+            "change": 2450.15,
+            "changePercent": 2.4,
+            "__typename": "AggregateSnapshot"
+        }
+    ]
+}

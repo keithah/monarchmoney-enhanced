@@ -470,6 +470,57 @@ class MonarchMoney(object):
             },
         )
 
+    async def get_net_worth_history(
+        self,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        timeframe: str = "monthly",
+    ) -> Dict[str, Any]:
+        """
+        Get net worth tracking over time with detailed breakdown.
+
+        :param start_date: Start date in "yyyy-mm-dd" format (defaults to 1 year ago)
+        :param end_date: End date in "yyyy-mm-dd" format (defaults to today)
+        :param timeframe: Data aggregation timeframe ('daily', 'weekly', 'monthly', 'yearly')
+        """
+        query = gql(
+            """
+            query GetNetWorthHistory($startDate: Date!, $endDate: Date!, $timeframe: TimeFrame!) {
+              netWorthHistory: aggregateSnapshots(filters: {
+                startDate: $startDate,
+                endDate: $endDate,
+                timeframe: $timeframe
+              }) {
+                date
+                totalAssets: signedBalance
+                netWorth: signedBalance
+                change: dayChange
+                changePercent: dayChangePercent
+                __typename
+              }
+            }
+            """
+        )
+
+        # Set default dates if not provided
+        if not start_date:
+            start_date = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
+
+        if not end_date:
+            end_date = datetime.now().strftime("%Y-%m-%d")
+
+        variables = {
+            "startDate": start_date,
+            "endDate": end_date,
+            "timeframe": timeframe.upper(),
+        }
+
+        return await self.gql_call(
+            operation="GetNetWorthHistory",
+            graphql_query=query,
+            variables=variables,
+        )
+
     async def create_manual_account(
         self,
         account_type: str,
@@ -1644,6 +1695,49 @@ class MonarchMoney(object):
             operation="Common_GetJointPlanningData",
             graphql_query=query,
             variables=variables,
+        )
+
+    async def get_goals(self) -> Dict[str, Any]:
+        """
+        Get financial goals and targets from the account.
+        """
+        query = gql(
+            """
+            query GetGoals {
+              goalsV2 {
+                id
+                name
+                targetAmount
+                currentAmount
+                targetDate
+                createdAt
+                updatedAt
+                archivedAt
+                completedAt
+                priority
+                imageStorageProvider
+                imageStorageProviderId
+                description
+                category
+                monthlyContributionSummaries {
+                  month
+                  sum
+                  __typename
+                }
+                accounts {
+                  id
+                  displayName
+                  __typename
+                }
+                __typename
+              }
+            }
+            """
+        )
+
+        return await self.gql_call(
+            operation="GetGoals",
+            graphql_query=query,
         )
 
     async def get_subscription_details(self) -> Dict[str, Any]:

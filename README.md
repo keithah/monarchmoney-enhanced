@@ -125,6 +125,8 @@ As of writing this README, the following methods are supported:
 - `get_account_history` - gets all daily account history for the specified account
 - `get_institutions` -- gets institutions linked to Monarch Money
 - `get_budgets` — all the budgets and the corresponding actual amounts
+- `get_goals` - gets all financial goals and targets with progress tracking
+- `get_net_worth_history` - gets net worth tracking over time with breakdown by timeframe
 - `get_subscription_details` - gets the Monarch Money account's status (e.g. paid or trial)
 - `get_recurring_transactions` - gets the future recurring transactions, including merchant and account details
 - `get_transactions_summary` - gets the transaction summary data from the transactions page

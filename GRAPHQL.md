@@ -61,6 +61,10 @@ This document maps the MonarchMoney GraphQL API operations and their implementat
 | Not specified | `get_recurring_transactions()` | ✅ | Get future recurring transactions |
 | **Utility/Upload** | | | |
 | Not specified | `upload_account_balance_history()` | ✅ | Upload historical balance data |
+| **Goals & Financial Planning** | | | |
+| `GetGoals` | `get_goals()` | ✅ | Get financial goals and targets with progress tracking |
+| **Net Worth & Analytics** | | | |
+| `GetNetWorthHistory` | `get_net_worth_history()` | ✅ | Get net worth tracking over time with breakdown |
 
 ## Not Yet Implemented
 
@@ -68,7 +72,7 @@ Based on analysis of hammem's repository and common financial API patterns, thes
 
 | Operation | Potential Method | Priority | Description |
 |-----------|------------------|----------|-------------|
-| `GetGoals` | `get_goals()` | Medium | Financial goals and targets |
+| `GetBills` | `get_bills()` | High | Upcoming bills and payments |
 | `CreateGoal` | `create_goal()` | Medium | Create new financial goal |
 | `UpdateGoal` | `update_goal()` | Medium | Update existing goal |
 | `DeleteGoal` | `delete_goal()` | Medium | Delete financial goal |

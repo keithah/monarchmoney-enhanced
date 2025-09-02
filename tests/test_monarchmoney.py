@@ -239,6 +239,49 @@ class TestMonarchMoney(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(result["categoryGroups"]), 2, "Expected 2 category groups")
         self.assertEqual(len(result["goalsV2"]), 1, "Expected 1 goal")
 
+    @patch.object(Client, "execute_async")
+    async def test_get_goals(self, mock_execute_async):
+        """
+        Test the get_goals method.
+        """
+        mock_execute_async.return_value = TestMonarchMoney.loadTestData(
+            filename="get_goals.json",
+        )
+        result = await self.monarch_money.get_goals()
+        mock_execute_async.assert_called_once()
+        self.assertIsNotNone(result, "Expected result to not be None")
+        self.assertEqual(len(result["goalsV2"]), 2, "Expected 2 goals")
+        self.assertEqual(
+            result["goalsV2"][0]["name"],
+            "Emergency Fund",
+            "Expected first goal name to be 'Emergency Fund'",
+        )
+        self.assertEqual(
+            result["goalsV2"][0]["targetAmount"],
+            10000.0,
+            "Expected first goal target amount to be 10000.0",
+        )
+
+    @patch.object(Client, "execute_async")
+    async def test_get_net_worth_history(self, mock_execute_async):
+        """
+        Test the get_net_worth_history method.
+        """
+        mock_execute_async.return_value = TestMonarchMoney.loadTestData(
+            filename="get_net_worth_history.json",
+        )
+        result = await self.monarch_money.get_net_worth_history(
+            start_date="2024-09-01", end_date="2025-01-01"
+        )
+        mock_execute_async.assert_called_once()
+        self.assertIsNotNone(result, "Expected result to not be None")
+        self.assertEqual(len(result["netWorthHistory"]), 5, "Expected 5 data points")
+        self.assertEqual(
+            result["netWorthHistory"][0]["netWorth"],
+            95000.50,
+            "Expected first net worth to be 95000.50",
+        )
+
     async def test_login(self):
         """
         Test the login method with empty values for email and password.

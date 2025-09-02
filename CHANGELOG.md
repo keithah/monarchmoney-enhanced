@@ -22,6 +22,21 @@ All notable changes to this project will be documented in this file.
 ### 📚 Documentation
 - **GraphQL API Mapping**: Created comprehensive GRAPHQL.md documenting all 40+ implemented operations with usage examples and contribution guidelines
 
+## [Unreleased] - 2025-09-02
+
+### ✨ Added
+- **Session Validation**: Enhanced session management with validation and refresh mechanisms
+  - `validate_session()` - validates session with lightweight API call
+  - `is_session_stale()` - checks if validation is needed based on time
+  - `ensure_valid_session()` - automatically validates stale sessions
+  - `get_session_info()` - provides session metadata and status
+- **Goals Management**: Added `get_goals()` method to retrieve financial goals and targets with progress tracking
+- **Net Worth Tracking**: Added `get_net_worth_history()` method for net worth analysis over time with customizable timeframes
+
+### 🔧 Enhanced
+- **Session Format**: Enhanced session files with metadata (creation time, validation timestamps, version)
+- **Backward Compatibility**: Maintains support for legacy session file formats
+
 ## [0.2.1] - 2025-09-02
 
 **Package Renamed**: Published as `monarchmoney-enhanced` on PyPI to distinguish from the original `monarchmoney` package while maintaining the same import structure.

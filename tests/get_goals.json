@@ -1,0 +1,81 @@
+{
+    "goalsV2": [
+        {
+            "id": "11",
+            "name": "Emergency Fund",
+            "targetAmount": 10000.0,
+            "currentAmount": 2500.0,
+            "targetDate": "2025-12-31",
+            "createdAt": "2024-01-15T10:30:00Z",
+            "updatedAt": "2025-09-01T14:20:00Z",
+            "archivedAt": null,
+            "completedAt": null,
+            "priority": 1,
+            "imageStorageProvider": "cloudinary",
+            "imageStorageProviderId": "production/goals/defaults/p1",
+            "description": "Build emergency fund for 6 months expenses",
+            "category": "emergency",
+            "monthlyContributionSummaries": [
+                {
+                    "month": "2024-12-01",
+                    "sum": 500.0,
+                    "__typename": "GoalContributionMonthlySummary"
+                },
+                {
+                    "month": "2025-01-01",
+                    "sum": 750.0,
+                    "__typename": "GoalContributionMonthlySummary"
+                },
+                {
+                    "month": "2025-02-01",
+                    "sum": 600.0,
+                    "__typename": "GoalContributionMonthlySummary"
+                }
+            ],
+            "accounts": [
+                {
+                    "id": "1234",
+                    "displayName": "High Yield Savings",
+                    "__typename": "Account"
+                }
+            ],
+            "__typename": "GoalV2"
+        },
+        {
+            "id": "12",
+            "name": "Vacation Fund",
+            "targetAmount": 5000.0,
+            "currentAmount": 1200.0,
+            "targetDate": "2025-07-01",
+            "createdAt": "2024-06-01T09:00:00Z",
+            "updatedAt": "2025-08-15T16:45:00Z",
+            "archivedAt": null,
+            "completedAt": null,
+            "priority": 2,
+            "imageStorageProvider": "cloudinary",
+            "imageStorageProviderId": "production/goals/defaults/p2",
+            "description": "Save for summer vacation",
+            "category": "travel",
+            "monthlyContributionSummaries": [
+                {
+                    "month": "2025-01-01",
+                    "sum": 400.0,
+                    "__typename": "GoalContributionMonthlySummary"
+                },
+                {
+                    "month": "2025-02-01",
+                    "sum": 400.0,
+                    "__typename": "GoalContributionMonthlySummary"
+                }
+            ],
+            "accounts": [
+                {
+                    "id": "1234",
+                    "displayName": "High Yield Savings",
+                    "__typename": "Account"
+                }
+            ],
+            "__typename": "GoalV2"
+        }
+    ]
+}
