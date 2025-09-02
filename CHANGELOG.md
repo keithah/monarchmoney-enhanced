@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased] - 2025-09-02
+## [0.2.2] - 2025-09-02
 
 ### 🔧 Fixed
 - **Mutable Default Arguments**: Fixed get_transactions method parameters to use None instead of empty lists, preventing shared state issues ([PR #147](https://github.com/hammem/monarchmoney/pull/147))
@@ -18,6 +18,9 @@ All notable changes to this project will be documented in this file.
   - `reorder_transaction_rules()` - Change rule priority order
   - `create_categorization_rule()` - Helper method for merchant-based categorization rules
 - **Transaction Summary Card**: Added `get_transactions_summary_card()` method to retrieve transaction summary card data with total count information ([PR #140](https://github.com/hammem/monarchmoney/pull/140))
+
+### 📚 Documentation
+- **GraphQL API Mapping**: Created comprehensive GRAPHQL.md documenting all 40+ implemented operations with usage examples and contribution guidelines
 
 ## [0.2.1] - 2025-09-02
 
