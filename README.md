@@ -6,24 +6,6 @@ Python library for accessing [Monarch Money](https://www.monarchmoney.com/referr
 
 Huge shoutout to [hammem](https://github.com/hammem) for originally starting this project! This is simply a fork of [his hard work](https://github.com/hammem/monarchmoney) to continue development and fix critical authentication issues.
 
-## ✨ Latest Release - v0.3.4 🎉
-
-**Major GraphQL Fixes Release** - September 2024
-
-This release fixes **critical GraphQL parsing errors** that were causing core functions to fail:
-
-- **✅ Fixed "Something went wrong while processing: None" errors**: All rule creation and financial analytics now work
-- **🔧 GraphQL Query Completeness**: Fixed incomplete mutation responses that only returned errors
-- **📊 100% Test Suite**: Comprehensive validation of 18 core functions 
-- **🎯 Real-World Tested**: All functions validated with live Monarch Money account
-- **🛡️ Zero Breaking Changes**: Full backward compatibility maintained
-
-### Previously Broken - Now Fixed:
-- ✅ `get_net_worth_history()` - Financial tracking over time
-- ✅ `create_amount_rule()` / `create_categorization_rule()` - Transaction rules
-- ✅ `apply_rules_to_existing_transactions()` - Retroactive rule processing  
-- ✅ `get_investment_performance()` - Portfolio analytics
-
 ## 🔧 Enhanced Features
 
 This fork includes **comprehensive improvements**:
