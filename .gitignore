@@ -1,8 +1,14 @@
-# Environment variables
+# Environment variables (SENSITIVE DATA)
 .env
 .env.local
 .env.production
 .env.*
+
+# Session files and tokens (SENSITIVE DATA)
+.mm/
+*.pickle
+*_session.pickle
+mm_session.pickle
 
 # HAR files (contain sensitive session data)
 *.har
