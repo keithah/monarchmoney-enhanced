@@ -17,7 +17,6 @@ from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
 from graphql import DocumentNode
 
-
 AUTH_HEADER_KEY = "authorization"
 CSRF_KEY = "csrftoken"
 DEFAULT_RECORD_LIMIT = 100
