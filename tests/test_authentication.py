@@ -11,8 +11,8 @@ import pytest
 from monarchmoney import MonarchMoney
 from monarchmoney.monarchmoney import (
     LoginFailedException,
-    RequireMFAException,
     RequestFailedException,
+    RequireMFAException,
 )
 
 
