@@ -35,10 +35,11 @@ class TestLogin:
         mock_response.__aenter__ = AsyncMock(return_value=mock_response)
         mock_response.__aexit__ = AsyncMock(return_value=None)
 
+        # Configure the session to return the response directly (not as coroutine)
         mock_session = AsyncMock()
-        mock_session.post = AsyncMock(return_value=mock_response)
-        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
-        mock_session.__aexit__ = AsyncMock(return_value=None)
+        mock_session.post.return_value = mock_response
+        mock_session.__aenter__.return_value = mock_session
+        mock_session.__aexit__.return_value = None
 
         with patch("monarchmoney.monarchmoney.ClientSession", return_value=mock_session):
             await mm.login(sample_credentials["email"], sample_credentials["password"])
@@ -58,9 +59,9 @@ class TestLogin:
 
         # Create a proper async context manager mock
         mock_session = AsyncMock()
-        mock_session.post = AsyncMock(return_value=mock_mfa_required_response)
-        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
-        mock_session.__aexit__ = AsyncMock(return_value=None)
+        mock_session.post.return_value = mock_mfa_required_response
+        mock_session.__aenter__.return_value = mock_session
+        mock_session.__aexit__.return_value = None
 
         with patch("monarchmoney.monarchmoney.ClientSession", return_value=mock_session):
             with pytest.raises(RequireMFAException, match="Multi-Factor Auth Required"):

@@ -38,6 +38,12 @@ def mock_mfa_required_response():
 
         async def json(self):
             return {"detail": "Multi-Factor Auth Required"}
+        
+        async def __aenter__(self):
+            return self
+        
+        async def __aexit__(self, exc_type, exc_val, exc_tb):
+            return None
 
     return MockResponse()
 
