@@ -155,11 +155,12 @@ class MonarchMoney(object):
         """Get version information for the MonarchMoney library."""
         # Import version here to avoid circular imports
         from . import __version__
+
         return {
             "library_version": __version__,
             "library_name": "monarchmoney-enhanced",
             "session_active": self._token is not None,
-            "session_file": self._session_file
+            "session_file": self._session_file,
         }
 
     async def interactive_login(
@@ -560,7 +561,7 @@ class MonarchMoney(object):
                     "startDate": start_date,
                     "endDate": end_date,
                     "accountType": None,
-                    "useAdaptiveGranularity": True
+                    "useAdaptiveGranularity": True,
                 }
             },
         )
@@ -3548,14 +3549,14 @@ class MonarchMoney(object):
         # Map user-friendly operator names to GraphQL operators
         operator_mapping = {
             "greater_than": "gt",
-            "less_than": "lt", 
+            "less_than": "lt",
             "equals": "eq",
             "equal": "eq",
             "gt": "gt",
             "lt": "lt",
-            "eq": "eq"
+            "eq": "eq",
         }
-        
+
         mapped_operator = operator_mapping.get(amount_operator.lower(), amount_operator)
 
         merchant_criteria = [{"operator": "contains", "value": merchant_contains}]
