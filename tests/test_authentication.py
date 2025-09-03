@@ -29,16 +29,14 @@ class TestLogin:
         mm = MonarchMoney(session_file=str(session_file))
 
         # Create a proper async context manager mock
-        async def mock_post(*args, **kwargs):
-            mock_response = AsyncMock()
-            mock_response.status = 200
-            mock_response.json.return_value = mock_successful_login_response
-            mock_response.__aenter__ = AsyncMock(return_value=mock_response)
-            mock_response.__aexit__ = AsyncMock(return_value=None)
-            return mock_response
+        mock_response = AsyncMock()
+        mock_response.status = 200
+        mock_response.json.return_value = mock_successful_login_response
+        mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_response.__aexit__ = AsyncMock(return_value=None)
 
         mock_session = AsyncMock()
-        mock_session.post = mock_post
+        mock_session.post = AsyncMock(return_value=mock_response)
         mock_session.__aenter__ = AsyncMock(return_value=mock_session)
         mock_session.__aexit__ = AsyncMock(return_value=None)
 
@@ -59,12 +57,8 @@ class TestLogin:
         mm = MonarchMoney(session_file=str(session_file))
 
         # Create a proper async context manager mock
-        async def mock_post(*args, **kwargs):
-            # Return the mock_mfa_required_response directly as an async context manager
-            return mock_mfa_required_response
-
         mock_session = AsyncMock()
-        mock_session.post = mock_post
+        mock_session.post = AsyncMock(return_value=mock_mfa_required_response)
         mock_session.__aenter__ = AsyncMock(return_value=mock_session)
         mock_session.__aexit__ = AsyncMock(return_value=None)
 
