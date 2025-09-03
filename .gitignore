@@ -4,6 +4,22 @@
 .env.production
 .env.*
 
+# HAR files (contain sensitive session data)
+*.har
+
+# Development/debug scripts
+debug_*.py
+test_*.py
+simple_*.py
+auth_*.py
+authenticate.py
+login_*.py
+comprehensive_test*.py
+analyze_*.py
+extract_*.py
+mcp_test.py
+real_operations.py
+
 # Python
 venv/
 *.egg-info/
