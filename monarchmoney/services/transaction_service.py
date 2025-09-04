@@ -108,6 +108,7 @@ class TransactionService(BaseService):
         category_ids: Optional[List[str]] = None,
         account_ids: Optional[List[str]] = None,
         tag_ids: Optional[List[str]] = None,
+        merchant_ids: Optional[List[str]] = None,
         search: Optional[str] = None,
         is_credit: Optional[bool] = None,
         abs_amount_range: Optional[List[Optional[float]]] = None,
@@ -123,6 +124,7 @@ class TransactionService(BaseService):
             category_ids: List of category IDs to filter by
             account_ids: List of account IDs to filter by
             tag_ids: List of tag IDs to filter by
+            merchant_ids: List of merchant IDs to filter by
             search: Search term for transaction description/merchant
             is_credit: Filter by transaction type (True=credits/income, False=debits/expenses)
             abs_amount_range: Filter by absolute amount range [min, max]. Use None for open-ended ranges.
@@ -197,6 +199,8 @@ class TransactionService(BaseService):
             variables["accountIds"] = account_ids
         if tag_ids:
             variables["tagIds"] = tag_ids
+        if merchant_ids:
+            variables["merchantIds"] = merchant_ids
         if search:
             variables["search"] = search
         if is_credit is not None:
@@ -215,6 +219,7 @@ class TransactionService(BaseService):
                 $categoryIds: [String],
                 $accountIds: [String],
                 $tagIds: [String],
+                $merchantIds: [String],
                 $search: String,
                 $isCredit: Boolean,
                 $minAmount: Float,
@@ -228,6 +233,7 @@ class TransactionService(BaseService):
                     categoryIds: $categoryIds,
                     accountIds: $accountIds,
                     tagIds: $tagIds,
+                    merchantIds: $merchantIds,
                     search: $search,
                     isCredit: $isCredit,
                     minAmount: $minAmount,
