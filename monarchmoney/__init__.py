@@ -28,5 +28,5 @@ from .monarchmoney import (  # Legacy exceptions for backward compatibility
     RequireMFAException,
 )
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 __author__ = "keithah"
