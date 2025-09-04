@@ -53,17 +53,35 @@ class ErrorRecoveryStrategy:
     """Base class for error recovery strategies."""
     
     def can_handle(self, error: Exception, context: ErrorContext) -> bool:
-        """Check if this strategy can handle the given error."""
-        raise NotImplementedError
+        """
+        Check if this strategy can handle the given error.
+        
+        Args:
+            error: The exception to check
+            context: Error context information
+            
+        Returns:
+            True if this strategy can handle the error, False otherwise
+        """
+        return False
         
     async def handle(self, error: Exception, context: ErrorContext) -> bool:
         """
         Handle the error and return whether recovery was successful.
         
+        Args:
+            error: The exception to handle
+            context: Error context information
+            
         Returns:
             True if the error was recovered from, False otherwise
         """
-        raise NotImplementedError
+        logger.warning(
+            "Base strategy handle called - should be overridden",
+            strategy=self.__class__.__name__,
+            error_type=error.__class__.__name__
+        )
+        return False
 
 
 class AuthenticationRecoveryStrategy(ErrorRecoveryStrategy):
