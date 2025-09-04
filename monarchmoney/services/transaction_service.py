@@ -109,6 +109,8 @@ class TransactionService(BaseService):
         account_ids: Optional[List[str]] = None,
         tag_ids: Optional[List[str]] = None,
         search: Optional[str] = None,
+        is_credit: Optional[bool] = None,
+        abs_amount_range: Optional[List[Optional[float]]] = None,
     ) -> Dict[str, Any]:
         """
         Get paginated list of transactions with filtering options.
@@ -122,9 +124,30 @@ class TransactionService(BaseService):
             account_ids: List of account IDs to filter by
             tag_ids: List of tag IDs to filter by
             search: Search term for transaction description/merchant
+            is_credit: Filter by transaction type (True=credits/income, False=debits/expenses)
+            abs_amount_range: Filter by absolute amount range [min, max]. Use None for open-ended ranges.
 
         Returns:
             Paginated transaction list with total count and filtering metadata
+            
+        Examples:
+            # Get only credit transactions (income)
+            transactions = await mm.get_transactions(is_credit=True)
+            
+            # Get only debit transactions (expenses)  
+            transactions = await mm.get_transactions(is_credit=False)
+            
+            # Get transactions >= $100
+            transactions = await mm.get_transactions(abs_amount_range=[100.0, None])
+            
+            # Get transactions <= $50
+            transactions = await mm.get_transactions(abs_amount_range=[None, 50.0])
+            
+            # Get transactions between $20 and $100
+            transactions = await mm.get_transactions(abs_amount_range=[20.0, 100.0])
+            
+            # Get transactions exactly $25.99
+            transactions = await mm.get_transactions(abs_amount_range=[25.99, 25.99])
         """
         # Validate inputs
         validated_limit = InputValidator.validate_limit(limit) or 100
@@ -134,6 +157,20 @@ class TransactionService(BaseService):
             start_date = InputValidator.validate_date_string(start_date)
         if end_date:
             end_date = InputValidator.validate_date_string(end_date)
+        
+        # Validate amount range
+        if abs_amount_range is not None:
+            if not isinstance(abs_amount_range, list) or len(abs_amount_range) != 2:
+                raise ValueError("abs_amount_range must be a list of two values: [min, max]")
+            
+            min_amount, max_amount = abs_amount_range
+            if min_amount is not None and min_amount < 0:
+                raise ValueError("min_amount must be non-negative or None")
+            if max_amount is not None and max_amount < 0:
+                raise ValueError("max_amount must be non-negative or None")
+            if (min_amount is not None and max_amount is not None and 
+                min_amount > max_amount):
+                raise ValueError("min_amount cannot be greater than max_amount")
 
         self.logger.info(
             "Fetching transactions",
@@ -141,6 +178,8 @@ class TransactionService(BaseService):
             offset=validated_offset,
             start_date=start_date,
             end_date=end_date,
+            is_credit=is_credit,
+            abs_amount_range=abs_amount_range,
         )
 
         variables = {
@@ -160,6 +199,11 @@ class TransactionService(BaseService):
             variables["tagIds"] = tag_ids
         if search:
             variables["search"] = search
+        if is_credit is not None:
+            variables["isCredit"] = is_credit
+        if abs_amount_range is not None:
+            variables["minAmount"] = abs_amount_range[0]
+            variables["maxAmount"] = abs_amount_range[1]
 
         query = gql(
             """
@@ -171,7 +215,10 @@ class TransactionService(BaseService):
                 $categoryIds: [String],
                 $accountIds: [String],
                 $tagIds: [String],
-                $search: String
+                $search: String,
+                $isCredit: Boolean,
+                $minAmount: Float,
+                $maxAmount: Float
             ) {
                 allTransactions(
                     first: $limit,
@@ -181,7 +228,10 @@ class TransactionService(BaseService):
                     categoryIds: $categoryIds,
                     accountIds: $accountIds,
                     tagIds: $tagIds,
-                    search: $search
+                    search: $search,
+                    isCredit: $isCredit,
+                    minAmount: $minAmount,
+                    maxAmount: $maxAmount
                 ) {
                     totalCount
                     results {
@@ -1614,4 +1664,228 @@ class TransactionService(BaseService):
             operation="Web_SetTransactionTags",
             graphql_query=query,
             variables=variables,
+        )
+
+    # Categories and Merchants API Methods
+    async def get_transaction_categories(self) -> Dict[str, Any]:
+        """
+        Get all available transaction categories.
+        
+        This method retrieves the complete list of transaction categories
+        available in Monarch Money, including custom categories.
+
+        Returns:
+            List of categories with IDs, names, icons, colors, and group information
+        """
+        self.logger.info("Fetching transaction categories")
+
+        query = gql(
+            """
+            query GetTransactionCategories {
+                categories {
+                    id
+                    name
+                    icon
+                    color
+                    isSystemCategory
+                    group {
+                        id
+                        name
+                        type
+                        __typename
+                    }
+                    __typename
+                }
+                categoryGroups {
+                    id
+                    name
+                    type
+                    __typename
+                }
+            }
+        """
+        )
+
+        return await self._execute_query(
+            operation="GetTransactionCategories", query=query
+        )
+
+    async def get_merchants(
+        self, 
+        search: Optional[str] = None,
+        limit: Optional[int] = 100,
+    ) -> Dict[str, Any]:
+        """
+        Get merchants used in transactions.
+        
+        This method retrieves merchants that have been used in transactions,
+        with optional search filtering.
+
+        Args:
+            search: Optional search term to filter merchants
+            limit: Maximum number of merchants to return (default: 100)
+
+        Returns:
+            List of merchants with IDs, names, and transaction counts
+        """
+        validated_limit = InputValidator.validate_limit(limit) or 100
+        
+        self.logger.info("Fetching merchants", search=search, limit=validated_limit)
+
+        variables = {"limit": validated_limit}
+        
+        if search:
+            variables["search"] = search
+
+        query = gql(
+            """
+            query GetMerchants($search: String, $limit: Int!) {
+                merchants(search: $search, limit: $limit) {
+                    id
+                    name
+                    logoUrl
+                    transactionCount
+                    lastTransactionDate
+                    categories {
+                        id
+                        name
+                        __typename
+                    }
+                    __typename
+                }
+            }
+        """
+        )
+
+        return await self._execute_query(
+            operation="GetMerchants", query=query, variables=variables
+        )
+
+    async def get_merchant_details(self, merchant_id: str) -> Dict[str, Any]:
+        """
+        Get detailed information about a specific merchant.
+
+        Args:
+            merchant_id: ID of the merchant to get details for
+
+        Returns:
+            Detailed merchant information including recent transactions
+
+        Raises:
+            ValidationError: If merchant_id is invalid
+        """
+        merchant_id = InputValidator.validate_string_length(merchant_id, "merchant_id", 1, 100)
+        
+        self.logger.info("Fetching merchant details", merchant_id=merchant_id)
+
+        variables = {"merchantId": merchant_id}
+
+        query = gql(
+            """
+            query GetMerchantDetails($merchantId: String!) {
+                merchant(id: $merchantId) {
+                    id
+                    name
+                    logoUrl
+                    website
+                    transactionCount
+                    totalSpent
+                    averageAmount
+                    firstTransactionDate
+                    lastTransactionDate
+                    categories {
+                        id
+                        name
+                        color
+                        icon
+                        __typename
+                    }
+                    recentTransactions(limit: 10) {
+                        id
+                        amount
+                        date
+                        description
+                        account {
+                            id
+                            displayName
+                            __typename
+                        }
+                        category {
+                            id
+                            name
+                            __typename
+                        }
+                        __typename
+                    }
+                    __typename
+                }
+            }
+        """
+        )
+
+        return await self._execute_query(
+            operation="GetMerchantDetails", query=query, variables=variables
+        )
+
+    async def get_category_details(self, category_id: str) -> Dict[str, Any]:
+        """
+        Get detailed information about a specific category.
+
+        Args:
+            category_id: ID of the category to get details for
+
+        Returns:
+            Detailed category information including transaction statistics
+
+        Raises:
+            ValidationError: If category_id is invalid
+        """
+        category_id = InputValidator.validate_string_length(category_id, "category_id", 1, 100)
+        
+        self.logger.info("Fetching category details", category_id=category_id)
+
+        variables = {"categoryId": category_id}
+
+        query = gql(
+            """
+            query GetCategoryDetails($categoryId: String!) {
+                category(id: $categoryId) {
+                    id
+                    name
+                    icon
+                    color
+                    isSystemCategory
+                    group {
+                        id
+                        name
+                        type
+                        __typename
+                    }
+                    transactionStats {
+                        transactionCount
+                        totalSpent
+                        averageAmount
+                        monthlyAverage
+                        lastTransactionDate
+                        __typename
+                    }
+                    topMerchants(limit: 5) {
+                        merchant {
+                            id
+                            name
+                            logoUrl
+                            __typename
+                        }
+                        transactionCount
+                        totalAmount
+                        __typename
+                    }
+                    __typename
+                }
+            }
+        """
+        )
+
+        return await self._execute_query(
+            operation="GetCategoryDetails", query=query, variables=variables
         )
