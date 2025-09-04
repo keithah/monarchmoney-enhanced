@@ -1,19 +1,28 @@
 import asyncio
 import json
+import logging
 
 from monarchmoney import MonarchMoney
+
+# Setup logging for demo
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 _SESSION_FILE_ = ".mm/mm_session.pickle"
 
 
 def main() -> None:
+    """Example usage of MonarchMoney API with proper logging."""
     # Use session file
     mm = MonarchMoney(session_file=_SESSION_FILE_)
     asyncio.run(mm.interactive_login())
 
     # Subscription details
     subs = asyncio.run(mm.get_subscription_details())
-    print(subs)
+    logger.info("Retrieved subscription details: %s", subs)
 
     # Accounts
     accounts = asyncio.run(mm.get_accounts())
@@ -43,17 +52,15 @@ def main() -> None:
     income_categories = dict()
     for c in categories.get("categories"):
         if c.get("group").get("type") == "income":
-            print(
-                f'{c.get("group").get("type")} - {c.get("group").get("name")} - {c.get("name")}'
-            )
+            category_info = f'{c.get("group").get("type")} - {c.get("group").get("name")} - {c.get("name")}'
+            logger.info("Income category: %s", category_info)
             income_categories[c.get("name")] = 0
 
     expense_category_groups = dict()
     for c in categories.get("categories"):
         if c.get("group").get("type") == "expense":
-            print(
-                f'{c.get("group").get("type")} - {c.get("group").get("name")} - {c.get("name")}'
-            )
+            category_info = f'{c.get("group").get("type")} - {c.get("group").get("name")} - {c.get("name")}'
+            logger.info("Expense category: %s", category_info)
             expense_category_groups[c.get("group").get("name")] = 0
 
     # Transactions
@@ -69,12 +76,13 @@ def main() -> None:
         json.dump(cashflow, outfile)
 
     for c in cashflow.get("summary"):
-        print(
+        summary_text = (
             f'Income: {c.get("summary").get("sumIncome")} '
             f'Expense: {c.get("summary").get("sumExpense")} '
             f'Savings: {c.get("summary").get("savings")} '
             f'({c.get("summary").get("savingsRate"):.0%})'
         )
+        logger.info("Cashflow summary: %s", summary_text)
 
     for c in cashflow.get("byCategory"):
         if c.get("groupBy").get("category").get("group").get("type") == "income":
@@ -82,16 +90,14 @@ def main() -> None:
                 "summary"
             ).get("sum")
 
-    print()
     for c in cashflow.get("byCategoryGroup"):
         if c.get("groupBy").get("categoryGroup").get("type") == "expense":
             expense_category_groups[
                 c.get("groupBy").get("categoryGroup").get("name")
             ] += c.get("summary").get("sum")
 
-    print(income_categories)
-    print()
-    print(expense_category_groups)
+    logger.info("Income categories summary: %s", income_categories)
+    logger.info("Expense category groups summary: %s", expense_category_groups)
 
 
 main()

@@ -17,6 +17,8 @@ from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
 from graphql import DocumentNode
 
+from .logging_config import logger
+
 AUTH_HEADER_KEY = "authorization"
 CSRF_KEY = "csrftoken"
 DEFAULT_RECORD_LIMIT = 100
@@ -66,17 +68,15 @@ async def retry_with_backoff(func, max_retries=3, base_delay=1.0, max_delay=60.0
             if "429" in error_str or "Too Many Requests" in error_str:
                 # Longer delay for rate limiting
                 delay = min(base_delay * (2**attempt) + random.uniform(0, 1), max_delay)
-                print(
-                    f"Rate limited. Retrying in {delay:.1f}s... (attempt {attempt + 1}/{max_retries})"
-                )
+                logger.warning("Rate limit exceeded, retrying", 
+                             delay=delay, attempt=attempt+1, max_retries=max_retries)
             elif any(code in error_str for code in ["500", "502", "503", "504"]):
                 # Shorter delay for server errors
                 delay = min(
                     base_delay * (1.5**attempt) + random.uniform(0, 0.5), max_delay / 2
                 )
-                print(
-                    f"Server error. Retrying in {delay:.1f}s... (attempt {attempt + 1}/{max_retries})"
-                )
+                logger.warning("Server error occurred, retrying", 
+                             delay=delay, attempt=attempt+1, max_retries=max_retries, error=error_str)
             else:
                 # Don't retry other errors
                 raise
@@ -189,7 +189,7 @@ class MonarchMoney(object):
     ) -> None:
         """Logs into a Monarch Money account."""
         if use_saved_session and os.path.exists(self._session_file):
-            print(f"Using saved session found at {self._session_file}")
+            logger.info("Loading saved session", session_file=self._session_file)
             self.load_session(self._session_file)
             return
 
@@ -2125,13 +2125,13 @@ class MonarchMoney(object):
         :param limit: Maximum number of rules to process (default: all)
         :return: Results of rule application
         """
-        print("🔄 Applying rules to existing transactions...")
+        logger.info("Applying rules to existing transactions")
 
         # Step 1: Get all transaction rules
-        print("   📋 Fetching transaction rules...")
+        logger.debug("Fetching transaction rules")
         rules_response = await self.get_transaction_rules()
         rules = rules_response.get("transactionRules", [])
-        print(f"   ✅ Found {len(rules)} rules")
+        logger.info("Found transaction rules", rule_count=len(rules))
 
         if not rules:
             return {"processed": 0, "applied": 0, "message": "No rules to apply"}
@@ -2140,7 +2140,7 @@ class MonarchMoney(object):
         applied_count = 0
         processed_count = min(len(rules), limit) if limit else len(rules)
 
-        print(f"   🔄 Updating {processed_count} rules to apply retroactively...")
+        logger.info("Updating rules to apply retroactively", processed_count=processed_count)
 
         for i, rule in enumerate(rules[:processed_count]):
             rule_id = rule.get("id")
@@ -2155,15 +2155,14 @@ class MonarchMoney(object):
                 applied_count += 1
 
                 if i % 10 == 0:  # Progress update every 10 rules
-                    print(f"   📊 Progress: {i+1}/{processed_count} rules updated")
+                    logger.debug("Rule update progress", updated=i+1, total=processed_count)
 
             except Exception as e:
-                print(f"   ⚠️  Failed to update rule {rule_id}: {str(e)[:50]}...")
+                logger.error("Failed to update rule", rule_id=rule_id, exc_info=e)
                 continue
 
-        print(
-            f"   ✅ Successfully applied {applied_count}/{processed_count} rules to existing transactions"
-        )
+        logger.info("Successfully applied rules to existing transactions", 
+                   applied=applied_count, processed=processed_count)
 
         return {
             "processed": processed_count,
@@ -2186,7 +2185,7 @@ class MonarchMoney(object):
         :param limit: Maximum results to return (default 30)
         :return: Preview of transactions that would be affected by the rule
         """
-        print("🔍 Previewing transaction rule matches using client-side logic...")
+        logger.info("Previewing transaction rule matches using client-side logic")
 
         # Get recent transactions to match against
         transactions_response = await self.get_transactions(
@@ -2263,7 +2262,7 @@ class MonarchMoney(object):
             "transactionRulePreview": {"totalCount": len(matches), "results": matches}
         }
 
-        print(f"   ✅ Found {len(matches)} matching transactions")
+        logger.info("Found matching transactions", match_count=len(matches))
         return result
 
     async def get_investment_performance(
