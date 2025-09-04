@@ -5,7 +5,7 @@ Provides comprehensive validation for user inputs and API parameters.
 """
 
 import re
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from .exceptions import ValidationError
 
@@ -337,7 +337,7 @@ class InputValidator:
 
 
 # Convenience functions for common validations
-def validate_login_credentials(email: str, password: str) -> tuple[str, str]:
+def validate_login_credentials(email: str, password: str) -> Tuple[str, str]:
     """
     Validate login credentials.
 
@@ -356,7 +356,7 @@ def validate_login_credentials(email: str, password: str) -> tuple[str, str]:
     return validated_email, validated_password
 
 
-def validate_mfa_credentials(email: str, password: str, code: str) -> tuple[str, str, str]:
+def validate_mfa_credentials(email: str, password: str, code: str) -> Tuple[str, str, str]:
     """
     Validate MFA credentials.
 

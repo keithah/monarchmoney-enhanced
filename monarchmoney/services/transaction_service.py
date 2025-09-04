@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from gql import gql
 
 from ..validators import InputValidator
+from ..exceptions import ValidationError
 from .base_service import BaseService
 
 if TYPE_CHECKING:
