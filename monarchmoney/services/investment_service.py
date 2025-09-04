@@ -44,7 +44,7 @@ class InvestmentService(BaseService):
             ValidationError: If account_id is invalid
         """
         account_id = InputValidator.validate_account_id(account_id)
-        
+
         if start_date:
             start_date = InputValidator.validate_date_string(start_date)
 
@@ -117,10 +117,10 @@ class InvestmentService(BaseService):
         account_id = InputValidator.validate_account_id(account_id)
         symbol = InputValidator.validate_string_length(symbol, "symbol", 1, 20)
         quantity = InputValidator.validate_amount(quantity)
-        
+
         if basis_per_share is not None:
             basis_per_share = InputValidator.validate_amount(basis_per_share)
-        
+
         if acquisition_date:
             acquisition_date = InputValidator.validate_date_string(acquisition_date)
 
@@ -232,7 +232,9 @@ class InvestmentService(BaseService):
         Raises:
             ValidationError: If holding_id is invalid
         """
-        holding_id = InputValidator.validate_string_length(holding_id, "holding_id", 1, 100)
+        holding_id = InputValidator.validate_string_length(
+            holding_id, "holding_id", 1, 100
+        )
 
         self.logger.info("Deleting manual holding", holding_id=holding_id)
 
@@ -262,13 +264,15 @@ class InvestmentService(BaseService):
         errors = delete_result.get("errors", [])
 
         if errors:
-            self.logger.error("Holding deletion failed", holding_id=holding_id, errors=errors)
+            self.logger.error(
+                "Holding deletion failed", holding_id=holding_id, errors=errors
+            )
             return False
 
         success = delete_result.get("deleted", False)
         if success:
             self.logger.info("Holding deleted successfully", holding_id=holding_id)
-        
+
         return success
 
     async def get_security_details(
@@ -280,7 +284,7 @@ class InvestmentService(BaseService):
         Args:
             ticker: Stock ticker symbol
             cusip: CUSIP identifier
-            
+
         Returns:
             Security information including name, price, and metadata
 
@@ -289,7 +293,7 @@ class InvestmentService(BaseService):
         """
         if not ticker and not cusip:
             raise ValidationError("Either ticker or cusip must be provided")
-        
+
         if ticker:
             ticker = InputValidator.validate_string_length(ticker, "ticker", 1, 20)
         if cusip:
@@ -366,7 +370,7 @@ class InvestmentService(BaseService):
         )
 
         variables = {"timePeriod": time_period}
-        
+
         if account_id:
             variables["accountId"] = account_id
         if start_date:
@@ -506,7 +510,7 @@ class InvestmentService(BaseService):
     ) -> Optional[Dict[str, Any]]:
         """
         Get holding information by ticker symbol.
-        
+
         This method searches through the user's holdings to find a specific
         security by its ticker symbol. Useful for programmatic holding management.
 
@@ -524,7 +528,9 @@ class InvestmentService(BaseService):
         if account_id:
             account_id = InputValidator.validate_account_id(account_id)
 
-        self.logger.info("Searching for holding by ticker", ticker=ticker, account_id=account_id)
+        self.logger.info(
+            "Searching for holding by ticker", ticker=ticker, account_id=account_id
+        )
 
         # Get all holdings
         if account_id:
@@ -534,11 +540,13 @@ class InvestmentService(BaseService):
             # Get holdings from all investment accounts
             accounts = await self.client.get_accounts()
             all_holdings = []
-            
+
             for account in accounts.get("accounts", []):
                 if account.get("type", {}).get("name") in ["investment", "retirement"]:
                     try:
-                        account_holdings = await self.get_account_holdings(account["id"])
+                        account_holdings = await self.get_account_holdings(
+                            account["id"]
+                        )
                         all_holdings.extend(account_holdings.get("holdings", []))
                     except Exception as e:
                         self.logger.debug(
@@ -553,7 +561,11 @@ class InvestmentService(BaseService):
         for holding in holdings:
             security = holding.get("security", {})
             if security.get("symbol", "").upper() == ticker.upper():
-                self.logger.info("Found holding by ticker", ticker=ticker, holding_id=holding.get("id"))
+                self.logger.info(
+                    "Found holding by ticker",
+                    ticker=ticker,
+                    holding_id=holding.get("id"),
+                )
                 return holding
 
         self.logger.info("No holding found for ticker", ticker=ticker)
@@ -568,7 +580,7 @@ class InvestmentService(BaseService):
     ) -> Dict[str, Any]:
         """
         Add a manual holding by ticker symbol.
-        
+
         This method first looks up the security by ticker, then creates
         a manual holding in the specified account. This enables programmatic
         investment portfolio management.
@@ -588,7 +600,7 @@ class InvestmentService(BaseService):
         """
         ticker = InputValidator.validate_string_length(ticker, "ticker", 1, 20)
         account_id = InputValidator.validate_account_id(account_id)
-        
+
         if basis_per_share is not None:
             basis_per_share = InputValidator.validate_amount(basis_per_share)
         quantity = InputValidator.validate_amount(quantity)
@@ -604,13 +616,13 @@ class InvestmentService(BaseService):
         # First, get security details by ticker
         security_data = await self.get_security_details(ticker=ticker)
         securities = security_data.get("securitySearch", [])
-        
+
         if not securities:
             raise ValueError(f"Security with ticker '{ticker}' not found")
-            
+
         security = securities[0]  # Use first match
         security_id = security.get("id")
-        
+
         if not security_id:
             raise ValueError(f"Could not get security ID for ticker '{ticker}'")
 
@@ -676,9 +688,15 @@ class InvestmentService(BaseService):
 
         holding = create_result.get("holding")
         if not holding:
-            raise ValueError(f"Failed to create holding for {ticker}: No holding returned")
+            raise ValueError(
+                f"Failed to create holding for {ticker}: No holding returned"
+            )
 
-        self.logger.info("Successfully added holding by ticker", ticker=ticker, holding_id=holding.get("id"))
+        self.logger.info(
+            "Successfully added holding by ticker",
+            ticker=ticker,
+            holding_id=holding.get("id"),
+        )
         return holding
 
     async def remove_holding_by_ticker(
@@ -686,7 +704,7 @@ class InvestmentService(BaseService):
     ) -> bool:
         """
         Remove a holding by ticker symbol.
-        
+
         This method finds the holding by ticker symbol and deletes it.
         Useful for programmatic portfolio management.
 
@@ -703,11 +721,13 @@ class InvestmentService(BaseService):
         """
         ticker = InputValidator.validate_string_length(ticker, "ticker", 1, 20)
 
-        self.logger.info("Removing holding by ticker", ticker=ticker, account_id=account_id)
+        self.logger.info(
+            "Removing holding by ticker", ticker=ticker, account_id=account_id
+        )
 
         # Find the holding by ticker
         holding = await self.get_holding_by_ticker(ticker, account_id)
-        
+
         if not holding:
             raise ValueError(f"No holding found for ticker '{ticker}'")
 
@@ -717,17 +737,17 @@ class InvestmentService(BaseService):
 
         # Delete the holding
         success = await self.delete_manual_holding(holding_id)
-        
+
         if success:
             self.logger.info("Successfully removed holding by ticker", ticker=ticker)
         else:
             self.logger.error("Failed to remove holding by ticker", ticker=ticker)
-            
+
         return success
 
     async def update_holding_quantity(
-        self, 
-        holding_id: str, 
+        self,
+        holding_id: str,
         new_quantity: Union[str, int, float],
         new_basis_per_share: Optional[Union[str, int, float]] = None,
     ) -> Dict[str, Any]:
@@ -745,9 +765,11 @@ class InvestmentService(BaseService):
         Raises:
             ValidationError: If parameters are invalid
         """
-        holding_id = InputValidator.validate_string_length(holding_id, "holding_id", 1, 100)
+        holding_id = InputValidator.validate_string_length(
+            holding_id, "holding_id", 1, 100
+        )
         new_quantity = InputValidator.validate_amount(new_quantity)
-        
+
         if new_basis_per_share is not None:
             new_basis_per_share = InputValidator.validate_amount(new_basis_per_share)
 
@@ -764,7 +786,7 @@ class InvestmentService(BaseService):
                 "quantity": str(new_quantity),
             }
         }
-        
+
         if new_basis_per_share is not None:
             variables["input"]["costBasisPerShare"] = str(new_basis_per_share)
 
@@ -809,7 +831,9 @@ class InvestmentService(BaseService):
         errors = update_result.get("errors", [])
 
         if errors:
-            self.logger.error("Holding update failed", holding_id=holding_id, errors=errors)
+            self.logger.error(
+                "Holding update failed", holding_id=holding_id, errors=errors
+            )
             raise ValueError(f"Failed to update holding: {errors}")
 
         holding = update_result.get("holding")

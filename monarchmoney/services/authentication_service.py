@@ -66,7 +66,7 @@ class AuthenticationService(BaseService):
 
         Args:
             email: User's email address
-            password: User's password  
+            password: User's password
             use_saved_session: Whether to use existing saved session
             save_session: Whether to save session after successful login
             mfa_secret_key: Optional MFA secret for automatic TOTP generation
@@ -151,7 +151,9 @@ class AuthenticationService(BaseService):
             is_valid = result.get("me", {}).get("id") is not None
 
             self.logger.debug(
-                "Session validation completed", valid=is_valid, has_token=bool(self.client._token)
+                "Session validation completed",
+                valid=is_valid,
+                has_token=bool(self.client._token),
             )
             return is_valid
 
@@ -194,9 +196,7 @@ class AuthenticationService(BaseService):
         if self.is_session_stale():
             self.logger.info("Session is stale, validating...")
             if not await self.validate_session():
-                raise AuthenticationError(
-                    "Session expired - please login again"
-                )
+                raise AuthenticationError("Session expired - please login again")
             else:
                 # Update last used time
                 import time
@@ -375,8 +375,10 @@ class AuthenticationService(BaseService):
                                 # Check if this is MFA required
                                 response_json = await response.json()
                                 if "Multi-Factor Auth Required" in str(response_json):
-                                    raise MFARequiredError("Multi-factor authentication required")
-                            
+                                    raise MFARequiredError(
+                                        "Multi-factor authentication required"
+                                    )
+
                             raise AuthenticationError(
                                 f"Login failed with status {response.status}"
                             )
@@ -520,7 +522,7 @@ class AuthenticationService(BaseService):
 
         Args:
             email: User's email address
-            password: User's password  
+            password: User's password
             code: MFA code
 
         Raises:

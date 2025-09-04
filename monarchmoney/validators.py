@@ -179,7 +179,8 @@ class InputValidator:
             amount_float = float(amount)
         except (ValueError, TypeError):
             raise ValidationError(
-                "Invalid amount format", details={"provided": amount, "type": type(amount)}
+                "Invalid amount format",
+                details={"provided": amount, "type": type(amount)},
             )
 
         # Check for reasonable limits (adjust as needed)
@@ -356,7 +357,9 @@ def validate_login_credentials(email: str, password: str) -> Tuple[str, str]:
     return validated_email, validated_password
 
 
-def validate_mfa_credentials(email: str, password: str, code: str) -> Tuple[str, str, str]:
+def validate_mfa_credentials(
+    email: str, password: str, code: str
+) -> Tuple[str, str, str]:
     """
     Validate MFA credentials.
 

@@ -141,9 +141,7 @@ class InsightService(BaseService):
             operation="GetInsights", graphql_query=query, variables=variables
         )
 
-    async def get_credit_score(
-        self, include_history: bool = True
-    ) -> Dict[str, Any]:
+    async def get_credit_score(self, include_history: bool = True) -> Dict[str, Any]:
         """
         Get credit score monitoring data.
 
@@ -153,9 +151,7 @@ class InsightService(BaseService):
         Returns:
             Credit score information with history and factors
         """
-        self.logger.info(
-            "Fetching credit score data", include_history=include_history
-        )
+        self.logger.info("Fetching credit score data", include_history=include_history)
 
         variables = {"includeHistory": include_history}
 

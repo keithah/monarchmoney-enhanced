@@ -17,11 +17,11 @@ from .transaction_service import TransactionService
 
 __all__ = [
     "AccountService",
-    "AuthenticationService", 
+    "AuthenticationService",
     "BaseService",
     "BudgetService",
     "GraphQLClient",
-    "InsightService", 
+    "InsightService",
     "InvestmentService",
     "SettingsService",
     "TransactionService",

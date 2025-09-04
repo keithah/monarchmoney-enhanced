@@ -154,9 +154,11 @@ class BudgetService(BaseService):
         Raises:
             ValidationError: If parameters are invalid
         """
-        category_id = InputValidator.validate_string_length(category_id, "category_id", 1, 100)
+        category_id = InputValidator.validate_string_length(
+            category_id, "category_id", 1, 100
+        )
         amount = InputValidator.validate_amount(amount)
-        
+
         if start_date:
             start_date = InputValidator.validate_date_string(start_date)
 
@@ -172,7 +174,7 @@ class BudgetService(BaseService):
             "amount": amount,
             "period": period,
         }
-        
+
         if start_date:
             variables["startDate"] = start_date
 
@@ -294,13 +296,17 @@ class BudgetService(BaseService):
         """
         name = InputValidator.validate_string_length(name, "goal name", 1, 100)
         target_amount = InputValidator.validate_amount(target_amount)
-        
+
         if target_date:
             target_date = InputValidator.validate_date_string(target_date)
         if description:
-            description = InputValidator.validate_string_length(description, "description", 0, 500)
+            description = InputValidator.validate_string_length(
+                description, "description", 0, 500
+            )
         if category_id:
-            category_id = InputValidator.validate_string_length(category_id, "category_id", 1, 100)
+            category_id = InputValidator.validate_string_length(
+                category_id, "category_id", 1, 100
+            )
 
         self.logger.info(
             "Creating financial goal",
@@ -313,7 +319,7 @@ class BudgetService(BaseService):
             "name": name,
             "targetAmount": target_amount,
         }
-        
+
         if target_date:
             variables["targetDate"] = target_date
         if description:
@@ -395,7 +401,7 @@ class BudgetService(BaseService):
             ValidationError: If parameters are invalid
         """
         goal_id = InputValidator.validate_string_length(goal_id, "goal_id", 1, 100)
-        
+
         if name is not None:
             name = InputValidator.validate_string_length(name, "goal name", 1, 100)
         if target_amount is not None:
@@ -403,12 +409,14 @@ class BudgetService(BaseService):
         if target_date is not None:
             target_date = InputValidator.validate_date_string(target_date)
         if description is not None:
-            description = InputValidator.validate_string_length(description, "description", 0, 500)
+            description = InputValidator.validate_string_length(
+                description, "description", 0, 500
+            )
 
         self.logger.info("Updating financial goal", goal_id=goal_id, name=name)
 
         variables = {"id": goal_id}
-        
+
         if name is not None:
             variables["name"] = name
         if target_amount is not None:
@@ -514,7 +522,7 @@ class BudgetService(BaseService):
         success = delete_result.get("deleted", False)
         if success:
             self.logger.info("Financial goal deleted successfully", goal_id=goal_id)
-        
+
         return success
 
     async def get_cashflow(

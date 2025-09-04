@@ -72,9 +72,7 @@ class TransactionService(BaseService):
         """
         )
 
-        return await self._execute_query(
-            operation="GetTransactionsPage", query=query
-        )
+        return await self._execute_query(operation="GetTransactionsPage", query=query)
 
     async def get_transactions_summary_card(self) -> Dict[str, Any]:
         """
@@ -132,47 +130,52 @@ class TransactionService(BaseService):
 
         Returns:
             Paginated transaction list with total count and filtering metadata
-            
+
         Examples:
             # Get only credit transactions (income)
             transactions = await mm.get_transactions(is_credit=True)
-            
-            # Get only debit transactions (expenses)  
+
+            # Get only debit transactions (expenses)
             transactions = await mm.get_transactions(is_credit=False)
-            
+
             # Get transactions >= $100
             transactions = await mm.get_transactions(abs_amount_range=[100.0, None])
-            
+
             # Get transactions <= $50
             transactions = await mm.get_transactions(abs_amount_range=[None, 50.0])
-            
+
             # Get transactions between $20 and $100
             transactions = await mm.get_transactions(abs_amount_range=[20.0, 100.0])
-            
+
             # Get transactions exactly $25.99
             transactions = await mm.get_transactions(abs_amount_range=[25.99, 25.99])
         """
         # Validate inputs
         validated_limit = InputValidator.validate_limit(limit) or 100
         validated_offset = offset or 0
-        
+
         if start_date:
             start_date = InputValidator.validate_date_string(start_date)
         if end_date:
             end_date = InputValidator.validate_date_string(end_date)
-        
+
         # Validate amount range
         if abs_amount_range is not None:
             if not isinstance(abs_amount_range, list) or len(abs_amount_range) != 2:
-                raise ValueError("abs_amount_range must be a list of two values: [min, max]")
-            
+                raise ValueError(
+                    "abs_amount_range must be a list of two values: [min, max]"
+                )
+
             min_amount, max_amount = abs_amount_range
             if min_amount is not None and min_amount < 0:
                 raise ValueError("min_amount must be non-negative or None")
             if max_amount is not None and max_amount < 0:
                 raise ValueError("max_amount must be non-negative or None")
-            if (min_amount is not None and max_amount is not None and 
-                min_amount > max_amount):
+            if (
+                min_amount is not None
+                and max_amount is not None
+                and min_amount > max_amount
+            ):
                 raise ValueError("min_amount cannot be greater than max_amount")
 
         self.logger.info(
@@ -333,7 +336,7 @@ class TransactionService(BaseService):
         merchant = InputValidator.validate_string_length(merchant, "merchant", 1, 200)
         amount = InputValidator.validate_amount(amount)
         date = InputValidator.validate_date_string(date)
-        
+
         if notes:
             notes = InputValidator.validate_string_length(notes, "notes", 0, 500)
 
@@ -457,13 +460,19 @@ class TransactionService(BaseService):
         errors = delete_result.get("errors", [])
 
         if errors:
-            self.logger.error("Transaction deletion failed", transaction_id=transaction_id, errors=errors)
+            self.logger.error(
+                "Transaction deletion failed",
+                transaction_id=transaction_id,
+                errors=errors,
+            )
             return False
 
         success = delete_result.get("deleted", False)
         if success:
-            self.logger.info("Transaction deleted successfully", transaction_id=transaction_id)
-        
+            self.logger.info(
+                "Transaction deleted successfully", transaction_id=transaction_id
+            )
+
         return success
 
     async def update_transaction(
@@ -496,9 +505,11 @@ class TransactionService(BaseService):
         """
         # Validate inputs
         transaction_id = InputValidator.validate_transaction_id(transaction_id)
-        
+
         if merchant is not None:
-            merchant = InputValidator.validate_string_length(merchant, "merchant", 1, 200)
+            merchant = InputValidator.validate_string_length(
+                merchant, "merchant", 1, 200
+            )
         if amount is not None:
             amount = InputValidator.validate_amount(amount)
         if date is not None:
@@ -516,7 +527,7 @@ class TransactionService(BaseService):
 
         # Build variables with only non-None values
         variables = {"id": transaction_id}
-        
+
         if merchant is not None:
             variables["merchant"] = merchant
         if amount is not None:
@@ -592,9 +603,7 @@ class TransactionService(BaseService):
             variables=variables,
         )
 
-    async def get_transaction_details(
-        self, transaction_id: str
-    ) -> Dict[str, Any]:
+    async def get_transaction_details(self, transaction_id: str) -> Dict[str, Any]:
         """
         Get detailed information for a single transaction.
 
@@ -782,7 +791,7 @@ class TransactionService(BaseService):
         for split in splits:
             if not isinstance(split, dict):
                 raise ValidationError("Each split must be a dictionary")
-            
+
             split_data = {
                 "amount": InputValidator.validate_amount(split.get("amount")),
                 "categoryId": split.get("category_id") or split.get("categoryId"),
@@ -913,7 +922,7 @@ class TransactionService(BaseService):
         )
 
     async def get_recurring_streams(
-        self, 
+        self,
         include_liabilities: bool = True,
         include_pending: bool = True,
         filters: Optional[Dict[str, Any]] = None,
@@ -1030,7 +1039,7 @@ class TransactionService(BaseService):
 
         Args:
             start_date: Start date for recurring items (YYYY-MM-DD)
-            end_date: End date for recurring items (YYYY-MM-DD) 
+            end_date: End date for recurring items (YYYY-MM-DD)
             group_by: How to group results ("status", "category", "account")
             filters: Optional filters for accounts, categories, etc.
 
@@ -1243,7 +1252,9 @@ class TransactionService(BaseService):
         Raises:
             ValidationError: If parameters are invalid
         """
-        stream_id = InputValidator.validate_string_length(stream_id, "stream_id", 1, 100)
+        stream_id = InputValidator.validate_string_length(
+            stream_id, "stream_id", 1, 100
+        )
 
         valid_statuses = ["approved", "ignored", "pending"]
         if review_status not in valid_statuses:
@@ -1310,9 +1321,9 @@ class TransactionService(BaseService):
         stream = review_result.get("stream")
         if stream:
             self.logger.info(
-                "Stream review successful", 
+                "Stream review successful",
                 stream_id=stream_id,
-                new_status=stream.get("reviewStatus")
+                new_status=stream.get("reviewStatus"),
             )
 
         return review_result
@@ -1330,7 +1341,9 @@ class TransactionService(BaseService):
         Raises:
             ValidationError: If stream_id is invalid
         """
-        stream_id = InputValidator.validate_string_length(stream_id, "stream_id", 1, 100)
+        stream_id = InputValidator.validate_string_length(
+            stream_id, "stream_id", 1, 100
+        )
 
         self.logger.info("Marking stream as not recurring", stream_id=stream_id)
 
@@ -1418,7 +1431,7 @@ class TransactionService(BaseService):
         )
 
     async def get_all_recurring_transaction_items(
-        self, 
+        self,
         filters: Optional[Dict[str, Any]] = None,
         include_liabilities: bool = True,
     ) -> Dict[str, Any]:
@@ -1544,9 +1557,7 @@ class TransactionService(BaseService):
         """
         )
 
-        return await self._execute_query(
-            operation="GetTransactionRules", query=query
-        )
+        return await self._execute_query(operation="GetTransactionRules", query=query)
 
     async def create_transaction_rule(
         self,
@@ -1572,7 +1583,9 @@ class TransactionService(BaseService):
         """
         name = InputValidator.validate_string_length(name, "rule name", 1, 100)
 
-        self.logger.info("Creating transaction rule", name=name, conditions_count=len(conditions))
+        self.logger.info(
+            "Creating transaction rule", name=name, conditions_count=len(conditions)
+        )
 
         variables = {
             "name": name,
@@ -1659,14 +1672,14 @@ class TransactionService(BaseService):
             ValidationError: If rule data is invalid
         """
         rule_id = InputValidator.validate_string_length(rule_id, "rule_id", 1, 100)
-        
+
         if name is not None:
             name = InputValidator.validate_string_length(name, "rule name", 1, 100)
 
         self.logger.info("Updating transaction rule", rule_id=rule_id, name=name)
 
         variables = {"id": rule_id}
-        
+
         if name is not None:
             variables["name"] = name
         if conditions is not None:
@@ -1782,7 +1795,7 @@ class TransactionService(BaseService):
         success = delete_result.get("deleted", False)
         if success:
             self.logger.info("Transaction rule deleted successfully", rule_id=rule_id)
-        
+
         return success
 
     async def delete_all_transaction_rules(self) -> bool:
@@ -1824,7 +1837,7 @@ class TransactionService(BaseService):
         success = delete_result.get("deleted", False)
         if success:
             self.logger.info("All transaction rules deleted successfully")
-        
+
         return success
 
     # Transaction Categories Methods
@@ -1867,9 +1880,7 @@ class TransactionService(BaseService):
         """
         )
 
-        return await self._execute_query(
-            operation="GetCategories", query=query
-        )
+        return await self._execute_query(operation="GetCategories", query=query)
 
     async def create_transaction_category(
         self,
@@ -1971,15 +1982,19 @@ class TransactionService(BaseService):
         Raises:
             ValidationError: If category data is invalid
         """
-        category_id = InputValidator.validate_string_length(category_id, "category_id", 1, 100)
-        
+        category_id = InputValidator.validate_string_length(
+            category_id, "category_id", 1, 100
+        )
+
         if name is not None:
             name = InputValidator.validate_string_length(name, "category name", 1, 100)
 
-        self.logger.info("Updating transaction category", category_id=category_id, name=name)
+        self.logger.info(
+            "Updating transaction category", category_id=category_id, name=name
+        )
 
         variables = {"id": category_id}
-        
+
         if name is not None:
             variables["name"] = name
         if icon is not None:
@@ -2041,7 +2056,9 @@ class TransactionService(BaseService):
         Raises:
             ValidationError: If category_id is invalid
         """
-        category_id = InputValidator.validate_string_length(category_id, "category_id", 1, 100)
+        category_id = InputValidator.validate_string_length(
+            category_id, "category_id", 1, 100
+        )
 
         self.logger.info("Deleting transaction category", category_id=category_id)
 
@@ -2071,13 +2088,17 @@ class TransactionService(BaseService):
         errors = delete_result.get("errors", [])
 
         if errors:
-            self.logger.error("Category deletion failed", category_id=category_id, errors=errors)
+            self.logger.error(
+                "Category deletion failed", category_id=category_id, errors=errors
+            )
             return False
 
         success = delete_result.get("deleted", False)
         if success:
-            self.logger.info("Transaction category deleted successfully", category_id=category_id)
-        
+            self.logger.info(
+                "Transaction category deleted successfully", category_id=category_id
+            )
+
         return success
 
     async def get_transaction_category_groups(self) -> Dict[str, Any]:
@@ -2274,7 +2295,7 @@ class TransactionService(BaseService):
     async def get_transaction_categories(self) -> Dict[str, Any]:
         """
         Get all available transaction categories.
-        
+
         This method retrieves the complete list of transaction categories
         available in Monarch Money, including custom categories.
 
@@ -2315,13 +2336,13 @@ class TransactionService(BaseService):
         )
 
     async def get_merchants(
-        self, 
+        self,
         search: Optional[str] = None,
         limit: Optional[int] = 100,
     ) -> Dict[str, Any]:
         """
         Get merchants used in transactions.
-        
+
         This method retrieves merchants that have been used in transactions,
         with optional search filtering.
 
@@ -2333,11 +2354,11 @@ class TransactionService(BaseService):
             List of merchants with IDs, names, and transaction counts
         """
         validated_limit = InputValidator.validate_limit(limit) or 100
-        
+
         self.logger.info("Fetching merchants", search=search, limit=validated_limit)
 
         variables = {"limit": validated_limit}
-        
+
         if search:
             variables["search"] = search
 
@@ -2378,8 +2399,10 @@ class TransactionService(BaseService):
         Raises:
             ValidationError: If merchant_id is invalid
         """
-        merchant_id = InputValidator.validate_string_length(merchant_id, "merchant_id", 1, 100)
-        
+        merchant_id = InputValidator.validate_string_length(
+            merchant_id, "merchant_id", 1, 100
+        )
+
         self.logger.info("Fetching merchant details", merchant_id=merchant_id)
 
         variables = {"merchantId": merchant_id}
@@ -2444,8 +2467,10 @@ class TransactionService(BaseService):
         Raises:
             ValidationError: If category_id is invalid
         """
-        category_id = InputValidator.validate_string_length(category_id, "category_id", 1, 100)
-        
+        category_id = InputValidator.validate_string_length(
+            category_id, "category_id", 1, 100
+        )
+
         self.logger.info("Fetching category details", category_id=category_id)
 
         variables = {"categoryId": category_id}

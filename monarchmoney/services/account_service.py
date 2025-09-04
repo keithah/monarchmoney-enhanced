@@ -132,9 +132,7 @@ class AccountService(BaseService):
         """
         )
 
-        return await self._execute_query(
-            operation="GetAccountTypeOptions", query=query
-        )
+        return await self._execute_query(operation="GetAccountTypeOptions", query=query)
 
     async def create_manual_account(
         self,
@@ -160,12 +158,12 @@ class AccountService(BaseService):
         """
         name = InputValidator.validate_string_length(name, "account name", 1, 100)
         type_name = InputValidator.validate_string_length(type_name, "type_name", 1, 50)
-        
+
         if subtype_name:
             subtype_name = InputValidator.validate_string_length(
                 subtype_name, "subtype_name", 1, 50
             )
-        
+
         if balance is not None:
             balance = InputValidator.validate_amount(balance)
 
@@ -258,7 +256,7 @@ class AccountService(BaseService):
             ValidationError: If account data is invalid
         """
         account_id = InputValidator.validate_account_id(account_id)
-        
+
         if display_name is not None:
             display_name = InputValidator.validate_string_length(
                 display_name, "display_name", 1, 100
@@ -272,7 +270,7 @@ class AccountService(BaseService):
         )
 
         variables = {"id": account_id}
-        
+
         if display_name is not None:
             variables["displayName"] = display_name
         if is_hidden is not None:
@@ -371,13 +369,15 @@ class AccountService(BaseService):
         errors = delete_result.get("errors", [])
 
         if errors:
-            self.logger.error("Account deletion failed", account_id=account_id, errors=errors)
+            self.logger.error(
+                "Account deletion failed", account_id=account_id, errors=errors
+            )
             return False
 
         success = delete_result.get("deleted", False)
         if success:
             self.logger.info("Account deleted successfully", account_id=account_id)
-        
+
         return success
 
     async def get_recent_account_balances(
@@ -474,7 +474,7 @@ class AccountService(BaseService):
             ValidationError: If account_id is invalid
         """
         account_id = InputValidator.validate_account_id(account_id)
-        
+
         if start_date:
             start_date = InputValidator.validate_date_string(start_date)
         if end_date:
@@ -488,7 +488,7 @@ class AccountService(BaseService):
         )
 
         variables = {"accountId": account_id}
-        
+
         if start_date:
             variables["startDate"] = start_date
         if end_date:
@@ -625,8 +625,12 @@ class AccountService(BaseService):
 
         refresh_status = result.get("accountsRefreshStatus", {})
         is_complete = refresh_status.get("isComplete", False)
-        
-        self.logger.debug("Refresh status check", is_complete=is_complete, status=refresh_status.get("status"))
+
+        self.logger.debug(
+            "Refresh status check",
+            is_complete=is_complete,
+            status=refresh_status.get("status"),
+        )
         return is_complete
 
     async def request_accounts_refresh_and_wait(
@@ -896,7 +900,7 @@ class AccountService(BaseService):
         for entry in balance_data:
             if not isinstance(entry, dict):
                 raise ValidationError("Each balance entry must be a dictionary")
-            
+
             validated_entry = {
                 "date": InputValidator.validate_date_string(entry.get("date")),
                 "balance": InputValidator.validate_amount(entry.get("balance")),

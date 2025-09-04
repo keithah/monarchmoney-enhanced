@@ -62,6 +62,7 @@ def mock_rate_limit_response():
         @property
         def ok(self):
             return 200 <= self.status < 300
+
         reason = "Too Many Requests"
 
         async def json(self):

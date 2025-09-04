@@ -1,0 +1,6 @@
+{
+  "cookies": {
+    "test_cookie": "test_value"
+  },
+  "token": "test_token"
+}

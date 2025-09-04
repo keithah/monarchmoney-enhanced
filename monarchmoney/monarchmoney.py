@@ -228,15 +228,15 @@ class MonarchMoney(object):
             BudgetService,
             GraphQLClient,
             InsightService,
-            InvestmentService, 
+            InvestmentService,
             SettingsService,
             TransactionService,
         )
-        
+
         # Initialize advanced GraphQL client for performance optimizations
         self._graphql_client = GraphQLClient(self)
-        
-        # Initialize services 
+
+        # Initialize services
         self._auth_service = AuthenticationService(self)
         self._account_service = AccountService(self)
         self._transaction_service = TransactionService(self)
@@ -5506,40 +5506,40 @@ class MonarchMoney(object):
             fetch_schema_from_transport=False,
             execute_timeout=self._timeout,
         )
-    
+
     # Performance and monitoring methods
     def get_performance_stats(self) -> Dict[str, Any]:
         """
         Get performance statistics for GraphQL operations.
-        
+
         Returns:
             Performance statistics including operation timings and cache metrics
         """
-        if hasattr(self, '_graphql_client') and self._graphql_client:
+        if hasattr(self, "_graphql_client") and self._graphql_client:
             return self._graphql_client.get_performance_stats()
         return {"error": "Advanced GraphQL client not available"}
-    
+
     def clear_cache(self) -> None:
         """Clear the GraphQL operation cache."""
-        if hasattr(self, '_graphql_client') and self._graphql_client:
+        if hasattr(self, "_graphql_client") and self._graphql_client:
             self._graphql_client.clear_cache()
             logger.info("GraphQL cache cleared")
-    
+
     async def close(self) -> None:
         """
         Close the MonarchMoney client and cleanup resources.
-        
+
         This should be called when you're done using the client to ensure
         proper cleanup of connections and resources.
         """
-        if hasattr(self, '_graphql_client') and self._graphql_client:
+        if hasattr(self, "_graphql_client") and self._graphql_client:
             await self._graphql_client.close()
             logger.debug("GraphQL client resources cleaned up")
-            
+
     async def __aenter__(self):
         """Async context manager entry."""
         return self
-        
+
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Async context manager exit with cleanup."""
         await self.close()
