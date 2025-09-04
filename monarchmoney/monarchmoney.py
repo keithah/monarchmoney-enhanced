@@ -369,8 +369,8 @@ class MonarchMoney(object):
         """
         Get merchant information for editing, including recurring transaction settings.
 
-        This method provides merchant information specifically designed for editing 
-        merchant settings, including whether the merchant has active recurring 
+        This method provides merchant information specifically designed for editing
+        merchant settings, including whether the merchant has active recurring
         transaction streams and the details of those streams.
 
         Args:
@@ -378,7 +378,7 @@ class MonarchMoney(object):
 
         Returns:
             Merchant edit information including:
-            - Basic details (id, name, logoUrl)  
+            - Basic details (id, name, logoUrl)
             - Transaction and rule counts
             - Whether merchant can be deleted
             - Active recurring stream status and details
@@ -391,12 +391,12 @@ class MonarchMoney(object):
             # Get merchant edit information
             edit_info = await mm.get_edit_merchant("104754400339336479")
             merchant = edit_info["merchant"]
-            
+
             print(f"Merchant: {merchant['name']}")
             print(f"Transactions: {merchant['transactionCount']}")
-            
+
             if merchant["hasActiveRecurringStreams"]:
-                stream = merchant["recurringTransactionStream"]  
+                stream = merchant["recurringTransactionStream"]
                 print(f"Recurring: {stream['frequency']} - ${stream['amount']}")
                 # Can then mark as not recurring using the stream ID
                 await mm.mark_stream_as_not_recurring(stream['id'])
