@@ -17,6 +17,8 @@ try:
     CRYPTOGRAPHY_AVAILABLE = True
 except ImportError:
     CRYPTOGRAPHY_AVAILABLE = False
+    # Create a placeholder for type hints when cryptography is not available
+    Fernet = None
 
 # Try to import logger from the package, fall back to basic logging
 try:
@@ -73,7 +75,7 @@ class SecureSessionStorage:
         )
         return hashlib.sha256(system_info.encode()).hexdigest()[:32]
 
-    def _create_cipher(self, password: str) -> Fernet:
+    def _create_cipher(self, password: str) -> "Fernet":
         """Create Fernet cipher from password."""
         # Use PBKDF2 to derive key from password
         key = hashlib.pbkdf2_hmac(

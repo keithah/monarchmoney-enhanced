@@ -39,6 +39,7 @@ from .exceptions import (  # Legacy aliases for backward compatibility
 )
 from .logging_config import logger
 from .session_storage import LegacyPickleSession, SecureSessionStorage
+from .validators import validate_login_credentials, validate_mfa_credentials
 
 AUTH_HEADER_KEY = "authorization"
 CSRF_KEY = "csrftoken"
@@ -207,6 +208,10 @@ class MonarchMoney(object):
         self._session_file = session_file
         self._token = token
         self._timeout = timeout
+        self._csrf_token = None
+        self._last_used = None
+        self._session_password = session_password
+        self._use_encryption = use_encryption
 
         # Initialize secure session storage
         self._secure_storage = SecureSessionStorage(session_password, use_encryption)
@@ -215,6 +220,30 @@ class MonarchMoney(object):
         self._session_created_at: Optional[float] = None
         self._session_last_validated: Optional[float] = None
         self._session_validation_interval = 3600  # Validate every hour
+
+        # Initialize services for service-oriented architecture
+        from .services import (
+            AccountService,
+            AuthenticationService,
+            BudgetService,
+            GraphQLClient,
+            InsightService,
+            InvestmentService, 
+            SettingsService,
+            TransactionService,
+        )
+        
+        # Initialize advanced GraphQL client for performance optimizations
+        self._graphql_client = GraphQLClient(self)
+        
+        # Initialize services 
+        self._auth_service = AuthenticationService(self)
+        self._account_service = AccountService(self)
+        self._transaction_service = TransactionService(self)
+        self._settings_service = SettingsService(self)
+        self._budget_service = BudgetService(self)
+        self._investment_service = InvestmentService(self)
+        self._insight_service = InsightService(self)
 
     @property
     def timeout(self) -> int:
@@ -278,170 +307,36 @@ class MonarchMoney(object):
         mfa_secret_key: Optional[str] = None,
     ) -> None:
         """Logs into a Monarch Money account."""
-        if use_saved_session and os.path.exists(self._session_file):
-            logger.info("Loading saved session", session_file=self._session_file)
-            self.load_session(self._session_file)
-            return
-
-        if (email is None) or (password is None) or (email == "") or (password == ""):
-            raise ValidationError(
-                "Email and password are required to login when not using a saved session.",
-                details={
-                    "email_provided": email is not None,
-                    "password_provided": password is not None,
-                },
-            )
-        await self._login_user(email, password, mfa_secret_key)
-        if save_session:
-            self.save_session(self._session_file)
+        # Delegate to AuthenticationService
+        await self._auth_service.login(
+            email=email,
+            password=password,
+            use_saved_session=use_saved_session,
+            save_session=save_session,
+            mfa_secret_key=mfa_secret_key,
+            session_file=self._session_file,
+        )
 
     async def multi_factor_authenticate(
         self, email: str, password: str, code: str
     ) -> None:
         """Performs multi-factor authentication to access a Monarch Money account."""
-        await self._multi_factor_authenticate(email, password, code)
+        # Delegate to AuthenticationService
+        await self._auth_service.multi_factor_authenticate(email, password, code)
 
     async def get_accounts(self) -> Dict[str, Any]:
         """
         Gets the list of accounts configured in the Monarch Money account.
         """
-        query = gql(
-            """
-          query GetAccounts {
-            accounts {
-              ...AccountFields
-              __typename
-            }
-            householdPreferences {
-              id
-              accountGroupOrder
-              __typename
-            }
-          }
-
-          fragment AccountFields on Account {
-            id
-            displayName
-            syncDisabled
-            deactivatedAt
-            isHidden
-            isAsset
-            mask
-            createdAt
-            updatedAt
-            displayLastUpdatedAt
-            currentBalance
-            displayBalance
-            includeInNetWorth
-            hideFromList
-            hideTransactionsFromReports
-            includeBalanceInNetWorth
-            includeInGoalBalance
-            dataProvider
-            dataProviderAccountId
-            isManual
-            transactionsCount
-            holdingsCount
-            manualInvestmentsTrackingMethod
-            order
-            logoUrl
-            type {
-              name
-              display
-              __typename
-            }
-            subtype {
-              name
-              display
-              __typename
-            }
-            credential {
-              id
-              updateRequired
-              disconnectedFromDataProviderAt
-              dataProvider
-              institution {
-                id
-                plaidInstitutionId
-                name
-                status
-                __typename
-              }
-              __typename
-            }
-            institution {
-              id
-              name
-              primaryColor
-              url
-              __typename
-            }
-            __typename
-          }
-        """
-        )
-        return await self.gql_call(
-            operation="GetAccounts",
-            graphql_query=query,
-        )
+        # Delegate to AccountService
+        return await self._account_service.get_accounts()
 
     async def get_me(self) -> Dict[str, Any]:
         """
         Gets the current user's profile information including timezone, email, name, and authentication status.
         """
-        query = gql(
-            """
-            query Common_GetMe {
-                me {
-                    ...UserFields
-                    id
-                    profile {
-                        id
-                        hasSeenCategoriesManagementTour
-                        dismissedTransactionsListUpdatesTourAt
-                        viewedMarkAsReviewedUpdatesCalloutAt
-                        hasDismissedWhatsNewAt
-                        __typename
-                    }
-                    __typename
-                }
-            }
-
-            fragment UserFields on User {
-                birthday
-                email
-                id
-                isSuperuser
-                name
-                timezone
-                hasPassword
-                hasMfaOn
-                externalAuthProviderNames
-                pendingEmailUpdateVerification {
-                    email
-                    __typename
-                }
-                profilePicture {
-                    id
-                    cloudinaryPublicId
-                    thumbnailUrl
-                    __typename
-                }
-                profilePictureUrl
-                activeSupportAccountAccessGrant {
-                    id
-                    createdAt
-                    expiresAt
-                    __typename
-                }
-                __typename
-            }
-            """
-        )
-        return await self.gql_call(
-            operation="Common_GetMe",
-            graphql_query=query,
-        )
+        # Delegate to SettingsService
+        return await self._settings_service.get_me()
 
     async def get_merchants(self) -> Dict[str, Any]:
         """
@@ -5611,3 +5506,40 @@ class MonarchMoney(object):
             fetch_schema_from_transport=False,
             execute_timeout=self._timeout,
         )
+    
+    # Performance and monitoring methods
+    def get_performance_stats(self) -> Dict[str, Any]:
+        """
+        Get performance statistics for GraphQL operations.
+        
+        Returns:
+            Performance statistics including operation timings and cache metrics
+        """
+        if hasattr(self, '_graphql_client') and self._graphql_client:
+            return self._graphql_client.get_performance_stats()
+        return {"error": "Advanced GraphQL client not available"}
+    
+    def clear_cache(self) -> None:
+        """Clear the GraphQL operation cache."""
+        if hasattr(self, '_graphql_client') and self._graphql_client:
+            self._graphql_client.clear_cache()
+            logger.info("GraphQL cache cleared")
+    
+    async def close(self) -> None:
+        """
+        Close the MonarchMoney client and cleanup resources.
+        
+        This should be called when you're done using the client to ensure
+        proper cleanup of connections and resources.
+        """
+        if hasattr(self, '_graphql_client') and self._graphql_client:
+            await self._graphql_client.close()
+            logger.debug("GraphQL client resources cleaned up")
+            
+    async def __aenter__(self):
+        """Async context manager entry."""
+        return self
+        
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Async context manager exit with cleanup."""
+        await self.close()

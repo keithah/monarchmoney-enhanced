@@ -36,6 +36,10 @@ def mock_mfa_required_response():
         status = 403
         reason = "Forbidden"
 
+        @property
+        def ok(self):
+            return 200 <= self.status < 300
+
         async def json(self):
             return {"detail": "Multi-Factor Auth Required"}
 
@@ -54,6 +58,10 @@ def mock_rate_limit_response():
 
     class MockResponse:
         status = 429
+
+        @property
+        def ok(self):
+            return 200 <= self.status < 300
         reason = "Too Many Requests"
 
         async def json(self):

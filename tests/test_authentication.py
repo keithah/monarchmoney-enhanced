@@ -36,6 +36,10 @@ class TestLogin:
             def __init__(self):
                 self.status = 200
                 
+            @property
+            def ok(self):
+                return 200 <= self.status < 300
+                
             async def json(self):
                 return mock_successful_login_response
                 
@@ -59,7 +63,7 @@ class TestLogin:
             async def __aexit__(self, exc_type, exc_val, exc_tb):
                 return None
 
-        with patch("monarchmoney.monarchmoney.ClientSession", return_value=MockSession()):
+        with patch("monarchmoney.services.authentication_service.ClientSession", return_value=MockSession()):
             await mm.login(sample_credentials["email"], sample_credentials["password"])
 
             assert mm.token == "mock_auth_token_abcdef123456"
@@ -89,7 +93,7 @@ class TestLogin:
             async def __aexit__(self, exc_type, exc_val, exc_tb):
                 return None
 
-        with patch("monarchmoney.monarchmoney.ClientSession", return_value=MockSession()):
+        with patch("monarchmoney.services.authentication_service.ClientSession", return_value=MockSession()):
             with pytest.raises(MFARequiredError, match="Multi-factor authentication required"):
                 await mm.login(
                     sample_credentials["email"], sample_credentials["password"]
