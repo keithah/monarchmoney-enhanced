@@ -4,7 +4,7 @@ Demo script showcasing new features implemented from community PRs.
 
 This script demonstrates:
 - Holdings management by ticker (PR #151)
-- Transaction filtering by amount (PR #148)  
+- Transaction filtering by amount (PR #148)
 - Transaction summary card (PR #140)
 - Categories and merchants API (PR #128)
 """
@@ -23,18 +23,19 @@ async def demo_holdings_management():
     """Demonstrate holdings management by ticker (PR #151)."""
     print("🔹 Holdings Management by Ticker (PR #151)")
     print("-" * 50)
-    
+
     async with MonarchMoney() as mm:
         # This would typically be done with real authentication
         print("📋 Holdings Management Features:")
         print("  • get_holding_by_ticker() - Find holdings by ticker symbol")
-        print("  • add_holding_by_ticker() - Add holdings programmatically")  
+        print("  • add_holding_by_ticker() - Add holdings programmatically")
         print("  • remove_holding_by_ticker() - Remove holdings by ticker")
         print("  • update_holding_quantity() - Update share quantities")
         print()
-        
+
         print("🔧 Example Usage:")
-        print("""
+        print(
+            """
         # Find existing AAPL holding
         aapl_holding = await mm._investment_service.get_holding_by_ticker('AAPL')
         
@@ -54,7 +55,8 @@ async def demo_holdings_management():
             holding_id='holding_456',
             new_quantity=25
         )
-        """)
+        """
+        )
         print("✅ Holdings management enables complete programmatic portfolio control!")
 
 
@@ -62,16 +64,17 @@ async def demo_transaction_filtering():
     """Demonstrate transaction filtering by amount (PR #148)."""
     print("\n🔹 Transaction Filtering by Amount (PR #148)")
     print("-" * 50)
-    
+
     async with MonarchMoney() as mm:
         print("💰 Enhanced Transaction Filtering:")
         print("  • Filter by credit/debit transactions")
-        print("  • Filter by amount ranges (min/max)")  
+        print("  • Filter by amount ranges (min/max)")
         print("  • Combine with existing filters")
         print()
-        
+
         print("🔧 Example Usage:")
-        print("""
+        print(
+            """
         # Get only credit transactions (income)
         income = await mm.get_transactions(is_credit=True)
         
@@ -96,7 +99,8 @@ async def demo_transaction_filtering():
             is_credit=False,
             abs_amount_range=[100.0, None]
         )
-        """)
+        """
+        )
         print("✅ Advanced filtering enables precise transaction analysis!")
 
 
@@ -104,16 +108,17 @@ async def demo_transaction_summary_card():
     """Demonstrate transaction summary card (PR #140)."""
     print("\n🔹 Transaction Summary Card (PR #140)")
     print("-" * 50)
-    
+
     async with MonarchMoney() as mm:
         print("📊 Enhanced Transaction Summary:")
         print("  • More accurate transaction counts")
         print("  • Matches Monarch UI exactly")
         print("  • Better data consistency")
         print()
-        
+
         print("🔧 Example Usage:")
-        print("""
+        print(
+            """
         # Get enhanced transaction summary (matches UI)
         summary_card = await mm._transaction_service.get_transactions_summary_card()
         
@@ -122,7 +127,8 @@ async def demo_transaction_summary_card():
         
         print(f"Standard count: {standard_summary['count']}")
         print(f"UI-accurate count: {summary_card['totalTransactionsCount']}")
-        """)
+        """
+        )
         print("✅ Summary card provides UI-consistent transaction counts!")
 
 
@@ -130,7 +136,7 @@ async def demo_categories_merchants_api():
     """Demonstrate categories and merchants API (PR #128)."""
     print("\n🔹 Categories and Merchants API (PR #128)")
     print("-" * 50)
-    
+
     async with MonarchMoney() as mm:
         print("🏪 Categories & Merchants Management:")
         print("  • get_transaction_categories() - All available categories")
@@ -138,9 +144,10 @@ async def demo_categories_merchants_api():
         print("  • get_merchant_details() - Detailed merchant information")
         print("  • get_category_details() - Category statistics & insights")
         print()
-        
+
         print("🔧 Example Usage:")
-        print("""
+        print(
+            """
         # Get all transaction categories
         categories = await mm._transaction_service.get_transaction_categories()
         
@@ -155,7 +162,8 @@ async def demo_categories_merchants_api():
         
         # Get category statistics and top merchants
         category_details = await mm._transaction_service.get_category_details('category_456')
-        """)
+        """
+        )
         print("✅ Categories & merchants APIs enable advanced transaction management!")
 
 
@@ -163,17 +171,26 @@ async def demo_service_architecture():
     """Demonstrate the service-oriented architecture benefits."""
     print("\n🔹 Service-Oriented Architecture Benefits")
     print("-" * 50)
-    
+
     async with MonarchMoney() as mm:
         print("🏗️ Clean Service Organization:")
-        print(f"  • InvestmentService: {len([m for m in dir(mm._investment_service) if not m.startswith('_')])} methods")
-        print(f"  • TransactionService: {len([m for m in dir(mm._transaction_service) if not m.startswith('_')])} methods")
-        print(f"  • AccountService: {len([m for m in dir(mm._account_service) if not m.startswith('_')])} methods")
-        print(f"  • AuthenticationService: {len([m for m in dir(mm._auth_service) if not m.startswith('_')])} methods")
+        print(
+            f"  • InvestmentService: {len([m for m in dir(mm._investment_service) if not m.startswith('_')])} methods"
+        )
+        print(
+            f"  • TransactionService: {len([m for m in dir(mm._transaction_service) if not m.startswith('_')])} methods"
+        )
+        print(
+            f"  • AccountService: {len([m for m in dir(mm._account_service) if not m.startswith('_')])} methods"
+        )
+        print(
+            f"  • AuthenticationService: {len([m for m in dir(mm._auth_service) if not m.startswith('_')])} methods"
+        )
         print()
-        
+
         print("💡 Direct Service Access:")
-        print("""
+        print(
+            """
         # Access services directly for advanced operations
         investment_service = mm._investment_service
         transaction_service = mm._transaction_service
@@ -182,7 +199,8 @@ async def demo_service_architecture():
         # Or use convenience methods on main client
         accounts = await mm.get_accounts()  # → AccountService
         transactions = await mm.get_transactions()  # → TransactionService  
-        """)
+        """
+        )
         print("✅ Services provide clean separation of concerns!")
 
 
@@ -190,7 +208,7 @@ async def demo_performance_features():
     """Demonstrate performance optimizations."""
     print("\n🔹 Performance Optimizations")
     print("-" * 50)
-    
+
     async with MonarchMoney() as mm:
         print("⚡ Advanced Performance Features:")
         print("  • GraphQL query caching with TTL")
@@ -199,7 +217,7 @@ async def demo_performance_features():
         print("  • Performance monitoring and metrics")
         print("  • Error recovery with automatic retry")
         print()
-        
+
         # Show performance stats
         stats = mm.get_performance_stats()
         print(f"📈 Performance Stats:")
@@ -207,7 +225,7 @@ async def demo_performance_features():
         print(f"  Operations Monitored: {len(stats.get('operations', {}))}")
         print(f"  Slow Operations: {len(stats.get('slow_operations', []))}")
         print()
-        
+
         print("✅ Enterprise-grade performance optimizations active!")
 
 
@@ -217,25 +235,25 @@ async def main():
     print("=" * 60)
     print("Showcasing valuable features implemented from community PRs")
     print()
-    
+
     try:
         await demo_holdings_management()
         await demo_transaction_filtering()
-        await demo_transaction_summary_card() 
+        await demo_transaction_summary_card()
         await demo_categories_merchants_api()
         await demo_service_architecture()
         await demo_performance_features()
-        
+
         print("\n" + "=" * 60)
         print("🎉 Community PR Features Demo Complete!")
         print("   All features are ready for production use.")
         print("   These PRs add significant value to the library!")
         print("=" * 60)
-        
+
     except Exception as e:
         print(f"❌ Demo failed: {e}")
         return 1
-    
+
     return 0
 
 
