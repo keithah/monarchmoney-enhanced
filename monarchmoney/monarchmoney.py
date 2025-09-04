@@ -365,6 +365,44 @@ class MonarchMoney(object):
             variables={"search": "", "limit": 100},
         )
 
+    async def get_edit_merchant(self, merchant_id: str) -> Dict[str, Any]:
+        """
+        Get merchant information for editing, including recurring transaction settings.
+
+        This method provides merchant information specifically designed for editing 
+        merchant settings, including whether the merchant has active recurring 
+        transaction streams and the details of those streams.
+
+        Args:
+            merchant_id: ID of the merchant to get edit information for
+
+        Returns:
+            Merchant edit information including:
+            - Basic details (id, name, logoUrl)  
+            - Transaction and rule counts
+            - Whether merchant can be deleted
+            - Active recurring stream status and details
+
+        Raises:
+            LoginFailedException: If not authenticated
+            ValidationError: If merchant_id is invalid
+
+        Example:
+            # Get merchant edit information
+            edit_info = await mm.get_edit_merchant("104754400339336479")
+            merchant = edit_info["merchant"]
+            
+            print(f"Merchant: {merchant['name']}")
+            print(f"Transactions: {merchant['transactionCount']}")
+            
+            if merchant["hasActiveRecurringStreams"]:
+                stream = merchant["recurringTransactionStream"]  
+                print(f"Recurring: {stream['frequency']} - ${stream['amount']}")
+                # Can then mark as not recurring using the stream ID
+                await mm.mark_stream_as_not_recurring(stream['id'])
+        """
+        return await self._transaction_service.get_edit_merchant(merchant_id)
+
     async def get_account_type_options(self) -> Dict[str, Any]:
         """
         Retrieves a list of available account types and their subtypes.
@@ -4939,6 +4977,34 @@ class MonarchMoney(object):
         return await self.gql_call(
             "Web_GetUpcomingRecurringTransactionItems", query, variables
         )
+
+    async def mark_stream_as_not_recurring(self, stream_id: str) -> bool:
+        """
+        Mark a recurring transaction stream as not recurring (disable it).
+
+        This stops Monarch Money from treating transactions from this merchant
+        as part of a recurring pattern, which can be useful when:
+        - A subscription has been cancelled but old transactions still exist
+        - One-time purchases from a merchant are being incorrectly grouped as recurring
+        - You want to remove predictive forecasting for a specific merchant
+
+        Args:
+            stream_id: ID of the recurring stream to disable
+
+        Returns:
+            True if successfully marked as not recurring, False otherwise
+
+        Raises:
+            LoginFailedException: If not authenticated
+            ValidationError: If stream_id is invalid
+
+        Example:
+            # Mark Amazon purchases as not recurring
+            success = await mm.mark_stream_as_not_recurring("135553558010567728")
+            if success:
+                print("Stream marked as not recurring")
+        """
+        return await self._transaction_service.mark_stream_as_not_recurring(stream_id)
 
     async def get_bills(
         self,

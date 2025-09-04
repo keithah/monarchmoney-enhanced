@@ -183,6 +183,8 @@ This enhanced library provides **comprehensive financial data access**:
 - `get_transaction_details(transaction_id)` - Detailed transaction data
 - `get_transaction_splits(transaction_id)` - Transaction split information
 - `get_transaction_tags()` - All configured transaction tags
+- `get_recurring_transactions()` - **Recurring transaction streams and patterns**
+- `mark_stream_as_not_recurring(stream_id)` - **Mark merchants as not recurring**
 - `get_net_worth_history()` - Net worth tracking over time
 - `is_accounts_refresh_complete()` - Account refresh status
 
@@ -218,6 +220,12 @@ This enhanced library provides **comprehensive financial data access**:
 - `delete_transaction_categories(category_ids)` - Delete multiple categories
 - `create_transaction_tag(name)` - Create transaction tags
 - `set_transaction_tags(transaction_id, tag_ids)` - Set tags on transactions
+
+### 🔄 **Recurring Transaction Management**
+- `mark_stream_as_not_recurring(stream_id)` - **Mark merchants as not recurring**
+- `get_edit_merchant(merchant_id)` - **Get merchant edit info with recurring details**
+- `get_recurring_transactions()` - Get upcoming recurring transactions
+- `review_recurring_stream(stream_id, status)` - Review and approve recurring streams
 
 ## Session Management Methods
 

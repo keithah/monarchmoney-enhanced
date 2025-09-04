@@ -2454,6 +2454,73 @@ class TransactionService(BaseService):
             operation="GetMerchantDetails", query=query, variables=variables
         )
 
+    async def get_edit_merchant(self, merchant_id: str) -> Dict[str, Any]:
+        """
+        Get merchant information for editing, including recurring transaction settings.
+
+        This method is specifically designed for editing merchant settings and
+        includes recurring transaction stream information that's needed for
+        managing merchant recurring behavior.
+
+        Args:
+            merchant_id: ID of the merchant to get edit information for
+
+        Returns:
+            Merchant edit information including:
+            - Basic merchant details (id, name, logoUrl)
+            - Transaction and rule counts
+            - Whether merchant can be deleted
+            - Recurring transaction stream details
+            - Active recurring stream status
+
+        Raises:
+            ValidationError: If merchant_id is invalid
+
+        Example:
+            # Get merchant edit info for managing recurring settings
+            edit_info = await mm._transaction_service.get_edit_merchant("104754400339336479")
+            has_recurring = edit_info["merchant"]["hasActiveRecurringStreams"]
+            if has_recurring:
+                stream = edit_info["merchant"]["recurringTransactionStream"]
+                print(f"Recurring: {stream['frequency']} - ${stream['amount']}")
+        """
+        merchant_id = InputValidator.validate_string_length(
+            merchant_id, "merchant_id", 1, 100
+        )
+
+        self.logger.info("Fetching merchant edit information", merchant_id=merchant_id)
+
+        variables = {"merchantId": merchant_id}
+
+        query = gql(
+            """
+            query Common_GetEditMerchant($merchantId: ID!) {
+                merchant(id: $merchantId) {
+                    id
+                    name
+                    logoUrl
+                    transactionCount
+                    ruleCount
+                    canBeDeleted
+                    hasActiveRecurringStreams
+                    recurringTransactionStream {
+                        id
+                        frequency
+                        amount
+                        baseDate
+                        isActive
+                        __typename
+                    }
+                    __typename
+                }
+            }
+        """
+        )
+
+        return await self._execute_query(
+            operation="Common_GetEditMerchant", query=query, variables=variables
+        )
+
     async def get_category_details(self, category_id: str) -> Dict[str, Any]:
         """
         Get detailed information about a specific category.
