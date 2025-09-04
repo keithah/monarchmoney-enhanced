@@ -587,30 +587,50 @@ class AccountService(BaseService):
         )
 
     async def is_accounts_refresh_complete(
-        self, refresh_id: Optional[str] = None
+        self, refresh_id: Optional[str] = None, account_ids: Optional[List[str]] = None
     ) -> bool:
         """
         Check if account refresh is complete.
 
         Args:
             refresh_id: Optional specific refresh ID to check
+            account_ids: Optional list of account IDs to check (if provided, only these accounts need to be complete)
 
         Returns:
             True if refresh is complete, False otherwise
         """
-        self.logger.info("Checking accounts refresh status", refresh_id=refresh_id)
+        self.logger.info(
+            "Checking accounts refresh status", 
+            refresh_id=refresh_id,
+            account_ids_count=len(account_ids) if account_ids else None
+        )
+
+        # Validate account IDs if provided
+        if account_ids:
+            account_ids = [
+                InputValidator.validate_account_id(account_id)
+                for account_id in account_ids
+            ]
 
         variables = {}
         if refresh_id:
             variables["refreshId"] = refresh_id
+        if account_ids:
+            variables["accountIds"] = account_ids
 
         query = gql(
             """
-            query ForceRefreshAccountsQuery($refreshId: String) {
-                accountsRefreshStatus(refreshId: $refreshId) {
+            query ForceRefreshAccountsQuery($refreshId: String, $accountIds: [String!]) {
+                accountsRefreshStatus(refreshId: $refreshId, accountIds: $accountIds) {
                     status
                     isComplete
                     message
+                    accountsStatus {
+                        accountId
+                        isComplete
+                        status
+                        __typename
+                    }
                     __typename
                 }
             }

@@ -1897,3 +1897,261 @@ FileNotFoundError: Session file not found: /tmp/nonexistent.pickle
 2025-09-03 20:21:10,939 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
 2025-09-03 20:21:10,940 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
 2025-09-03 20:21:10,940 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-03 21:39:40,983 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,047 - AccountService - INFO - info:64 - Fetching accounts
+2025-09-03 21:39:41,051 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,075 - SettingsService - INFO - info:64 - Fetching user profile information
+2025-09-03 21:39:41,080 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,102 - AccountService - INFO - info:64 - Fetching accounts
+2025-09-03 21:39:41,104 - AccountService - ERROR - error:76 - GraphQL operation failed - {'operation': 'GetAccounts', 'error': 'Make sure you call login() first or provide a session token!'}
+2025-09-03 21:39:41,104 - ErrorHandlers - WARNING - warning:69 - Operation failed, attempting recovery - {'operation': '_execute_query', 'attempt': 0, 'error_type': 'LoginFailedException', 'error_message': 'Make sure you call login() first or provide a session token!'}
+2025-09-03 21:39:41,104 - ErrorHandlers - INFO - info:62 - Attempting authentication recovery - {'operation': '_execute_query'}
+2025-09-03 21:39:41,104 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,126 - monarchmoney - ERROR - error:76 - Failed to load session - {'session_file': '.mm/mm_session.pickle'}
+Traceback (most recent call last):
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/error_handlers.py", line 304, in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/services/base_service.py", line 90, in _execute_query
+    result = await self.client.gql_call(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        operation=operation, graphql_query=query
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/monarchmoney.py", line 5046, in gql_call
+    return await retry_with_backoff(_execute)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/monarchmoney.py", line 86, in retry_with_backoff
+    return await func()
+           ^^^^^^^^^^^^
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/monarchmoney.py", line 5042, in _execute
+    return await self._get_graphql_client().execute_async(
+                 ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/monarchmoney.py", line 5495, in _get_graphql_client
+    raise LoginFailedException(
+        "Make sure you call login() first or provide a session token!"
+    )
+monarchmoney.exceptions.LoginFailedException: Make sure you call login() first or provide a session token!
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/session_storage.py", line 148, in load_session
+    raise FileNotFoundError(f"Session file not found: {session_file}")
+FileNotFoundError: Session file not found: .mm/mm_session.pickle
+2025-09-03 21:39:41,129 - AuthenticationService - ERROR - error:76 - Failed to load session - {'session_file': '.mm/mm_session.pickle', 'error': 'Session file not found: .mm/mm_session.pickle'}
+2025-09-03 21:39:41,129 - ErrorHandlers - ERROR - error:76 - Authentication recovery failed - {'error': 'Session file not found: .mm/mm_session.pickle'}
+2025-09-03 21:39:41,129 - ErrorHandlers - WARNING - warning:69 - No recovery strategy succeeded - {'error_type': 'LoginFailedException'}
+2025-09-03 21:39:41,129 - ErrorHandlers - ERROR - error:76 - Error recovery failed, aborting retries - {'operation': '_execute_query', 'attempt': 0}
+2025-09-03 21:39:41,131 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,151 - SettingsService - INFO - info:64 - Fetching user profile information
+2025-09-03 21:39:41,153 - SettingsService - ERROR - error:76 - GraphQL operation failed - {'operation': 'Common_GetMe', 'error': 'Make sure you call login() first or provide a session token!'}
+2025-09-03 21:39:41,153 - ErrorHandlers - WARNING - warning:69 - Operation failed, attempting recovery - {'operation': '_execute_query', 'attempt': 0, 'error_type': 'LoginFailedException', 'error_message': 'Make sure you call login() first or provide a session token!'}
+2025-09-03 21:39:41,153 - ErrorHandlers - INFO - info:62 - Attempting authentication recovery - {'operation': '_execute_query'}
+2025-09-03 21:39:41,153 - monarchmoney - ERROR - error:76 - Failed to load session - {'session_file': '.mm/mm_session.pickle'}
+Traceback (most recent call last):
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/error_handlers.py", line 304, in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/services/base_service.py", line 90, in _execute_query
+    result = await self.client.gql_call(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        operation=operation, graphql_query=query
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/monarchmoney.py", line 5046, in gql_call
+    return await retry_with_backoff(_execute)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/monarchmoney.py", line 86, in retry_with_backoff
+    return await func()
+           ^^^^^^^^^^^^
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/monarchmoney.py", line 5042, in _execute
+    return await self._get_graphql_client().execute_async(
+                 ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/monarchmoney.py", line 5495, in _get_graphql_client
+    raise LoginFailedException(
+        "Make sure you call login() first or provide a session token!"
+    )
+monarchmoney.exceptions.LoginFailedException: Make sure you call login() first or provide a session token!
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/session_storage.py", line 148, in load_session
+    raise FileNotFoundError(f"Session file not found: {session_file}")
+FileNotFoundError: Session file not found: .mm/mm_session.pickle
+2025-09-03 21:39:41,154 - AuthenticationService - ERROR - error:76 - Failed to load session - {'session_file': '.mm/mm_session.pickle', 'error': 'Session file not found: .mm/mm_session.pickle'}
+2025-09-03 21:39:41,154 - ErrorHandlers - ERROR - error:76 - Authentication recovery failed - {'error': 'Session file not found: .mm/mm_session.pickle'}
+2025-09-03 21:39:41,154 - ErrorHandlers - WARNING - warning:69 - No recovery strategy succeeded - {'error_type': 'LoginFailedException'}
+2025-09-03 21:39:41,154 - ErrorHandlers - ERROR - error:76 - Error recovery failed, aborting retries - {'operation': '_execute_query', 'attempt': 0}
+2025-09-03 21:39:41,156 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,184 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,209 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,241 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,262 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,284 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,305 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,326 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,348 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,368 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,388 - AuthenticationService - INFO - info:62 - Attempting user login - {'email': 'test@example.com'}
+2025-09-03 21:39:41,389 - AuthenticationService - INFO - info:62 - Login successful - {'email': 'test@example.com'}
+2025-09-03 21:39:41,392 - AuthenticationService - INFO - info:62 - Session saved successfully - {'session_file': '/private/var/folders/pd/vzt389g972j9mlrm4lwbyf780000gn/T/pytest-of-keith/pytest-16/test_successful_login0/test_session.pickle'}
+2025-09-03 21:39:41,394 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,414 - AuthenticationService - INFO - info:62 - Attempting user login - {'email': 'test@example.com'}
+2025-09-03 21:39:41,416 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,438 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,458 - monarchmoney - INFO - info:62 - Session saved securely - {'session_file': '/private/var/folders/pd/vzt389g972j9mlrm4lwbyf780000gn/T/pytest-of-keith/pytest-16/test_save_and_load_session0/test_session.pickle'}
+2025-09-03 21:39:41,458 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,478 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': '/private/var/folders/pd/vzt389g972j9mlrm4lwbyf780000gn/T/pytest-of-keith/pytest-16/test_save_and_load_session0/test_session.pickle'}
+2025-09-03 21:39:41,479 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,498 - monarchmoney - ERROR - error:76 - Failed to load session - {'session_file': '/nonexistent/session.pickle'}
+Traceback (most recent call last):
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/session_storage.py", line 148, in load_session
+    raise FileNotFoundError(f"Session file not found: {session_file}")
+FileNotFoundError: Session file not found: /nonexistent/session.pickle
+2025-09-03 21:39:41,499 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,519 - monarchmoney - INFO - info:62 - Session saved securely - {'session_file': '/private/var/folders/pd/vzt389g972j9mlrm4lwbyf780000gn/T/pytest-of-keith/pytest-16/test_delete_session0/test_session.pickle'}
+2025-09-03 21:39:41,520 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,541 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,561 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,581 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,602 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,622 - monarchmoney - INFO - info:62 - Session saved securely - {'session_file': '/private/var/folders/pd/vzt389g972j9mlrm4lwbyf780000gn/T/pytest-of-keith/pytest-16/test_enhanced_session_format0/test_session.pickle'}
+2025-09-03 21:39:41,622 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,642 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': '/private/var/folders/pd/vzt389g972j9mlrm4lwbyf780000gn/T/pytest-of-keith/pytest-16/test_enhanced_session_format0/test_session.pickle'}
+2025-09-03 21:39:41,644 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,663 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': '/private/var/folders/pd/vzt389g972j9mlrm4lwbyf780000gn/T/pytest-of-keith/pytest-16/test_legacy_session_compatibil0/legacy_session.pickle'}
+2025-09-03 21:39:41,663 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': '/private/var/folders/pd/vzt389g972j9mlrm4lwbyf780000gn/T/pytest-of-keith/pytest-16/test_legacy_session_compatibil0/legacy_session.pickle'}
+2025-09-03 21:39:41,664 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': '/private/var/folders/pd/vzt389g972j9mlrm4lwbyf780000gn/T/pytest-of-keith/pytest-16/test_legacy_session_compatibil0/legacy_session.pickle', 'to_file': '/private/var/folders/pd/vzt389g972j9mlrm4lwbyf780000gn/T/pytest-of-keith/pytest-16/test_legacy_session_compatibil0/legacy_session.json'}
+2025-09-03 21:39:41,664 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': '/private/var/folders/pd/vzt389g972j9mlrm4lwbyf780000gn/T/pytest-of-keith/pytest-16/test_legacy_session_compatibil0/legacy_session.json'}
+2025-09-03 21:39:41,665 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,684 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,705 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,725 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,746 - monarchmoney - WARNING - warning:69 - Rate limit exceeded, retrying - {'delay': 1.6052730561564934, 'attempt': 1, 'max_retries': 3}
+2025-09-03 21:39:41,746 - monarchmoney - WARNING - warning:69 - Rate limit exceeded, retrying - {'delay': 2.3883754721701007, 'attempt': 2, 'max_retries': 3}
+2025-09-03 21:39:41,749 - monarchmoney - WARNING - warning:69 - Server error, retrying - {'status_code': 500, 'delay': 1.2038918245895842, 'attempt': 1, 'max_retries': 2}
+2025-09-03 21:39:41,749 - monarchmoney - WARNING - warning:69 - Server error, retrying - {'status_code': 500, 'delay': 1.5169413537741998, 'attempt': 2, 'max_retries': 2}
+2025-09-03 21:39:41,750 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,770 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,790 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,811 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,832 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,852 - AccountService - INFO - info:64 - Fetching accounts
+2025-09-03 21:39:41,853 - AccountService - ERROR - error:76 - GraphQL operation failed - {'operation': 'GetAccounts', 'error': 'Make sure you call login() first or provide a session token!'}
+2025-09-03 21:39:41,853 - ErrorHandlers - WARNING - warning:69 - Operation failed, attempting recovery - {'operation': '_execute_query', 'attempt': 0, 'error_type': 'LoginFailedException', 'error_message': 'Make sure you call login() first or provide a session token!'}
+2025-09-03 21:39:41,853 - ErrorHandlers - INFO - info:62 - Attempting authentication recovery - {'operation': '_execute_query'}
+2025-09-03 21:39:41,853 - monarchmoney - ERROR - error:76 - Failed to load session - {'session_file': '/tmp/nonexistent.pickle'}
+Traceback (most recent call last):
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/error_handlers.py", line 304, in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/services/base_service.py", line 90, in _execute_query
+    result = await self.client.gql_call(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        operation=operation, graphql_query=query
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/monarchmoney.py", line 5046, in gql_call
+    return await retry_with_backoff(_execute)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/monarchmoney.py", line 86, in retry_with_backoff
+    return await func()
+           ^^^^^^^^^^^^
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/monarchmoney.py", line 5042, in _execute
+    return await self._get_graphql_client().execute_async(
+                 ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/monarchmoney.py", line 5495, in _get_graphql_client
+    raise LoginFailedException(
+        "Make sure you call login() first or provide a session token!"
+    )
+monarchmoney.exceptions.LoginFailedException: Make sure you call login() first or provide a session token!
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/session_storage.py", line 148, in load_session
+    raise FileNotFoundError(f"Session file not found: {session_file}")
+FileNotFoundError: Session file not found: /tmp/nonexistent.pickle
+2025-09-03 21:39:41,854 - AuthenticationService - ERROR - error:76 - Failed to load session - {'session_file': '/tmp/nonexistent.pickle', 'error': 'Session file not found: /tmp/nonexistent.pickle'}
+2025-09-03 21:39:41,854 - ErrorHandlers - ERROR - error:76 - Authentication recovery failed - {'error': 'Session file not found: /tmp/nonexistent.pickle'}
+2025-09-03 21:39:41,854 - ErrorHandlers - WARNING - warning:69 - No recovery strategy succeeded - {'error_type': 'LoginFailedException'}
+2025-09-03 21:39:41,854 - ErrorHandlers - ERROR - error:76 - Error recovery failed, aborting retries - {'operation': '_execute_query', 'attempt': 0}
+2025-09-03 21:39:41,856 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,878 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,902 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,922 - AccountService - INFO - info:64 - Fetching accounts
+2025-09-03 21:39:41,924 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,946 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,968 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:41,988 - monarchmoney - INFO - info:62 - Session saved securely - {'session_file': '/private/var/folders/pd/vzt389g972j9mlrm4lwbyf780000gn/T/pytest-of-keith/pytest-16/test_session_saving_consistenc0/test_session.pickle'}
+2025-09-03 21:39:41,989 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:42,009 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,009 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,010 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-03 21:39:42,010 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-03 21:39:42,019 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:42,038 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,038 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,039 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-03 21:39:42,039 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-03 21:39:42,043 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:42,063 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,063 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,064 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-03 21:39:42,064 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-03 21:39:42,067 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:42,087 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,087 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,087 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-03 21:39:42,087 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-03 21:39:42,089 - AccountService - INFO - info:64 - Fetching accounts
+2025-09-03 21:39:42,092 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:42,112 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,112 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,113 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-03 21:39:42,113 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-03 21:39:42,117 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:42,137 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,137 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,137 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-03 21:39:42,137 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-03 21:39:42,144 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:42,163 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,163 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,164 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-03 21:39:42,164 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-03 21:39:42,167 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:42,187 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,187 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,187 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-03 21:39:42,187 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-03 21:39:42,191 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:42,211 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,211 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,211 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-03 21:39:42,211 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-03 21:39:42,215 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:42,235 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,235 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,236 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-03 21:39:42,236 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-03 21:39:42,240 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:42,259 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,259 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,260 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-03 21:39:42,260 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-03 21:39:42,263 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:42,283 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,284 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,284 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-03 21:39:42,284 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-03 21:39:42,287 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:39:42,307 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,307 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-03 21:39:42,309 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-03 21:39:42,309 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}

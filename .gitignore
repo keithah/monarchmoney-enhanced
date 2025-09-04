@@ -35,3 +35,4 @@ __pycache__/
 coverage.xml
 dist/
 build/
+venv/
