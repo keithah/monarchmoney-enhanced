@@ -113,11 +113,11 @@ def demo_error_formatting():
     print("🔍 Error Message Formatting Demo")
     print("=" * 50)
 
-    from monarchmoney.error_handlers import ErrorMessageFormatter, ErrorContext
+    from monarchmoney.error_handlers import ErrorContext, ErrorMessageFormatter
     from monarchmoney.exceptions import (
         AuthenticationError,
-        RateLimitError,
         NetworkError,
+        RateLimitError,
     )
 
     # Demo different error types

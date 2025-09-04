@@ -10,7 +10,7 @@ managing recurring transaction streams and calendar items.
 import asyncio
 import json
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 from monarchmoney import MonarchMoney
 
