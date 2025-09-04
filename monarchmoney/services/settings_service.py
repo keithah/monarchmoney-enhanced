@@ -156,14 +156,14 @@ class SettingsService(BaseService):
             """
             mutation UpdateUserSettings(
                 $timezone: String,
-                $currency: String, 
+                $currency: String,
                 $dateFormat: String,
                 $emailNotifications: Boolean
             ) {
                 updateUserSettings(
                     timezone: $timezone,
                     currency: $currency,
-                    dateFormat: $dateFormat, 
+                    dateFormat: $dateFormat,
                     emailNotifications: $emailNotifications
                 ) {
                     me {

@@ -600,9 +600,9 @@ class AccountService(BaseService):
             True if refresh is complete, False otherwise
         """
         self.logger.info(
-            "Checking accounts refresh status", 
+            "Checking accounts refresh status",
             refresh_id=refresh_id,
-            account_ids_count=len(account_ids) if account_ids else None
+            account_ids_count=len(account_ids) if account_ids else None,
         )
 
         # Validate account IDs if provided

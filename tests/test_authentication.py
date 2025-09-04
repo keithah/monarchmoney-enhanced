@@ -35,31 +35,31 @@ class TestLogin:
         class MockResponse:
             def __init__(self):
                 self.status = 200
-                
+
             @property
             def ok(self):
                 return 200 <= self.status < 300
-                
+
             async def json(self):
                 return mock_successful_login_response
-                
+
             async def __aenter__(self):
                 return self
-                
+
             async def __aexit__(self, exc_type, exc_val, exc_tb):
                 return None
-        
-        # Create custom async context manager for session  
+
+        # Create custom async context manager for session
         class MockSession:
             def __init__(self):
                 pass
-            
+
             def post(self, *args, **kwargs):
                 return MockResponse()
-                
+
             async def __aenter__(self):
                 return self
-                
+
             async def __aexit__(self, exc_type, exc_val, exc_tb):
                 return None
 
@@ -83,13 +83,13 @@ class TestLogin:
         class MockSession:
             def __init__(self):
                 pass
-            
+
             def post(self, *args, **kwargs):
                 return mock_mfa_required_response
-                
+
             async def __aenter__(self):
                 return self
-                
+
             async def __aexit__(self, exc_type, exc_val, exc_tb):
                 return None
 

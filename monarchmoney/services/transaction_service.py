@@ -956,7 +956,7 @@ class TransactionService(BaseService):
         query = gql(
             """
             query Common_GetRecurringStreams(
-                $includeLiabilities: Boolean, 
+                $includeLiabilities: Boolean,
                 $includePending: Boolean,
                 $filters: RecurringTransactionFilter
             ) {

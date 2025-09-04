@@ -8,14 +8,13 @@ import os
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
 import oathtool
-from aiohttp import ClientSession, FormData
+from aiohttp import ClientSession
 from gql import gql
 
 from ..exceptions import (
     AuthenticationError,
     InvalidMFAError,
     MFARequiredError,
-    ServerError,
     ValidationError,
 )
 from ..session_storage import SecureSessionStorage, get_secure_storage
@@ -369,9 +368,9 @@ class AuthenticationService(BaseService):
                     ) as response:
                         login_response = await response.json()
                         self.logger.debug(
-                            "Login response received", 
+                            "Login response received",
                             status=response.status,
-                            response=login_response
+                            response=login_response,
                         )
 
                         if response.status == 404:
@@ -386,21 +385,26 @@ class AuthenticationService(BaseService):
                                 # Use already parsed response
                                 error_code = login_response.get("error_code", "")
                                 detail = login_response.get("detail", "")
-                                
+
                                 self.logger.debug(
                                     "403 response details",
                                     error_code=error_code,
                                     detail=detail,
-                                    full_response=login_response
+                                    full_response=login_response,
                                 )
-                                
+
                                 # Check for various MFA indicators
-                                if (error_code == "MFA_REQUIRED" or 
-                                    "Multi-Factor Auth Required" in str(login_response) or
-                                    "MFA is required" in detail):
-                                    
-                                    self.logger.info("MFA required detected, attempting MFA submission")
-                                    
+                                if (
+                                    error_code == "MFA_REQUIRED"
+                                    or "Multi-Factor Auth Required"
+                                    in str(login_response)
+                                    or "MFA is required" in detail
+                                ):
+
+                                    self.logger.info(
+                                        "MFA required detected, attempting MFA submission"
+                                    )
+
                                     if mfa_secret_key:
                                         # We have MFA secret, try to submit MFA
                                         login_response = await self._submit_mfa_login(
@@ -507,16 +511,19 @@ class AuthenticationService(BaseService):
                 json=mfa_data,
                 headers=headers,
             ) as response:
-                
+
                 response_json = await response.json()
-                
+
                 if not response.ok:
                     if response.status == 400:
                         # Invalid MFA code
                         error_detail = response_json.get("detail", "")
-                        if "invalid" in error_detail.lower() or "incorrect" in error_detail.lower():
+                        if (
+                            "invalid" in error_detail.lower()
+                            or "incorrect" in error_detail.lower()
+                        ):
                             raise InvalidMFAError("Invalid MFA code provided")
-                    
+
                     raise AuthenticationError(
                         f"MFA submission failed with status {response.status}: {response_json}"
                     )
@@ -527,7 +534,7 @@ class AuthenticationService(BaseService):
         except Exception as e:
             if isinstance(e, (AuthenticationError, InvalidMFAError)):
                 raise
-            
+
             self.logger.error("MFA submission error", error=str(e))
             raise AuthenticationError(f"MFA submission failed: {e}")
 
@@ -567,7 +574,7 @@ class AuthenticationService(BaseService):
             ) {
                 login(
                     email: $email,
-                    password: $password, 
+                    password: $password,
                     totpToken: $totpToken,
                     rememberMe: $rememberMe
                 ) {
@@ -747,7 +754,7 @@ class AuthenticationService(BaseService):
                     errors {
                         field
                         messages
-                        __typename  
+                        __typename
                     }
                     __typename
                 }

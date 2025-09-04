@@ -38,7 +38,7 @@ async def demo_holdings_management():
             """
         # Find existing AAPL holding
         aapl_holding = await mm._investment_service.get_holding_by_ticker('AAPL')
-        
+
         # Add 10 shares of MSFT to investment account
         new_holding = await mm._investment_service.add_holding_by_ticker(
             account_id='account_123',
@@ -46,10 +46,10 @@ async def demo_holdings_management():
             quantity=10,
             basis_per_share=150.00
         )
-        
+
         # Remove all TSLA holdings
         success = await mm._investment_service.remove_holding_by_ticker('TSLA')
-        
+
         # Update quantity of existing holding
         updated = await mm._investment_service.update_holding_quantity(
             holding_id='holding_456',
@@ -77,22 +77,22 @@ async def demo_transaction_filtering():
             """
         # Get only credit transactions (income)
         income = await mm.get_transactions(is_credit=True)
-        
+
         # Get only debit transactions (expenses)
         expenses = await mm.get_transactions(is_credit=False)
-        
+
         # Get transactions >= $100
         large_txns = await mm.get_transactions(abs_amount_range=[100.0, None])
-        
+
         # Get transactions <= $25
         small_txns = await mm.get_transactions(abs_amount_range=[None, 25.0])
-        
+
         # Get transactions between $50-$200
         medium_txns = await mm.get_transactions(abs_amount_range=[50.0, 200.0])
-        
+
         # Get transactions exactly $99.99
         specific = await mm.get_transactions(abs_amount_range=[99.99, 99.99])
-        
+
         # Combine with date filtering
         recent_large = await mm.get_transactions(
             start_date='2024-01-01',
@@ -121,10 +121,10 @@ async def demo_transaction_summary_card():
             """
         # Get enhanced transaction summary (matches UI)
         summary_card = await mm._transaction_service.get_transactions_summary_card()
-        
+
         # Compare with standard summary
         standard_summary = await mm._transaction_service.get_transactions_summary()
-        
+
         print(f"Standard count: {standard_summary['count']}")
         print(f"UI-accurate count: {summary_card['totalTransactionsCount']}")
         """
@@ -150,16 +150,16 @@ async def demo_categories_merchants_api():
             """
         # Get all transaction categories
         categories = await mm._transaction_service.get_transaction_categories()
-        
+
         # Search for merchants
         starbucks = await mm._transaction_service.get_merchants(search='Starbucks')
-        
+
         # Get all merchants (paginated)
         merchants = await mm._transaction_service.get_merchants(limit=50)
-        
+
         # Get detailed merchant info with recent transactions
         merchant_details = await mm._transaction_service.get_merchant_details('merchant_123')
-        
+
         # Get category statistics and top merchants
         category_details = await mm._transaction_service.get_category_details('category_456')
         """
@@ -195,10 +195,10 @@ async def demo_service_architecture():
         investment_service = mm._investment_service
         transaction_service = mm._transaction_service
         account_service = mm._account_service
-        
+
         # Or use convenience methods on main client
         accounts = await mm.get_accounts()  # → AccountService
-        transactions = await mm.get_transactions()  # → TransactionService  
+        transactions = await mm.get_transactions()  # → TransactionService
         """
         )
         print("✅ Services provide clean separation of concerns!")
