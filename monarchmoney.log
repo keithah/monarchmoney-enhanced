@@ -2155,3 +2155,34 @@ FileNotFoundError: Session file not found: /tmp/nonexistent.pickle
 2025-09-03 21:39:42,307 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
 2025-09-03 21:39:42,309 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
 2025-09-03 21:39:42,309 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-03 21:41:31,708 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:41:31,735 - AuthenticationService - INFO - info:62 - Attempting user login - {'email': 'keith@hadm.net'}
+2025-09-03 21:42:02,654 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:42:02,680 - AuthenticationService - INFO - info:62 - Attempting user login - {'email': 'keith@hadm.net'}
+2025-09-03 21:42:18,492 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:42:18,517 - AuthenticationService - INFO - info:62 - Attempting user login - {'email': 'keith@hadm.net'}
+2025-09-03 21:42:18,931 - AuthenticationService - INFO - info:62 - Attempting user login - {'email': 'keith@hadm.net'}
+2025-09-03 21:44:00,404 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:44:00,435 - AuthenticationService - INFO - info:62 - Attempting user login - {'email': 'keith@hadm.net'}
+2025-09-03 21:44:00,657 - AuthenticationService - INFO - info:62 - Attempting user login - {'email': 'keith@hadm.net'}
+2025-09-03 21:44:15,215 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:44:15,244 - AuthenticationService - INFO - info:62 - Attempting user login - {'email': 'keith@hadm.net'}
+2025-09-03 21:44:15,440 - AuthenticationService - INFO - info:62 - Attempting user login - {'email': 'keith@hadm.net'}
+2025-09-03 21:44:26,172 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:44:26,201 - AuthenticationService - INFO - info:62 - Attempting user login - {'email': 'keith@hadm.net'}
+2025-09-03 21:44:26,409 - AuthenticationService - INFO - info:62 - Attempting user login - {'email': 'keith@hadm.net'}
+2025-09-03 21:44:45,739 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:44:45,768 - AuthenticationService - INFO - info:62 - Attempting user login - {'email': 'keith@hadm.net'}
+2025-09-03 21:44:46,180 - AuthenticationService - INFO - info:62 - Attempting user login - {'email': 'keith@hadm.net'}
+2025-09-03 21:48:28,272 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:48:28,302 - AuthenticationService - INFO - info:62 - Attempting user login - {'email': 'keith@hadm.net'}
+2025-09-03 21:48:29,996 - AuthenticationService - INFO - info:64 - MFA required detected, attempting MFA submission
+2025-09-03 21:48:29,997 - AuthenticationService - INFO - info:62 - Attempting user login - {'email': 'keith@hadm.net'}
+2025-09-03 21:48:31,805 - AuthenticationService - INFO - info:62 - Login successful - {'email': 'keith@hadm.net'}
+2025-09-03 21:48:31,805 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:48:31,831 - AuthenticationService - INFO - info:62 - Session saved successfully - {'session_file': '.mm/mm_session.pickle'}
+2025-09-03 21:48:31,831 - AccountService - INFO - info:64 - Fetching accounts
+2025-09-03 21:48:40,879 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:48:40,902 - AuthenticationService - INFO - info:62 - Attempting user login - {'email': 'keith@hadm.net'}
+2025-09-03 21:49:02,744 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:49:02,767 - AuthenticationService - INFO - info:62 - Attempting user login - {'email': 'keith@hadm.net'}

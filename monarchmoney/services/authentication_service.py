@@ -341,26 +341,37 @@ class AuthenticationService(BaseService):
             login_response = None
 
             async with ClientSession() as session:
-                form_data = FormData()
-                form_data.add_field("username", email)
-                form_data.add_field("password", password)
-                form_data.add_field("supports_mfa", "true")
+                # Create JSON payload
+                login_data = {
+                    "username": email,
+                    "password": password,
+                    "trusted_device": True,
+                    "supports_mfa": True,
+                    "supports_email_otp": True,
+                    "supports_recaptcha": True,
+                }
 
                 if mfa_secret_key:
                     # Generate TOTP code
                     totp_code = oathtool.generate_otp(mfa_secret_key)
-                    form_data.add_field("totp", totp_code)
+                    login_data["totp"] = totp_code
                     self.logger.debug("Added TOTP code to login request")
+
+                # Update headers for JSON
+                headers = self.client._headers.copy()
+                headers["Content-Type"] = "application/json"
 
                 try:
                     async with session.post(
                         MonarchMoneyEndpoints.getLoginEndpoint(),
-                        data=form_data,
-                        headers=self.client._headers,
+                        json=login_data,
+                        headers=headers,
                     ) as response:
                         login_response = await response.json()
                         self.logger.debug(
-                            "Login response received", status=response.status
+                            "Login response received", 
+                            status=response.status,
+                            response=login_response
                         )
 
                         if response.status == 404:
@@ -372,12 +383,34 @@ class AuthenticationService(BaseService):
 
                         if not response.ok:
                             if response.status == 403:
-                                # Check if this is MFA required
-                                response_json = await response.json()
-                                if "Multi-Factor Auth Required" in str(response_json):
-                                    raise MFARequiredError(
-                                        "Multi-factor authentication required"
-                                    )
+                                # Use already parsed response
+                                error_code = login_response.get("error_code", "")
+                                detail = login_response.get("detail", "")
+                                
+                                self.logger.debug(
+                                    "403 response details",
+                                    error_code=error_code,
+                                    detail=detail,
+                                    full_response=login_response
+                                )
+                                
+                                # Check for various MFA indicators
+                                if (error_code == "MFA_REQUIRED" or 
+                                    "Multi-Factor Auth Required" in str(login_response) or
+                                    "MFA is required" in detail):
+                                    
+                                    self.logger.info("MFA required detected, attempting MFA submission")
+                                    
+                                    if mfa_secret_key:
+                                        # We have MFA secret, try to submit MFA
+                                        login_response = await self._submit_mfa_login(
+                                            email, password, mfa_secret_key, session
+                                        )
+                                        return login_response
+                                    else:
+                                        raise MFARequiredError(
+                                            "Multi-factor authentication required"
+                                        )
 
                             raise AuthenticationError(
                                 f"Login failed with status {response.status}"
@@ -422,6 +455,81 @@ class AuthenticationService(BaseService):
             self.logger.info("Login successful", email=email)
 
         await retry_with_backoff(_attempt_login)
+
+    async def _submit_mfa_login(
+        self,
+        email: str,
+        password: str,
+        mfa_secret_key: str,
+        session: ClientSession,
+    ) -> Dict[str, Any]:
+        """
+        Submit MFA login after receiving MFA_REQUIRED response.
+
+        Args:
+            email: User's email address
+            password: User's password
+            mfa_secret_key: MFA secret key for TOTP generation
+            session: Active HTTP session
+
+        Returns:
+            Login response with authentication tokens
+
+        Raises:
+            AuthenticationError: If MFA submission fails
+            InvalidMFAError: If MFA code is invalid
+        """
+        from ..monarchmoney import MonarchMoneyEndpoints
+
+        # Generate TOTP code
+        totp_code = oathtool.generate_otp(mfa_secret_key)
+        self.logger.debug("Generated TOTP code for MFA submission")
+
+        # Create JSON payload for MFA submission
+        mfa_data = {
+            "username": email,
+            "password": password,
+            "totp": totp_code,
+            "trusted_device": True,
+            "supports_mfa": True,
+            "supports_email_otp": True,
+            "supports_recaptcha": True,
+        }
+
+        # Update headers for JSON
+        headers = self.client._headers.copy()
+        headers["Content-Type"] = "application/json"
+
+        try:
+            # Try the same login endpoint with MFA code
+            async with session.post(
+                MonarchMoneyEndpoints.getLoginEndpoint(),
+                json=mfa_data,
+                headers=headers,
+            ) as response:
+                
+                response_json = await response.json()
+                
+                if not response.ok:
+                    if response.status == 400:
+                        # Invalid MFA code
+                        error_detail = response_json.get("detail", "")
+                        if "invalid" in error_detail.lower() or "incorrect" in error_detail.lower():
+                            raise InvalidMFAError("Invalid MFA code provided")
+                    
+                    raise AuthenticationError(
+                        f"MFA submission failed with status {response.status}: {response_json}"
+                    )
+
+                self.logger.info("MFA login successful")
+                return response_json
+
+        except Exception as e:
+            if isinstance(e, (AuthenticationError, InvalidMFAError)):
+                raise
+            
+            self.logger.error("MFA submission error", error=str(e))
+            raise AuthenticationError(f"MFA submission failed: {e}")
 
     async def _login_user_graphql(
         self, email: str, password: str, mfa_secret_key: Optional[str] = None
@@ -534,16 +642,26 @@ class AuthenticationService(BaseService):
         self.logger.info("Performing MFA authentication", email=email)
 
         async with ClientSession() as session:
-            form_data = FormData()
-            form_data.add_field("username", email)
-            form_data.add_field("password", password)
-            form_data.add_field("totp", code)
+            # Create JSON payload
+            mfa_data = {
+                "username": email,
+                "password": password,
+                "totp": code,
+                "trusted_device": True,
+                "supports_mfa": True,
+                "supports_email_otp": True,
+                "supports_recaptcha": True,
+            }
+
+            # Update headers for JSON
+            headers = self.client._headers.copy()
+            headers["Content-Type"] = "application/json"
 
             try:
                 async with session.post(
                     MonarchMoneyEndpoints.getLoginEndpoint(),
-                    data=form_data,
-                    headers=self.client._headers,
+                    json=mfa_data,
+                    headers=headers,
                 ) as response:
                     if response.status == 404:
                         # Fallback to GraphQL MFA
