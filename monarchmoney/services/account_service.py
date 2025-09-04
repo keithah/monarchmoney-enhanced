@@ -43,13 +43,7 @@ class AccountService(BaseService):
                 accounts {
                     id
                     displayName
-                    syncDisabled
-                    isHidden
-                    isAsset
-                    mask
-                    displayBalance
                     currentBalance
-                    availableBalance
                     __typename
                 }
             }
