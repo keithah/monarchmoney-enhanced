@@ -1,7 +1,7 @@
 """
 Services package for MonarchMoney Enhanced.
 
-This package contains the refactored service classes that break down the 
+This package contains the refactored service classes that break down the
 original God Class into focused, single-responsibility components.
 """
 
