@@ -41,9 +41,38 @@ class AccountService(BaseService):
             """
             query GetAccounts {
                 accounts {
-                    ...AccountFields
+                    id
+                    displayName
+                    syncDisabled
+                    isHidden
+                    isAsset
+                    mask
+                    displayBalance
+                    currentBalance
+                    availableBalance
                     __typename
                 }
+            }
+        """
+        )
+
+        return await self._execute_query(operation="GetAccounts", query=query)
+
+    async def get_institutions(self) -> Dict[str, Any]:
+        """
+        Get all financial institutions.
+        
+        Note: This endpoint may be unstable and could return server errors.
+        If you encounter issues, use the institution data from individual accounts instead.
+
+        Returns:
+            List of financial institutions with metadata
+        """
+        self.logger.info("Fetching institutions")
+        
+        query = gql(
+            """
+            query GetInstitutions {
                 institutions {
                     id
                     name
@@ -55,52 +84,10 @@ class AccountService(BaseService):
                     __typename
                 }
             }
-
-            fragment AccountFields on Account {
-                id
-                displayName
-                syncDisabled
-                isHidden
-                isAsset
-                mask
-                createdAt
-                updatedAt
-                displayBalance
-                currentBalance
-                availableBalance
-                balance {
-                    current
-                    available
-                    limit
-                    __typename
-                }
-                type {
-                    name
-                    display
-                    group
-                    __typename
-                }
-                subtype {
-                    name
-                    display
-                    __typename
-                }
-                institution {
-                    id
-                    name
-                    logo {
-                        url
-                        __typename
-                    }
-                    primaryColor
-                    __typename
-                }
-                __typename
-            }
         """
         )
 
-        return await self._execute_query(operation="GetAccounts", query=query)
+        return await self._execute_query(operation="GetInstitutions", query=query)
 
     async def get_account_type_options(self) -> Dict[str, Any]:
         """
