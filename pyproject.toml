@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "monarchmoney-enhanced"
-version = "0.6.1"
+version = "0.6.2"
 description = "Enhanced Monarch Money API with service-oriented architecture, performance optimizations, and advanced error recovery"
 readme = "README.md"
 authors = [
