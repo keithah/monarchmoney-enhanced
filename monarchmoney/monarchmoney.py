@@ -19,6 +19,27 @@ from graphql import DocumentNode
 
 from .logging_config import logger
 from .session_storage import SecureSessionStorage, LegacyPickleSession
+from .exceptions import (
+    MonarchMoneyError,
+    AuthenticationError,
+    MFARequiredError,
+    InvalidMFAError,
+    SessionExpiredError,
+    RateLimitError,
+    ServerError,
+    ClientError,
+    ValidationError,
+    NetworkError,
+    GraphQLError,
+    DataError,
+    ConfigurationError,
+    handle_http_response,
+    handle_graphql_errors,
+    # Legacy aliases for backward compatibility
+    RequireMFAException,
+    LoginFailedException,
+    RequestFailedException,
+)
 
 AUTH_HEADER_KEY = "authorization"
 CSRF_KEY = "csrftoken"
@@ -46,55 +67,80 @@ class MonarchMoneyEndpoints(object):
 
 async def retry_with_backoff(func, max_retries=3, base_delay=1.0, max_delay=60.0):
     """
-    Retry function with exponential backoff for rate limiting and network errors.
+    Retry function with exponential backoff using proper exception hierarchy.
+    
+    Args:
+        func: Async function to retry
+        max_retries: Maximum number of retry attempts  
+        base_delay: Base delay in seconds
+        max_delay: Maximum delay in seconds
+    
+    Returns:
+        Result of successful function call
+        
+    Raises:
+        Original exception if all retries exhausted or non-retryable error
     """
     for attempt in range(max_retries + 1):
         try:
             return await func()
-        except Exception as e:
-            error_str = str(e)
-
-            # Don't retry authentication errors
-            if any(
-                code in error_str
-                for code in ["401", "403", "Unauthorized", "Forbidden"]
-            ):
-                raise
-
-            # Don't retry on final attempt
+        except (AuthenticationError, ValidationError, ConfigurationError):
+            # Don't retry authentication, validation, or config errors
+            raise
+        except RateLimitError as e:
             if attempt == max_retries:
                 raise
-
-            # Calculate delay with exponential backoff and jitter
-            if "429" in error_str or "Too Many Requests" in error_str:
-                # Longer delay for rate limiting
-                delay = min(base_delay * (2**attempt) + random.uniform(0, 1), max_delay)
-                logger.warning("Rate limit exceeded, retrying", 
-                             delay=delay, attempt=attempt+1, max_retries=max_retries)
+            
+            # Use retry_after from exception if available, otherwise calculate
+            delay = e.retry_after or min(
+                base_delay * (2**attempt) + random.uniform(0, 1), max_delay
+            )
+            logger.warning("Rate limit exceeded, retrying", 
+                         delay=delay, attempt=attempt+1, max_retries=max_retries)
+            await asyncio.sleep(delay)
+        except ServerError as e:
+            if attempt == max_retries:
+                raise
+            
+            # Shorter delay for server errors
+            delay = min(
+                base_delay * (1.5**attempt) + random.uniform(0, 0.5), max_delay / 2
+            )
+            logger.warning("Server error, retrying", 
+                         status_code=e.status_code, delay=delay, 
+                         attempt=attempt+1, max_retries=max_retries)
+            await asyncio.sleep(delay)
+        except NetworkError as e:
+            if attempt == max_retries:
+                raise
+                
+            delay = min(base_delay * (2**attempt), max_delay)
+            logger.warning("Network error, retrying", 
+                         delay=delay, attempt=attempt+1, max_retries=max_retries)
+            await asyncio.sleep(delay)
+        except Exception as e:
+            # Convert unknown exceptions to appropriate types
+            error_str = str(e).lower()
+            
+            if any(code in error_str for code in ["401", "unauthorized"]):
+                raise AuthenticationError("Authentication failed") from e
+            elif "403" in error_str or "forbidden" in error_str:
+                raise AuthenticationError("Access forbidden") from e  
+            elif "429" in error_str or "rate limit" in error_str:
+                raise RateLimitError("Rate limit exceeded") from e
             elif any(code in error_str for code in ["500", "502", "503", "504"]):
-                # Shorter delay for server errors
-                delay = min(
-                    base_delay * (1.5**attempt) + random.uniform(0, 0.5), max_delay / 2
-                )
-                logger.warning("Server error occurred, retrying", 
-                             delay=delay, attempt=attempt+1, max_retries=max_retries, error=error_str)
+                # Extract status code if possible
+                import re
+                status_match = re.search(r'\b(50[0-9])\b', error_str)
+                status_code = int(status_match.group(1)) if status_match else 500
+                raise ServerError("Server error occurred", status_code) from e
             else:
-                # Don't retry other errors
+                # Don't retry unknown errors
                 raise
 
-            await asyncio.sleep(delay)
 
-
-class RequireMFAException(Exception):
-    pass
-
-
-class LoginFailedException(Exception):
-    pass
-
-
-class RequestFailedException(Exception):
-    pass
+# Exception classes moved to exceptions.py
+# Legacy classes are imported from exceptions.py for backward compatibility
 
 
 class MonarchMoney(object):
@@ -200,8 +246,9 @@ class MonarchMoney(object):
             return
 
         if (email is None) or (password is None) or (email == "") or (password == ""):
-            raise LoginFailedException(
-                "Email and password are required to login when not using a saved session."
+            raise ValidationError(
+                "Email and password are required to login when not using a saved session.",
+                details={'email_provided': email is not None, 'password_provided': password is not None}
             )
         await self._login_user(email, password, mfa_secret_key)
         if save_session:
@@ -456,7 +503,11 @@ class MonarchMoney(object):
         Instead, it looks like, e.g., 2023-01
         """
         if timeframe not in ("year", "month"):
-            raise Exception(f'Unknown timeframe "{timeframe}"')
+            raise ValidationError(
+                f'Unknown timeframe "{timeframe}"', 
+                field='timeframe',
+                details={'valid_values': ['year', 'month'], 'provided': timeframe}
+            )
 
         query = gql(
             """
@@ -861,7 +912,12 @@ class MonarchMoney(object):
         )
 
         if not response["forceRefreshAccounts"]["success"]:
-            raise RequestFailedException(response["forceRefreshAccounts"]["errors"])
+            errors = response["forceRefreshAccounts"]["errors"]
+            raise DataError(
+                "Failed to refresh accounts", 
+                data_type='account_refresh',
+                details={'errors': errors}
+            )
 
         return True
 
@@ -5244,7 +5300,7 @@ class MonarchMoney(object):
                     MonarchMoneyEndpoints.getLoginEndpoint(), json=data
                 ) as resp:
                     if resp.status == 403:
-                        raise RequireMFAException("Multi-Factor Auth Required")
+                        raise MFARequiredError("Multi-factor authentication required")
                     elif resp.status == 404:
                         # REST endpoint not found, try GraphQL authentication
                         await self._login_user_graphql(
@@ -5253,7 +5309,7 @@ class MonarchMoney(object):
                         return
                     elif resp.status == 429:
                         # Rate limited - will be retried by retry_with_backoff
-                        raise Exception(f"HTTP Code {resp.status}: Too Many Requests")
+                        raise RateLimitError("API rate limit exceeded during login")
                     elif resp.status != 200:
                         raise LoginFailedException(
                             f"HTTP Code {resp.status}: {resp.reason}"
@@ -5462,7 +5518,7 @@ class MonarchMoney(object):
                         return
                     elif resp.status == 429:
                         # Rate limited - will be retried by retry_with_backoff
-                        raise Exception(f"HTTP Code {resp.status}: Too Many Requests")
+                        raise RateLimitError("API rate limit exceeded during login")
                     elif resp.status != 200:
                         try:
                             response = await resp.json()
