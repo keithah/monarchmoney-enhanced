@@ -119,7 +119,7 @@ async def retry_with_backoff(func, max_retries=3, base_delay=1.0, max_delay=60.0
                          delay=delay, attempt=attempt+1, max_retries=max_retries)
             await asyncio.sleep(delay)
         except Exception as e:
-            # Convert unknown exceptions to appropriate types
+            # Convert unknown exceptions to appropriate types and handle retries
             error_str = str(e).lower()
             
             if any(code in error_str for code in ["401", "unauthorized"]):
@@ -127,13 +127,33 @@ async def retry_with_backoff(func, max_retries=3, base_delay=1.0, max_delay=60.0
             elif "403" in error_str or "forbidden" in error_str:
                 raise AuthenticationError("Access forbidden") from e  
             elif "429" in error_str or "rate limit" in error_str:
-                raise RateLimitError("Rate limit exceeded") from e
+                # Convert to RateLimitError but handle retry logic here
+                if attempt == max_retries:
+                    raise RateLimitError("Rate limit exceeded") from e
+                    
+                delay = min(
+                    base_delay * (2**attempt) + random.uniform(0, 1), max_delay
+                )
+                logger.warning("Rate limit exceeded, retrying", 
+                             delay=delay, attempt=attempt+1, max_retries=max_retries)
+                await asyncio.sleep(delay)
             elif any(code in error_str for code in ["500", "502", "503", "504"]):
                 # Extract status code if possible
                 import re
                 status_match = re.search(r'\b(50[0-9])\b', error_str)
                 status_code = int(status_match.group(1)) if status_match else 500
-                raise ServerError("Server error occurred", status_code) from e
+                
+                if attempt == max_retries:
+                    raise ServerError("Server error occurred", status_code) from e
+                
+                # Shorter delay for server errors
+                delay = min(
+                    base_delay * (1.5**attempt) + random.uniform(0, 0.5), max_delay / 2
+                )
+                logger.warning("Server error, retrying", 
+                             status_code=status_code, delay=delay, 
+                             attempt=attempt+1, max_retries=max_retries)
+                await asyncio.sleep(delay)
             else:
                 # Don't retry unknown errors
                 raise

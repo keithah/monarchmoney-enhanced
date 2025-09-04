@@ -7,7 +7,7 @@ from unittest.mock import patch
 from gql import Client
 
 from monarchmoney import MonarchMoney
-from monarchmoney.monarchmoney import LoginFailedException
+from monarchmoney.exceptions import ValidationError
 
 
 class TestMonarchMoney(unittest.IsolatedAsyncioTestCase):
@@ -330,9 +330,9 @@ class TestMonarchMoney(unittest.IsolatedAsyncioTestCase):
         """
         Test the login method with empty values for email and password.
         """
-        with self.assertRaises(LoginFailedException):
+        with self.assertRaises(ValidationError):
             await self.monarch_money.login(use_saved_session=False)
-        with self.assertRaises(LoginFailedException):
+        with self.assertRaises(ValidationError):
             await self.monarch_money.login(
                 email="", password="", use_saved_session=False
             )
@@ -343,7 +343,7 @@ class TestMonarchMoney(unittest.IsolatedAsyncioTestCase):
         """
         Test the interactive_login method with empty values for email and password.
         """
-        with self.assertRaises(LoginFailedException):
+        with self.assertRaises(ValidationError):
             await self.monarch_money.interactive_login(use_saved_session=False)
 
     @classmethod

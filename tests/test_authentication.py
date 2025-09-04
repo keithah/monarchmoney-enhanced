@@ -9,10 +9,13 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from monarchmoney import MonarchMoney
-from monarchmoney.monarchmoney import (
-    LoginFailedException,
-    RequestFailedException,
-    RequireMFAException,
+from monarchmoney.exceptions import (
+    ValidationError,
+    MFARequiredError,
+    MonarchMoneyError,
+    AuthenticationError,
+    RateLimitError,
+    ServerError,
 )
 
 
@@ -87,7 +90,7 @@ class TestLogin:
                 return None
 
         with patch("monarchmoney.monarchmoney.ClientSession", return_value=MockSession()):
-            with pytest.raises(RequireMFAException, match="Multi-Factor Auth Required"):
+            with pytest.raises(MFARequiredError, match="Multi-factor authentication required"):
                 await mm.login(
                     sample_credentials["email"], sample_credentials["password"]
                 )
@@ -100,12 +103,12 @@ class TestLogin:
         mm = MonarchMoney(session_file=str(session_file))
 
         with pytest.raises(
-            LoginFailedException, match="Email and password are required"
+            ValidationError, match="Email and password are required"
         ):
             await mm.login("", "")
 
         with pytest.raises(
-            LoginFailedException, match="Email and password are required"
+            ValidationError, match="Email and password are required"
         ):
             await mm.login(None, None)
 
@@ -405,7 +408,7 @@ class TestSessionManagement:
         """Test ensure_valid_session with no token."""
         mm = MonarchMoney()
 
-        with pytest.raises(RequestFailedException, match="No session token available"):
+        with pytest.raises(MonarchMoneyError, match="No session token available"):
             await mm.ensure_valid_session()
 
     def test_enhanced_session_format(self, tmp_path):
@@ -536,7 +539,7 @@ class TestRetryLogic:
             call_count += 1
             raise Exception("HTTP Code 403: Forbidden")
 
-        with pytest.raises(Exception, match="403: Forbidden"):
+        with pytest.raises(AuthenticationError, match="Access forbidden"):
             await retry_with_backoff(auth_failing_function, max_retries=3)
 
         assert call_count == 1  # Should not retry auth errors
@@ -555,7 +558,7 @@ class TestRetryLogic:
             raise Exception("HTTP Code 500: Internal Server Error")
 
         with patch("asyncio.sleep", new_callable=AsyncMock):
-            with pytest.raises(Exception, match="500: Internal Server Error"):
+            with pytest.raises(ServerError, match="Server error 500: Server error occurred"):
                 await retry_with_backoff(always_failing_function, max_retries=2)
 
         assert call_count == 3  # Initial + 2 retries
