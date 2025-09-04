@@ -12,6 +12,7 @@ mm_session.pickle
 
 # HAR files (contain sensitive session data)
 *.har
+hars/
 
 # Development/debug scripts
 debug_*.py
