@@ -2186,3 +2186,21 @@ FileNotFoundError: Session file not found: /tmp/nonexistent.pickle
 2025-09-03 21:48:40,902 - AuthenticationService - INFO - info:62 - Attempting user login - {'email': 'keith@hadm.net'}
 2025-09-03 21:49:02,744 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
 2025-09-03 21:49:02,767 - AuthenticationService - INFO - info:62 - Attempting user login - {'email': 'keith@hadm.net'}
+2025-09-03 21:49:25,920 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:49:25,988 - AccountService - INFO - info:64 - Fetching accounts
+2025-09-03 21:49:25,992 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:49:26,028 - SettingsService - INFO - info:64 - Fetching user profile information
+2025-09-03 21:49:26,032 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:49:26,064 - AccountService - INFO - info:64 - Fetching accounts
+2025-09-03 21:49:26,065 - AccountService - ERROR - error:76 - GraphQL operation failed - {'operation': 'GetAccounts', 'error': 'Make sure you call login() first or provide a session token!'}
+2025-09-03 21:49:26,066 - ErrorHandlers - WARNING - warning:69 - Operation failed, attempting recovery - {'operation': '_execute_query', 'attempt': 0, 'error_type': 'LoginFailedException', 'error_message': 'Make sure you call login() first or provide a session token!'}
+2025-09-03 21:49:26,066 - ErrorHandlers - INFO - info:62 - Attempting authentication recovery - {'operation': '_execute_query'}
+2025-09-03 21:49:26,066 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:49:26,103 - AuthenticationService - INFO - info:62 - Session loaded successfully - {'session_file': '.mm/mm_session.pickle'}
+2025-09-03 21:49:26,441 - ErrorHandlers - INFO - info:64 - Authentication recovered via session reload
+2025-09-03 21:49:26,441 - ErrorHandlers - INFO - info:62 - Error recovery successful - {'strategy': 'AuthenticationRecoveryStrategy', 'operation': '_execute_query'}
+2025-09-03 21:49:37,255 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:49:37,281 - AuthenticationService - INFO - info:62 - Attempting user login - {'email': 'test@example.com'}
+2025-09-03 21:49:37,281 - AuthenticationService - INFO - info:62 - Login successful - {'email': 'test@example.com'}
+2025-09-03 21:49:37,281 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-03 21:49:37,304 - AuthenticationService - INFO - info:62 - Session saved successfully - {'session_file': '/private/var/folders/pd/vzt389g972j9mlrm4lwbyf780000gn/T/pytest-of-keith/pytest-17/test_successful_login0/test_session.pickle'}
