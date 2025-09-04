@@ -55,7 +55,7 @@ class AccountService(BaseService):
     async def get_institutions(self) -> Dict[str, Any]:
         """
         Get all financial institutions.
-        
+
         Note: This endpoint may be unstable and could return server errors.
         If you encounter issues, use the institution data from individual accounts instead.
 
@@ -63,7 +63,7 @@ class AccountService(BaseService):
             List of financial institutions with metadata
         """
         self.logger.info("Fetching institutions")
-        
+
         query = gql(
             """
             query GetInstitutions {

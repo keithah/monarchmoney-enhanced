@@ -79,7 +79,13 @@ class TestAccountMethods:
     @pytest.mark.api
     async def test_get_accounts_requires_auth(self):
         """Test that get_accounts requires authentication."""
-        mm = MonarchMoney()  # No token set
+        import os
+        import tempfile
+
+        # Use a non-existent session directory to prevent auto-recovery
+        temp_dir = tempfile.mkdtemp()
+        session_file = os.path.join(temp_dir, "test_session.pickle")
+        mm = MonarchMoney(session_file=session_file)  # No token set, no existing session
 
         with pytest.raises(LoginFailedException, match="Make sure you call login"):
             await mm.get_accounts()
@@ -88,7 +94,13 @@ class TestAccountMethods:
     @pytest.mark.api
     async def test_get_me_requires_auth(self):
         """Test that get_me requires authentication."""
-        mm = MonarchMoney()  # No token set
+        import os
+        import tempfile
+
+        # Use a non-existent session directory to prevent auto-recovery
+        temp_dir = tempfile.mkdtemp()
+        session_file = os.path.join(temp_dir, "test_session.pickle")
+        mm = MonarchMoney(session_file=session_file)  # No token set, no existing session
 
         with pytest.raises(LoginFailedException, match="Make sure you call login"):
             await mm.get_me()
