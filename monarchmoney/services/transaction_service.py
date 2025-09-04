@@ -905,6 +905,603 @@ class TransactionService(BaseService):
             variables=variables,
         )
 
+    async def get_recurring_streams(
+        self, 
+        include_liabilities: bool = True,
+        include_pending: bool = True,
+        filters: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Get all recurring transaction streams.
+
+        Args:
+            include_liabilities: Include liability-based streams (credit cards, loans)
+            include_pending: Include streams pending review
+            filters: Optional filters for accounts, categories, etc.
+
+        Returns:
+            List of recurring transaction streams with details
+        """
+        self.logger.info(
+            "Fetching recurring streams",
+            include_liabilities=include_liabilities,
+            include_pending=include_pending,
+            filters=filters,
+        )
+
+        variables = {
+            "includeLiabilities": include_liabilities,
+            "includePending": include_pending,
+        }
+
+        if filters:
+            variables["filters"] = filters
+
+        query = gql(
+            """
+            query Common_GetRecurringStreams(
+                $includeLiabilities: Boolean, 
+                $includePending: Boolean,
+                $filters: RecurringTransactionFilter
+            ) {
+                recurringTransactionStreams(
+                    includePending: $includePending,
+                    includeLiabilities: $includeLiabilities,
+                    filters: $filters
+                ) {
+                    stream {
+                        id
+                        reviewStatus
+                        frequency
+                        amount
+                        baseDate
+                        dayOfTheMonth
+                        isApproximate
+                        name
+                        logoUrl
+                        recurringType
+                        isActive
+                        merchant {
+                            id
+                            name
+                            logoUrl
+                            __typename
+                        }
+                        creditReportLiabilityAccount {
+                            id
+                            account {
+                                id
+                                displayName
+                                __typename
+                            }
+                            lastStatement {
+                                id
+                                dueDate
+                                __typename
+                            }
+                            __typename
+                        }
+                        __typename
+                    }
+                    nextForecastedTransaction {
+                        date
+                        amount
+                        __typename
+                    }
+                    category {
+                        id
+                        name
+                        icon
+                        __typename
+                    }
+                    account {
+                        id
+                        displayName
+                        icon
+                        logoUrl
+                        __typename
+                    }
+                    __typename
+                }
+            }
+        """
+        )
+
+        return await self._execute_query(
+            operation="Common_GetRecurringStreams", query=query, variables=variables
+        )
+
+    async def get_aggregated_recurring_items(
+        self,
+        start_date: str,
+        end_date: str,
+        group_by: str = "status",
+        filters: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Get aggregated recurring transaction items for a date range.
+
+        Args:
+            start_date: Start date for recurring items (YYYY-MM-DD)
+            end_date: End date for recurring items (YYYY-MM-DD) 
+            group_by: How to group results ("status", "category", "account")
+            filters: Optional filters for accounts, categories, etc.
+
+        Returns:
+            Aggregated recurring transaction items with summaries
+
+        Raises:
+            ValidationError: If dates are invalid
+        """
+        start_date = InputValidator.validate_date_string(start_date)
+        end_date = InputValidator.validate_date_string(end_date)
+
+        self.logger.info(
+            "Fetching aggregated recurring items",
+            start_date=start_date,
+            end_date=end_date,
+            group_by=group_by,
+            filters=filters,
+        )
+
+        variables = {
+            "startDate": start_date,
+            "endDate": end_date,
+            "groupBy": group_by,
+        }
+
+        if filters:
+            variables["filters"] = filters
+
+        query = gql(
+            """
+            query Common_GetAggregatedRecurringItems(
+                $startDate: Date!,
+                $endDate: Date!,
+                $groupBy: String!,
+                $filters: RecurringTransactionFilter
+            ) {
+                aggregatedRecurringItems(
+                    startDate: $startDate,
+                    endDate: $endDate,
+                    groupBy: $groupBy,
+                    filters: $filters
+                ) {
+                    groups {
+                        groupBy {
+                            status
+                            __typename
+                        }
+                        results {
+                            ...RecurringItemFields
+                            __typename
+                        }
+                        summary {
+                            expense {
+                                total
+                                __typename
+                            }
+                            creditCard {
+                                total
+                                __typename
+                            }
+                            income {
+                                total
+                                __typename
+                            }
+                            __typename
+                        }
+                        __typename
+                    }
+                    aggregatedSummary {
+                        expense {
+                            completed
+                            remaining
+                            total
+                            count
+                            pendingAmountCount
+                            __typename
+                        }
+                        creditCard {
+                            completed
+                            remaining
+                            total
+                            count
+                            pendingAmountCount
+                            __typename
+                        }
+                        income {
+                            completed
+                            remaining
+                            total
+                            __typename
+                        }
+                        __typename
+                    }
+                    __typename
+                }
+            }
+
+            fragment RecurringItemStreamFields on RecurringTransactionStream {
+                id
+                frequency
+                isActive
+                amount
+                isApproximate
+                name
+                logoUrl
+                merchant {
+                    id
+                    name
+                    logoUrl
+                    __typename
+                }
+                creditReportLiabilityAccount {
+                    id
+                    liabilityType
+                    account {
+                        id
+                        __typename
+                    }
+                    __typename
+                }
+                __typename
+            }
+
+            fragment RecurringItemLiabilityFields on LiabilityStatement {
+                id
+                minimumPaymentAmount
+                paymentsInformation {
+                    status
+                    remainingBalance
+                    transactions {
+                        id
+                        amount
+                        date
+                        category {
+                            id
+                            name
+                            icon
+                            group {
+                                id
+                                name
+                                type
+                                __typename
+                            }
+                            __typename
+                        }
+                        __typename
+                    }
+                    __typename
+                }
+                __typename
+            }
+
+            fragment RecurringItemFields on RecurringTransactionCalendarItem {
+                stream {
+                    ...RecurringItemStreamFields
+                    __typename
+                }
+                date
+                isPast
+                isLate
+                markedPaidAt
+                isCompleted
+                transactionId
+                amount
+                amountDiff
+                isAmountDifferentThanOriginal
+                creditReportLiabilityStatementId
+                category {
+                    id
+                    name
+                    icon
+                    __typename
+                }
+                account {
+                    id
+                    displayName
+                    icon
+                    logoUrl
+                    __typename
+                }
+                liabilityStatement {
+                    ...RecurringItemLiabilityFields
+                    __typename
+                }
+                __typename
+            }
+        """
+        )
+
+        return await self._execute_query(
+            operation="Common_GetAggregatedRecurringItems",
+            query=query,
+            variables=variables,
+        )
+
+    async def review_recurring_stream(
+        self, stream_id: str, review_status: str
+    ) -> Dict[str, Any]:
+        """
+        Review and update the status of a recurring transaction stream.
+
+        Args:
+            stream_id: ID of the recurring stream to review
+            review_status: New status ("approved", "ignored", "pending")
+
+        Returns:
+            Updated stream information
+
+        Raises:
+            ValidationError: If parameters are invalid
+        """
+        stream_id = InputValidator.validate_string_length(stream_id, "stream_id", 1, 100)
+
+        valid_statuses = ["approved", "ignored", "pending"]
+        if review_status not in valid_statuses:
+            raise ValueError(f"review_status must be one of: {valid_statuses}")
+
+        self.logger.info(
+            "Reviewing recurring stream",
+            stream_id=stream_id,
+            review_status=review_status,
+        )
+
+        variables = {
+            "input": {
+                "streamId": stream_id,
+                "reviewStatus": review_status,
+            }
+        }
+
+        query = gql(
+            """
+            mutation Web_ReviewStream($input: ReviewRecurringStreamInput!) {
+                reviewRecurringStream(input: $input) {
+                    stream {
+                        id
+                        reviewStatus
+                        __typename
+                    }
+                    errors {
+                        ...PayloadErrorFields
+                        __typename
+                    }
+                    __typename
+                }
+            }
+
+            fragment PayloadErrorFields on PayloadError {
+                fieldErrors {
+                    field
+                    messages
+                    __typename
+                }
+                message
+                code
+                __typename
+            }
+        """
+        )
+
+        result = await self.client.gql_call(
+            operation="Web_ReviewStream",
+            graphql_query=query,
+            variables=variables,
+        )
+
+        review_result = result.get("reviewRecurringStream", {})
+        errors = review_result.get("errors", [])
+
+        if errors:
+            self.logger.error(
+                "Stream review failed", stream_id=stream_id, errors=errors
+            )
+            raise ValueError(f"Failed to review stream: {errors}")
+
+        stream = review_result.get("stream")
+        if stream:
+            self.logger.info(
+                "Stream review successful", 
+                stream_id=stream_id,
+                new_status=stream.get("reviewStatus")
+            )
+
+        return review_result
+
+    async def mark_stream_as_not_recurring(self, stream_id: str) -> bool:
+        """
+        Mark a recurring stream as not recurring (disable it).
+
+        Args:
+            stream_id: ID of the recurring stream to disable
+
+        Returns:
+            True if successful, False otherwise
+
+        Raises:
+            ValidationError: If stream_id is invalid
+        """
+        stream_id = InputValidator.validate_string_length(stream_id, "stream_id", 1, 100)
+
+        self.logger.info("Marking stream as not recurring", stream_id=stream_id)
+
+        variables = {"streamId": stream_id}
+
+        query = gql(
+            """
+            mutation Common_MarkAsNotRecurring($streamId: ID!) {
+                markStreamAsNotRecurring(streamId: $streamId) {
+                    success
+                    errors {
+                        ...PayloadErrorFields
+                        __typename
+                    }
+                    __typename
+                }
+            }
+
+            fragment PayloadErrorFields on PayloadError {
+                fieldErrors {
+                    field
+                    messages
+                    __typename
+                }
+                message
+                code
+                __typename
+            }
+        """
+        )
+
+        result = await self.client.gql_call(
+            operation="Common_MarkAsNotRecurring",
+            graphql_query=query,
+            variables=variables,
+        )
+
+        mark_result = result.get("markStreamAsNotRecurring", {})
+        errors = mark_result.get("errors", [])
+
+        if errors:
+            self.logger.error(
+                "Mark as not recurring failed", stream_id=stream_id, errors=errors
+            )
+            return False
+
+        success = mark_result.get("success", False)
+        if success:
+            self.logger.info("Stream marked as not recurring", stream_id=stream_id)
+
+        return success
+
+    async def get_recurring_merchant_search_status(self) -> Dict[str, Any]:
+        """
+        Get the status of recurring merchant search operations.
+
+        Returns:
+            Search status with timing and count information
+        """
+        self.logger.info("Fetching recurring merchant search status")
+
+        query = gql(
+            """
+            query RecurringMerchantSearch {
+                recurringMerchantSearch {
+                    startedAt
+                    nextAt
+                    finishedAt
+                    createdCount
+                    __typename
+                }
+                recurringTransactionStreams {
+                    stream {
+                        id
+                        __typename
+                    }
+                    __typename
+                }
+            }
+        """
+        )
+
+        return await self._execute_query(
+            operation="RecurringMerchantSearch", query=query
+        )
+
+    async def get_all_recurring_transaction_items(
+        self, 
+        filters: Optional[Dict[str, Any]] = None,
+        include_liabilities: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Get all recurring transaction items with optional filtering.
+
+        Args:
+            filters: Optional filters for accounts, categories, etc.
+            include_liabilities: Include liability-based transactions
+
+        Returns:
+            List of all recurring transaction items with forecasts
+        """
+        self.logger.info(
+            "Fetching all recurring transaction items",
+            filters=filters,
+            include_liabilities=include_liabilities,
+        )
+
+        variables = {
+            "includeLiabilities": include_liabilities,
+        }
+
+        if filters:
+            variables["filters"] = filters
+
+        query = gql(
+            """
+            query Web_GetAllRecurringTransactionItems(
+                $filters: RecurringTransactionFilter,
+                $includeLiabilities: Boolean
+            ) {
+                recurringTransactionStreams(
+                    filters: $filters,
+                    includeLiabilities: $includeLiabilities
+                ) {
+                    stream {
+                        id
+                        frequency
+                        isActive
+                        isApproximate
+                        name
+                        logoUrl
+                        merchant {
+                            id
+                            name
+                            logoUrl
+                            __typename
+                        }
+                        creditReportLiabilityAccount {
+                            id
+                            account {
+                                id
+                                displayName
+                                __typename
+                            }
+                            __typename
+                        }
+                        __typename
+                    }
+                    nextForecastedTransaction {
+                        date
+                        amount
+                        __typename
+                    }
+                    category {
+                        id
+                        name
+                        icon
+                        __typename
+                    }
+                    account {
+                        id
+                        displayName
+                        icon
+                        logoUrl
+                        __typename
+                    }
+                    __typename
+                }
+            }
+        """
+        )
+
+        return await self._execute_query(
+            operation="Web_GetAllRecurringTransactionItems",
+            query=query,
+            variables=variables,
+        )
+
     # Transaction Rules Methods
     async def get_transaction_rules(self) -> Dict[str, Any]:
         """
