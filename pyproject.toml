@@ -22,7 +22,8 @@ classifiers = [
 dependencies = [
     "aiohttp>=3.8.4",
     "gql>=3.4",
-    "oathtool>=2.3.1"
+    "oathtool>=2.3.1",
+    "cryptography>=3.4.8"
 ]
 
 [project.urls]

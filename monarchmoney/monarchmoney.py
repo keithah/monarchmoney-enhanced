@@ -18,6 +18,7 @@ from gql.transport.aiohttp import AIOHTTPTransport
 from graphql import DocumentNode
 
 from .logging_config import logger
+from .session_storage import SecureSessionStorage, LegacyPickleSession
 
 AUTH_HEADER_KEY = "authorization"
 CSRF_KEY = "csrftoken"
@@ -102,6 +103,8 @@ class MonarchMoney(object):
         session_file: str = SESSION_FILE,
         timeout: int = 10,
         token: Optional[str] = None,
+        session_password: Optional[str] = None,
+        use_encryption: bool = True,
     ) -> None:
         self._headers = {
             "Accept": "application/json",
@@ -120,6 +123,9 @@ class MonarchMoney(object):
         self._session_file = session_file
         self._token = token
         self._timeout = timeout
+
+        # Initialize secure session storage
+        self._secure_storage = SecureSessionStorage(session_password, use_encryption)
 
         # Session metadata for validation and refresh
         self._session_created_at: Optional[float] = None
@@ -5043,7 +5049,7 @@ class MonarchMoney(object):
     def save_session(self, filename: Optional[str] = None) -> None:
         """
         Saves the auth token and session metadata needed to access a Monarch Money account.
-        Includes timestamp for session validation and expiration tracking.
+        Uses secure JSON storage instead of unsafe pickle format.
         """
         if filename is None:
             filename = self._session_file
@@ -5051,40 +5057,68 @@ class MonarchMoney(object):
 
         session_data = {
             "token": self._token,
-            "created_at": time.time(),
-            "last_validated": time.time(),
-            "version": "0.2.2",
+            "created_at": self._session_created_at or time.time(),
+            "last_validated": self._session_last_validated or time.time(),
+            "version": "0.3.6",
         }
 
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        with open(filename, "wb") as fh:
-            pickle.dump(session_data, fh)
+        self._secure_storage.save_session(session_data, filename)
+        logger.info("Session saved securely", session_file=filename)
 
     def load_session(self, filename: Optional[str] = None) -> None:
         """
-        Loads pre-existing auth token from a Python pickle file.
-        Supports both legacy format (token only) and new format (with metadata).
+        Loads pre-existing auth token from session file.
+        Supports both new secure JSON format and legacy pickle format (with migration).
         """
         if filename is None:
             filename = self._session_file
 
-        with open(filename, "rb") as fh:
-            data = pickle.load(fh)
-
-            # Handle legacy session format (just token string or {"token": "..."})
-            if isinstance(data, str):
-                self.set_token(data)
-            elif isinstance(data, dict) and "token" in data:
-                self.set_token(data["token"])
-                # Store session metadata if available
-                if "created_at" in data:
-                    self._session_created_at = data["created_at"]
-                if "last_validated" in data:
-                    self._session_last_validated = data["last_validated"]
+        # Check if this is a legacy pickle file
+        if LegacyPickleSession.detect_pickle_file(filename):
+            logger.warning("Detected legacy pickle session file. Migrating to secure format.",
+                          session_file=filename)
+            
+            # Create new filename for JSON version
+            json_filename = filename.replace('.pickle', '.json')
+            
+            # Migrate the session
+            if self._secure_storage.migrate_pickle_session(filename, json_filename):
+                # Update session file path to new JSON version
+                self._session_file = json_filename
+                filename = json_filename
             else:
-                raise ValueError("Invalid session file format")
+                # If migration fails, load pickle with warning
+                data = LegacyPickleSession.load_with_warning(filename)
+                self._load_session_data(data)
+                return
 
-            self._headers["Authorization"] = f"Token {self._token}"
+        # Load secure JSON session
+        try:
+            data = self._secure_storage.load_session(filename)
+            self._load_session_data(data)
+            logger.info("Session loaded securely", session_file=filename)
+            
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Session file not found: {filename}")
+        except ValueError as e:
+            raise ValueError(f"Invalid session file format: {e}")
+    
+    def _load_session_data(self, data: Any) -> None:
+        """Load session data from parsed session file."""
+        # Handle legacy session format (just token string or {"token": "..."})
+        if isinstance(data, str):
+            self.set_token(data)
+        elif isinstance(data, dict) and "token" in data:
+            self.set_token(data["token"])
+            # Store session metadata if available
+            if "created_at" in data:
+                self._session_created_at = data["created_at"]
+            if "last_validated" in data:
+                self._session_last_validated = data["last_validated"]
+        else:
+            raise ValueError("Invalid session file format")
+
+        self._headers["Authorization"] = f"Token {self._token}"
 
     def delete_session(self, filename: Optional[str] = None) -> None:
         """
