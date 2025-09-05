@@ -2585,3 +2585,355 @@ class TransactionService(BaseService):
         return await self._execute_query(
             operation="GetCategoryDetails", query=query, variables=variables
         )
+
+    async def bulk_update_transactions(
+        self,
+        transaction_ids: List[str],
+        updates: Dict[str, Any],
+        excluded_transaction_ids: Optional[List[str]] = None,
+        all_selected: bool = False,
+        filters: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Bulk update multiple transactions with specified changes.
+
+        Args:
+            transaction_ids: List of transaction IDs to update
+            updates: Dictionary of updates to apply (e.g., {"hide": False})
+            excluded_transaction_ids: Optional list of transaction IDs to exclude
+            all_selected: Whether all transactions are selected (for large bulk operations)
+            filters: Optional filters that were used to select transactions
+
+        Returns:
+            Result of bulk update operation with success status and affected count
+
+        Raises:
+            ValidationError: If inputs are invalid
+
+        Examples:
+            # Unhide specific transactions
+            result = await mm.bulk_update_transactions(
+                transaction_ids=["123", "456", "789"],
+                updates={"hide": False}
+            )
+
+            # Hide transactions from reports
+            result = await mm.bulk_update_transactions(
+                transaction_ids=["123", "456"],
+                updates={"hide": True}
+            )
+        """
+        # Validate transaction IDs
+        if not transaction_ids or not isinstance(transaction_ids, list):
+            raise ValidationError("transaction_ids must be a non-empty list")
+
+        validated_ids = []
+        for tid in transaction_ids:
+            validated_ids.append(InputValidator.validate_transaction_id(tid))
+
+        # Validate updates
+        if not updates or not isinstance(updates, dict):
+            raise ValidationError("updates must be a non-empty dictionary")
+
+        # Validate excluded IDs if provided
+        validated_excluded_ids = excluded_transaction_ids or []
+        if excluded_transaction_ids:
+            for tid in excluded_transaction_ids:
+                InputValidator.validate_transaction_id(tid)
+
+        expected_count = len(validated_ids) - len(validated_excluded_ids)
+
+        self.logger.info(
+            "Bulk updating transactions",
+            transaction_count=len(validated_ids),
+            excluded_count=len(validated_excluded_ids),
+            expected_affected_count=expected_count,
+            updates=updates,
+        )
+
+        variables = {
+            "selectedTransactionIds": validated_ids,
+            "excludedTransactionIds": validated_excluded_ids,
+            "updates": updates,
+            "allSelected": all_selected,
+            "expectedAffectedTransactionCount": expected_count,
+        }
+
+        if filters:
+            variables["filters"] = filters
+
+        query = gql(
+            """
+            mutation Common_BulkUpdateTransactionsMutation(
+                $selectedTransactionIds: [ID!]!,
+                $excludedTransactionIds: [ID!],
+                $allSelected: Boolean!,
+                $expectedAffectedTransactionCount: Int!,
+                $updates: TransactionUpdateParams!,
+                $filters: TransactionFilterInput
+            ) {
+                bulkUpdateTransactions(
+                    selectedTransactionIds: $selectedTransactionIds,
+                    excludedTransactionIds: $excludedTransactionIds,
+                    updates: $updates,
+                    allSelected: $allSelected,
+                    expectedAffectedTransactionCount: $expectedAffectedTransactionCount,
+                    filters: $filters
+                ) {
+                    success
+                    affectedCount
+                    errors {
+                        message
+                        __typename
+                    }
+                    __typename
+                }
+            }
+        """
+        )
+
+        result = await self.client.gql_call(
+            operation="Common_BulkUpdateTransactionsMutation",
+            graphql_query=query,
+            variables=variables,
+        )
+
+        bulk_result = result.get("bulkUpdateTransactions", {})
+        errors = bulk_result.get("errors", [])
+
+        if errors:
+            self.logger.error(
+                "Bulk update failed",
+                transaction_count=len(validated_ids),
+                errors=errors,
+            )
+            raise ValueError(f"Bulk update failed: {errors}")
+
+        success = bulk_result.get("success", False)
+        affected_count = bulk_result.get("affectedCount", 0)
+
+        if success:
+            self.logger.info(
+                "Bulk update successful",
+                affected_count=affected_count,
+                expected_count=expected_count,
+            )
+
+        return bulk_result
+
+    async def bulk_unhide_transactions(
+        self, transaction_ids: List[str], filters: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Bulk unhide transactions (set hideFromReports to false).
+
+        This is a convenience method that calls bulk_update_transactions with
+        the appropriate parameters to unhide transactions.
+
+        Args:
+            transaction_ids: List of transaction IDs to unhide
+            filters: Optional filters that were used to select the transactions
+
+        Returns:
+            Result of bulk unhide operation with success status and affected count
+
+        Raises:
+            ValidationError: If transaction_ids is invalid
+
+        Example:
+            # Unhide specific hidden transactions
+            result = await mm.bulk_unhide_transactions(
+                transaction_ids=["220716668609011425", "220716668609011424"],
+                filters={"hideFromReports": True}
+            )
+            
+            if result["success"]:
+                print(f"Successfully unhid {result['affectedCount']} transactions")
+        """
+        self.logger.info(
+            "Bulk unhiding transactions", transaction_count=len(transaction_ids)
+        )
+
+        return await self.bulk_update_transactions(
+            transaction_ids=transaction_ids,
+            updates={"hide": False},
+            filters=filters,
+        )
+
+    async def bulk_hide_transactions(
+        self, transaction_ids: List[str], filters: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Bulk hide transactions (set hideFromReports to true).
+
+        This is a convenience method that calls bulk_update_transactions with
+        the appropriate parameters to hide transactions from reports.
+
+        Args:
+            transaction_ids: List of transaction IDs to hide
+            filters: Optional filters that were used to select the transactions
+
+        Returns:
+            Result of bulk hide operation with success status and affected count
+
+        Raises:
+            ValidationError: If transaction_ids is invalid
+
+        Example:
+            # Hide specific transactions from reports
+            result = await mm.bulk_hide_transactions(
+                transaction_ids=["220716668609011425", "220716668609011424"]
+            )
+            
+            if result["success"]:
+                print(f"Successfully hid {result['affectedCount']} transactions")
+        """
+        self.logger.info(
+            "Bulk hiding transactions", transaction_count=len(transaction_ids)
+        )
+
+        return await self.bulk_update_transactions(
+            transaction_ids=transaction_ids,
+            updates={"hide": True},
+            filters=filters,
+        )
+
+    async def get_hidden_transactions(
+        self,
+        limit: Optional[int] = 100,
+        offset: Optional[int] = 0,
+        order_by: str = "date",
+    ) -> Dict[str, Any]:
+        """
+        Get transactions that are hidden from reports.
+
+        This method retrieves transactions where hideFromReports is true,
+        making it easy to see what transactions are currently hidden and
+        potentially bulk unhide them.
+
+        Args:
+            limit: Maximum number of transactions to return
+            offset: Number of transactions to skip
+            order_by: Field to order by (default: "date")
+
+        Returns:
+            List of hidden transactions with full transaction details
+
+        Example:
+            # Get all hidden transactions
+            hidden = await mm.get_hidden_transactions(limit=50)
+            transaction_ids = [t["id"] for t in hidden["allTransactions"]["results"]]
+            
+            # Unhide them all
+            await mm.bulk_unhide_transactions(transaction_ids)
+        """
+        validated_limit = InputValidator.validate_limit(limit) or 100
+        validated_offset = offset or 0
+
+        self.logger.info(
+            "Fetching hidden transactions",
+            limit=validated_limit,
+            offset=validated_offset,
+        )
+
+        variables = {
+            "orderBy": order_by,
+            "limit": validated_limit,
+            "offset": validated_offset,
+            "filters": {"hideFromReports": True},
+        }
+
+        query = gql(
+            """
+            query Web_GetTransactionsList(
+                $offset: Int,
+                $limit: Int,
+                $filters: TransactionFilterInput,
+                $orderBy: TransactionOrdering
+            ) {
+                allTransactions(filters: $filters) {
+                    totalCount
+                    totalSelectableCount
+                    results(offset: $offset, limit: $limit, orderBy: $orderBy) {
+                        id
+                        ...TransactionOverviewFields
+                        __typename
+                    }
+                    __typename
+                }
+                transactionRules {
+                    id
+                    __typename
+                }
+            }
+
+            fragment TransactionOverviewFields on Transaction {
+                id
+                amount
+                pending
+                date
+                hideFromReports
+                hiddenByAccount
+                plaidName
+                notes
+                isRecurring
+                reviewStatus
+                needsReview
+                isSplitTransaction
+                dataProviderDescription
+                attachments {
+                    id
+                    __typename
+                }
+                goal {
+                    id
+                    name
+                    __typename
+                }
+                category {
+                    id
+                    name
+                    icon
+                    group {
+                        id
+                        type
+                        __typename
+                    }
+                    __typename
+                }
+                merchant {
+                    name
+                    id
+                    transactionsCount
+                    logoUrl
+                    recurringTransactionStream {
+                        frequency
+                        isActive
+                        __typename
+                    }
+                    __typename
+                }
+                tags {
+                    id
+                    name
+                    color
+                    order
+                    __typename
+                }
+                account {
+                    id
+                    displayName
+                    icon
+                    logoUrl
+                    __typename
+                }
+                __typename
+            }
+        """
+        )
+
+        return await self.client.gql_call(
+            operation="Web_GetTransactionsList",
+            graphql_query=query,
+            variables=variables,
+        )

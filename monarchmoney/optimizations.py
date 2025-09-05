@@ -293,7 +293,7 @@ class OptimizationMixin:
             return -1
 
 
-class OptimizedMonarchMoney(OptimizationMixin):
+class OptimizedMonarchMoney:
     """
     Enhanced MonarchMoney client with GraphQL optimizations.
     
@@ -318,12 +318,18 @@ class OptimizedMonarchMoney(OptimizationMixin):
     """
     
     def __init__(self, *args, **kwargs):
-        # Initialize optimization components directly
+        # Extract optimization parameters first
         self._cache_enabled = kwargs.pop('cache_enabled', False)
         self._cache_max_size_mb = kwargs.pop('cache_max_size_mb', 50)
         self._deduplicate_requests = kwargs.pop('deduplicate_requests', False)
         self._metrics_enabled = kwargs.pop('metrics_enabled', True)
         cache_ttl_overrides = kwargs.pop('cache_ttl_overrides', None)
+        
+        # Import MonarchMoney here to avoid circular imports
+        from .monarchmoney import MonarchMoney
+        
+        # Create the base MonarchMoney instance
+        self._mm = MonarchMoney(*args, **kwargs)
         
         # Initialize optimization components
         self._query_cache = QueryCache(self._cache_max_size_mb, self._metrics_enabled) if self._cache_enabled else None
@@ -334,6 +340,32 @@ class OptimizedMonarchMoney(OptimizationMixin):
             for operation, ttl in cache_ttl_overrides.items():
                 # Set custom strategy for operations with TTL overrides
                 self._query_cache._operation_strategies[operation] = CacheStrategy.CUSTOM
+    
+    def __getattr__(self, name):
+        """Delegate all method calls to the underlying MonarchMoney instance."""
+        return getattr(self._mm, name)
+    
+    def get_cache_metrics(self) -> Dict[str, Any]:
+        """Get cache performance metrics."""
+        if not self._query_cache:
+            return {"cache_enabled": False}
+        return self._query_cache.get_metrics()
+    
+    def clear_cache(self) -> None:
+        """Clear all cached query results."""
+        if self._query_cache:
+            self._query_cache.clear()
+    
+    def invalidate_cache(self, pattern: Optional[str] = None) -> int:
+        """Invalidate cached results matching a pattern."""
+        if not self._query_cache:
+            return 0
+        
+        if pattern:
+            return self._query_cache.invalidate_pattern(pattern)
+        else:
+            self._query_cache.clear()
+            return -1
     
     async def _optimized_gql_call(self, operation: str, graphql_query, variables: Dict[str, Any] = None, force_refresh: bool = False):
         """Enhanced gql_call with caching and deduplication."""

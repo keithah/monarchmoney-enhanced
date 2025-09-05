@@ -4817,6 +4817,187 @@ class MonarchMoney(object):
             graphql_query=query,
         )
 
+    async def bulk_update_transactions(
+        self,
+        transaction_ids: List[str],
+        updates: Dict[str, Any],
+        excluded_transaction_ids: Optional[List[str]] = None,
+        all_selected: bool = False,
+        filters: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Bulk update multiple transactions with specified changes.
+
+        This method allows you to efficiently update many transactions at once
+        with the same set of changes, such as hiding/unhiding from reports,
+        changing categories, or updating other transaction properties.
+
+        Args:
+            transaction_ids: List of transaction IDs to update
+            updates: Dictionary of updates to apply (e.g., {"hide": False})
+            excluded_transaction_ids: Optional list of transaction IDs to exclude from updates
+            all_selected: Whether all transactions are selected (for large bulk operations)
+            filters: Optional filters that were used to select the transactions
+
+        Returns:
+            Result of bulk update operation with success status and affected count
+
+        Raises:
+            ValidationError: If inputs are invalid
+            ValueError: If bulk update operation fails
+
+        Examples:
+            # Unhide specific transactions
+            result = await mm.bulk_update_transactions(
+                transaction_ids=["123", "456", "789"],
+                updates={"hide": False}
+            )
+
+            # Hide transactions from reports
+            result = await mm.bulk_update_transactions(
+                transaction_ids=["123", "456"],
+                updates={"hide": True}
+            )
+
+            # Update category for multiple transactions
+            result = await mm.bulk_update_transactions(
+                transaction_ids=["123", "456"],
+                updates={"categoryId": "category_id_here"}
+            )
+        """
+        return await self._transaction_service.bulk_update_transactions(
+            transaction_ids=transaction_ids,
+            updates=updates,
+            excluded_transaction_ids=excluded_transaction_ids,
+            all_selected=all_selected,
+            filters=filters,
+        )
+
+    async def bulk_unhide_transactions(
+        self, transaction_ids: List[str], filters: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Bulk unhide transactions (set hideFromReports to false).
+
+        This is a convenience method that unhides multiple transactions at once,
+        making them visible in reports again. This is particularly useful when
+        you have many transactions that were accidentally hidden or need to be
+        shown in reports again.
+
+        Args:
+            transaction_ids: List of transaction IDs to unhide
+            filters: Optional filters that were used to select the transactions
+
+        Returns:
+            Result of bulk unhide operation with success status and affected count
+
+        Raises:
+            ValidationError: If transaction_ids is invalid
+            ValueError: If bulk unhide operation fails
+
+        Examples:
+            # Unhide specific transactions
+            result = await mm.bulk_unhide_transactions([
+                "220716668609011425",
+                "220716668609011424",
+                "220716668609011423"
+            ])
+            
+            if result["success"]:
+                print(f"Successfully unhid {result['affectedCount']} transactions")
+
+            # Get hidden transactions and unhide them all
+            hidden = await mm.get_hidden_transactions(limit=100)
+            transaction_ids = [t["id"] for t in hidden["allTransactions"]["results"]]
+            
+            if transaction_ids:
+                result = await mm.bulk_unhide_transactions(
+                    transaction_ids,
+                    filters={"hideFromReports": True}
+                )
+                print(f"Unhid {result['affectedCount']} transactions")
+        """
+        return await self._transaction_service.bulk_unhide_transactions(
+            transaction_ids=transaction_ids, filters=filters
+        )
+
+    async def bulk_hide_transactions(
+        self, transaction_ids: List[str], filters: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Bulk hide transactions (set hideFromReports to true).
+
+        This is a convenience method that hides multiple transactions from reports
+        at once. Hidden transactions won't appear in spending reports or budget
+        calculations, which is useful for internal transfers or transactions
+        you don't want to track.
+
+        Args:
+            transaction_ids: List of transaction IDs to hide
+            filters: Optional filters that were used to select the transactions
+
+        Returns:
+            Result of bulk hide operation with success status and affected count
+
+        Raises:
+            ValidationError: If transaction_ids is invalid
+            ValueError: If bulk hide operation fails
+
+        Examples:
+            # Hide specific transactions from reports
+            result = await mm.bulk_hide_transactions([
+                "220716668609011425",
+                "220716668609011424"
+            ])
+            
+            if result["success"]:
+                print(f"Successfully hid {result['affectedCount']} transactions")
+        """
+        return await self._transaction_service.bulk_hide_transactions(
+            transaction_ids=transaction_ids, filters=filters
+        )
+
+    async def get_hidden_transactions(
+        self,
+        limit: Optional[int] = 100,
+        offset: Optional[int] = 0,
+        order_by: str = "date",
+    ) -> Dict[str, Any]:
+        """
+        Get transactions that are hidden from reports.
+
+        This method retrieves transactions where hideFromReports is true,
+        making it easy to see what transactions are currently hidden and
+        potentially bulk unhide them.
+
+        Args:
+            limit: Maximum number of transactions to return (default: 100)
+            offset: Number of transactions to skip (default: 0)
+            order_by: Field to order by (default: "date")
+
+        Returns:
+            List of hidden transactions with full transaction details including:
+            - Transaction IDs, amounts, dates, merchants
+            - Category and account information
+            - Tags and other metadata
+            - Total count of hidden transactions
+
+        Examples:
+            # Get first 50 hidden transactions
+            hidden = await mm.get_hidden_transactions(limit=50)
+            print(f"Found {hidden['allTransactions']['totalCount']} hidden transactions")
+            
+            # Extract transaction IDs for bulk operations
+            transaction_ids = [t["id"] for t in hidden["allTransactions"]["results"]]
+            
+            # Unhide them all
+            if transaction_ids:
+                await mm.bulk_unhide_transactions(transaction_ids)
+        """
+        return await self._transaction_service.get_hidden_transactions(
+            limit=limit, offset=offset, order_by=order_by
+        )
+
     async def set_budget_amount(
         self,
         amount: float,
