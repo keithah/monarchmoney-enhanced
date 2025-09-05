@@ -28,5 +28,23 @@ from .monarchmoney import (  # Legacy exceptions for backward compatibility
     RequireMFAException,
 )
 
-__version__ = "0.7.0"
+# GraphQL Optimizations (optional)
+try:
+    from .optimizations import (
+        CacheStrategy,
+        OptimizedMonarchMoney,
+        QueryCache,
+        RequestDeduplicator,
+    )
+    from .graphql import (
+        FRAGMENTS,
+        QueryVariants,
+        QueryBuilder,
+        BatchedGraphQLClient,
+    )
+    _OPTIMIZATIONS_AVAILABLE = True
+except ImportError:
+    _OPTIMIZATIONS_AVAILABLE = False
+
+__version__ = "0.8.0"
 __author__ = "keithah"
