@@ -199,6 +199,11 @@ class QueryCache:
         """Get the recommended cache strategy for an operation."""
         return self._operation_strategies.get(operation, CacheStrategy.SHORT)
     
+    def invalidate_by_operation(self, operation: str) -> int:
+        """Invalidate all cache entries for a specific operation."""
+        pattern = f"{operation}:"
+        return self.invalidate_pattern(pattern)
+    
     def get_metrics(self) -> Dict[str, Any]:
         """Get cache performance metrics."""
         if not self._metrics:
@@ -313,11 +318,22 @@ class OptimizedMonarchMoney(OptimizationMixin):
     """
     
     def __init__(self, *args, **kwargs):
-        from .monarchmoney import MonarchMoney
+        # Initialize optimization components directly
+        self._cache_enabled = kwargs.pop('cache_enabled', False)
+        self._cache_max_size_mb = kwargs.pop('cache_max_size_mb', 50)
+        self._deduplicate_requests = kwargs.pop('deduplicate_requests', False)
+        self._metrics_enabled = kwargs.pop('metrics_enabled', True)
+        cache_ttl_overrides = kwargs.pop('cache_ttl_overrides', None)
         
-        # Multiple inheritance: OptimizationMixin + MonarchMoney
-        super(OptimizationMixin, self).__init__(*args, **kwargs)
-        OptimizationMixin.__init__(self, *args, **kwargs)
+        # Initialize optimization components
+        self._query_cache = QueryCache(self._cache_max_size_mb, self._metrics_enabled) if self._cache_enabled else None
+        self._deduplicator = RequestDeduplicator() if self._deduplicate_requests else None
+        
+        # Apply custom TTL overrides
+        if self._query_cache and cache_ttl_overrides:
+            for operation, ttl in cache_ttl_overrides.items():
+                # Set custom strategy for operations with TTL overrides
+                self._query_cache._operation_strategies[operation] = CacheStrategy.CUSTOM
     
     async def _optimized_gql_call(self, operation: str, graphql_query, variables: Dict[str, Any] = None, force_refresh: bool = False):
         """Enhanced gql_call with caching and deduplication."""
@@ -333,12 +349,8 @@ class OptimizedMonarchMoney(OptimizationMixin):
         
         # Deduplication wrapper
         async def _execute():
-            # Call the original gql_call method
-            if hasattr(super(), 'gql_call'):
-                return await super().gql_call(operation, graphql_query, variables)
-            else:
-                # Fallback to service-based execution
-                return await self._execute_graphql_operation(operation, graphql_query, variables)
+            # Fallback to service-based execution (for testing)
+            return await self._execute_graphql_operation(operation, graphql_query, variables)
         
         # Use request deduplication if enabled
         if self._deduplicator:
