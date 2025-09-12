@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "monarchmoney-enhanced"
-version = "0.9.0"
+version = "0.9.1"
 description = "Enhanced Monarch Money API with bulk transaction operations, GraphQL optimizations, intelligent caching, query variants, and service-oriented architecture"
 readme = "README.md"
 authors = [
@@ -34,8 +34,6 @@ Repository = "https://github.com/keithah/monarchmoney-enhanced"
 where = ["."]
 include = ["monarchmoney*"]
 
-[tool.black]
-line-length = 88
 
 [tool.isort]
 profile = "black"
