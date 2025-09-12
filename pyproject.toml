@@ -35,6 +35,3 @@ where = ["."]
 include = ["monarchmoney*"]
 
 
-[tool.isort]
-profile = "black"
-line_length = 88
