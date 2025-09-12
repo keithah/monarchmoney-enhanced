@@ -205,7 +205,8 @@ class MonarchMoney(object):
         if token:
             self._headers["Authorization"] = f"Token {token}"
 
-        self._session_file = session_file
+        # Auto-detect the correct session file format
+        self._session_file = self._resolve_session_file(session_file)
         self._token = token
         self._timeout = timeout
         self._csrf_token = None
@@ -1030,7 +1031,7 @@ class MonarchMoney(object):
                 "accountIds": [str(account_id)],
                 "endDate": datetime.today().strftime("%Y-%m-%d"),
                 "includeHiddenHoldings": True,
-                "startDate": datetime.today().strftime("%Y-%m-%d"),
+                "startDate": (datetime.today() - timedelta(days=30)).strftime("%Y-%m-%d"),
             },
         }
 
@@ -3930,7 +3931,7 @@ class MonarchMoney(object):
         self,
         group_id: str,
         transaction_category_name: str,
-        rollover_start_month: datetime = datetime.today().replace(day=1),
+        rollover_start_month: Optional[datetime] = None,
         icon: str = "\U00002753",
         rollover_enabled: bool = False,
         rollover_type: str = "monthly",
@@ -3996,6 +3997,11 @@ class MonarchMoney(object):
             }
             """
         )
+        
+        # Set default rollover_start_month if not provided
+        if rollover_start_month is None:
+            rollover_start_month = datetime.today().replace(day=1)
+        
         variables = {
             "input": {
                 "group": group_id,
@@ -5350,6 +5356,25 @@ class MonarchMoney(object):
             raise FileNotFoundError(f"Session file not found: {filename}")
         except ValueError as e:
             raise ValueError(f"Invalid session file format: {e}")
+
+    def _resolve_session_file(self, session_file: str) -> str:
+        """
+        Auto-detect the correct session file format.
+        
+        If the default pickle file is requested but a migrated JSON version exists,
+        use the JSON version instead to prevent load_session() failures.
+        """
+        # If user provided explicit non-default file, use as-is
+        if session_file != SESSION_FILE:
+            return session_file
+            
+        # Check if JSON version exists (from migration)
+        json_filename = session_file.replace(".pickle", ".json")
+        if os.path.exists(json_filename):
+            return json_filename
+            
+        # Fall back to original filename
+        return session_file
 
     def _load_session_data(self, data: Any) -> None:
         """Load session data from parsed session file."""

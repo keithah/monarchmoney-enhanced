@@ -792,8 +792,8 @@ class InvestmentService(BaseService):
 
         query = gql(
             """
-            mutation UpdateHoldingQuantity($input: UpdateManualHoldingInput!) {
-                updateManualHolding(input: $input) {
+            mutation UpdateHoldingQuantity($input: UpdateHoldingInput!) {
+                updateHolding(input: $input) {
                     holding {
                         id
                         quantity
@@ -827,7 +827,7 @@ class InvestmentService(BaseService):
             variables=variables,
         )
 
-        update_result = result.get("updateManualHolding", {})
+        update_result = result.get("updateHolding", {})
         errors = update_result.get("errors", [])
 
         if errors:
