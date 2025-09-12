@@ -17,10 +17,45 @@ jobs:
       with:
         python-version: "3.11"
     
+    - name: Extract version from tag
+      id: get_version
+      run: |
+        # Extract version from tag (remove 'v' prefix if present)
+        VERSION=${GITHUB_REF#refs/tags/}
+        VERSION=${VERSION#v}
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Extracted version: $VERSION"
+    
+    - name: Update version in files
+      run: |
+        VERSION="${{ steps.get_version.outputs.version }}"
+        echo "Updating version to: $VERSION"
+        
+        # Update setup.py
+        sed -i "s/version=\"[^\"]*\"/version=\"$VERSION\"/" setup.py
+        
+        # Update pyproject.toml
+        sed -i "s/version = \"[^\"]*\"/version = \"$VERSION\"/" pyproject.toml
+        
+        # Verify changes
+        echo "setup.py version line:"
+        grep "version=" setup.py
+        echo "pyproject.toml version line:"
+        grep "version =" pyproject.toml
+    
     - name: Install build dependencies
       run: |
         python -m pip install --upgrade pip
         pip install build twine
+    
+    - name: Commit version changes
+      run: |
+        VERSION="${{ steps.get_version.outputs.version }}"
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add setup.py pyproject.toml
+        git commit -m "🔧 AUTO: Update version to $VERSION for release" || echo "No changes to commit"
+        git push || echo "Nothing to push"
     
     - name: Build package
       run: python -m build
