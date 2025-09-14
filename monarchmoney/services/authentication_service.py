@@ -493,12 +493,19 @@ class AuthenticationService(BaseService):
         mfa_data = {
             "username": email,
             "password": password,
-            "totp": totp_code,
             "trusted_device": True,
             "supports_mfa": True,
             "supports_email_otp": True,
             "supports_recaptcha": True,
         }
+
+        # Add the MFA code - try email_otp first, then totp
+        if len(totp_code) == 6 and totp_code.isdigit():
+            # Likely email OTP (6 digits)
+            mfa_data["email_otp"] = totp_code
+        else:
+            # Likely TOTP from authenticator app
+            mfa_data["totp"] = totp_code
 
         # Update headers for JSON
         headers = self.client._headers.copy()
@@ -653,12 +660,19 @@ class AuthenticationService(BaseService):
             mfa_data = {
                 "username": email,
                 "password": password,
-                "totp": code,
                 "trusted_device": True,
                 "supports_mfa": True,
                 "supports_email_otp": True,
                 "supports_recaptcha": True,
             }
+
+            # Add the MFA code - try email_otp first, then totp
+            if len(code) == 6 and code.isdigit():
+                # Likely email OTP (6 digits)
+                mfa_data["email_otp"] = code
+            else:
+                # Likely TOTP from authenticator app
+                mfa_data["totp"] = code
 
             # Update headers for JSON
             headers = self.client._headers.copy()

@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.2] - 2025-09-13
+
+### 🔧 Authentication Fixes
+- **🔐 Fixed Email OTP Support**: Resolved issue #30 where email verification codes were failing with 403 errors
+  - Authentication service now properly detects 6-digit email codes vs TOTP codes
+  - Email codes are sent using `email_otp` field, TOTP codes use `totp` field
+  - Added interactive email OTP demo in `examples/email_otp_demo.py`
+  - Improved error handling and user guidance for email verification flow
+
 ## [0.8.0] - 2025-01-05
 
 ### 🚀 Major GraphQL Optimization Features
