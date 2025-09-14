@@ -52,30 +52,64 @@ class InvestmentService(BaseService):
             "Fetching account holdings", account_id=account_id, start_date=start_date
         )
 
-        variables = {"accountId": account_id}
+        # Build portfolio input with date range
+        portfolio_input = {}
         if start_date:
-            variables["startDate"] = start_date
+            portfolio_input["startDate"] = start_date
+            # Set end date to current date if not specified
+            import datetime
+            end_date = datetime.datetime.now().strftime("%Y-%m-%d")
+            portfolio_input["endDate"] = end_date
 
+        variables = {"portfolioInput": portfolio_input}
+
+        # Use the portfolio query approach like the web UI
+        # Note: This now gets ALL holdings across accounts, not just one account
+        # We'll filter for the specific account in the response processing
         query = gql(
             """
-            query Web_GetHoldings($accountId: String!, $startDate: String) {
-                account(id: $accountId) {
-                    id
-                    displayName
-                    holdings(startDate: $startDate) {
-                        id
-                        quantity
-                        basis
-                        marketValue
-                        totalReturn
-                        totalReturnPercent
-                        security {
-                            id
-                            symbol
-                            name
-                            cusip
-                            currentPrice
-                            securityType
+            query Web_GetPortfolio($portfolioInput: PortfolioInput) {
+                portfolio(input: $portfolioInput) {
+                    aggregateHoldings {
+                        edges {
+                            node {
+                                id
+                                quantity
+                                basis
+                                totalValue
+                                securityPriceChangeDollars
+                                securityPriceChangePercent
+                                lastSyncedAt
+                                holdings {
+                                    id
+                                    type
+                                    typeDisplay
+                                    name
+                                    ticker
+                                    closingPrice
+                                    closingPriceUpdatedAt
+                                    quantity
+                                    value
+                                    account {
+                                        id
+                                        displayName
+                                        __typename
+                                    }
+                                    __typename
+                                }
+                                security {
+                                    id
+                                    name
+                                    ticker
+                                    currentPrice
+                                    currentPriceUpdatedAt
+                                    closingPrice
+                                    type
+                                    typeDisplay
+                                    __typename
+                                }
+                                __typename
+                            }
                             __typename
                         }
                         __typename
@@ -86,9 +120,60 @@ class InvestmentService(BaseService):
         """
         )
 
-        return await self.client.gql_call(
-            operation="Web_GetHoldings", graphql_query=query, variables=variables
+        result = await self.client.gql_call(
+            operation="Web_GetPortfolio", graphql_query=query, variables=variables
         )
+
+        # Process the portfolio response to extract holdings for the specific account
+        portfolio = result.get("portfolio", {})
+        aggregate_holdings = portfolio.get("aggregateHoldings", {})
+        edges = aggregate_holdings.get("edges", [])
+
+        # Filter holdings for the requested account
+        account_holdings = []
+        account_display_name = "Unknown"
+
+        for edge in edges:
+            node = edge.get("node", {})
+            holdings = node.get("holdings", [])
+
+            for holding in holdings:
+                holding_account = holding.get("account", {})
+                if holding_account.get("id") == account_id:
+                    # Store account display name
+                    if account_display_name == "Unknown":
+                        account_display_name = holding_account.get("displayName", "Unknown")
+
+                    # Transform to match expected format
+                    transformed_holding = {
+                        "id": holding["id"],
+                        "quantity": holding.get("quantity", 0),
+                        "basis": node.get("basis", 0),
+                        "marketValue": holding.get("value", 0),
+                        "totalReturn": 0,  # Calculate if needed
+                        "totalReturnPercent": 0,  # Calculate if needed
+                        "security": {
+                            "id": node.get("security", {}).get("id"),
+                            "symbol": holding.get("ticker"),
+                            "name": node.get("security", {}).get("name"),
+                            "cusip": None,  # Not available in this response
+                            "currentPrice": node.get("security", {}).get("currentPrice"),
+                            "securityType": node.get("security", {}).get("type"),
+                            "__typename": "Security"
+                        },
+                        "__typename": "Holding"
+                    }
+                    account_holdings.append(transformed_holding)
+
+        # Return in expected format
+        return {
+            "account": {
+                "id": account_id,
+                "displayName": account_display_name,
+                "holdings": account_holdings,
+                "__typename": "Account"
+            }
+        }
 
     async def create_manual_holding(
         self,
@@ -131,57 +216,56 @@ class InvestmentService(BaseService):
             quantity=quantity,
         )
 
-        variables = {
-            "accountId": account_id,
-            "symbol": symbol,
-            "quantity": quantity,
-        }
+        # First get the security ID for the symbol
+        security_data = await self.get_security_details(ticker=symbol)
+        securities = security_data.get("securitySearch", [])
 
-        if basis_per_share is not None:
-            variables["basisPerShare"] = basis_per_share
-        if acquisition_date:
-            variables["acquisitionDate"] = acquisition_date
+        if not securities:
+            raise ValueError(f"Security with symbol '{symbol}' not found")
+
+        security = securities[0]  # Use first match
+        security_id = security.get("id")
+
+        if not security_id:
+            raise ValueError(f"Could not get security ID for symbol '{symbol}'")
 
         query = gql(
             """
-            mutation Common_CreateManualHolding(
-                $accountId: String!,
-                $symbol: String!,
-                $quantity: Float!,
-                $basisPerShare: Float,
-                $acquisitionDate: String
-            ) {
-                createManualHolding(
-                    accountId: $accountId,
-                    symbol: $symbol,
-                    quantity: $quantity,
-                    basisPerShare: $basisPerShare,
-                    acquisitionDate: $acquisitionDate
-                ) {
+            mutation Common_CreateManualHolding($input: CreateManualHoldingInput!) {
+                createManualHolding(input: $input) {
                     holding {
                         id
-                        quantity
-                        basis
-                        marketValue
-                        security {
-                            id
-                            symbol
-                            name
-                            currentPrice
-                            __typename
-                        }
+                        ticker
                         __typename
                     }
                     errors {
-                        field
-                        messages
+                        ...PayloadErrorFields
                         __typename
                     }
                     __typename
                 }
             }
+
+            fragment PayloadErrorFields on PayloadError {
+                fieldErrors {
+                    field
+                    messages
+                    __typename
+                }
+                message
+                code
+                __typename
+            }
         """
         )
+
+        variables = {
+            "input": {
+                "accountId": account_id,
+                "securityId": security_id,
+                "quantity": float(quantity),
+            }
+        }
 
         return await self.client.gql_call(
             operation="Common_CreateManualHolding",
@@ -309,31 +393,40 @@ class InvestmentService(BaseService):
 
         query = gql(
             """
-            query SecuritySearch($ticker: String, $cusip: String) {
-                securitySearch(ticker: $ticker, cusip: $cusip) {
+            query SecuritySearch($search: String!, $limit: Int, $orderByPopularity: Boolean) {
+                securities(
+                    search: $search
+                    limit: $limit
+                    orderByPopularity: $orderByPopularity
+                ) {
                     id
-                    symbol
                     name
-                    cusip
+                    ticker
                     currentPrice
-                    previousClose
-                    change
-                    changePercent
-                    securityType
-                    exchange
-                    currency
-                    marketCap
-                    peRatio
-                    dividendYield
                     __typename
                 }
             }
         """
         )
 
-        return await self.client.gql_call(
+        # Convert parameters to match the working schema
+        search_term = ticker if ticker else cusip
+        if not search_term:
+            raise ValidationError("Either ticker or cusip must be provided")
+
+        variables = {
+            "search": search_term,
+            "limit": 5,
+            "orderByPopularity": True
+        }
+
+        result = await self.client.gql_call(
             operation="SecuritySearch", graphql_query=query, variables=variables
         )
+
+        # Transform the result to match the expected format
+        securities = result.get("securities", [])
+        return {"securitySearch": securities}
 
     async def get_investment_performance(
         self,
