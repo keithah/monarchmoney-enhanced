@@ -2754,7 +2754,7 @@ class MonarchMoney(object):
             graphql_query=query,
         )
 
-    async def get_transactions_summary_card(self) -> Dict[str, Any]:
+    async def get_transactions_list_dashboard(self) -> Dict[str, Any]:
         """
         Gets transactions summary card data from the account.
         This provides total transaction count information that may differ
@@ -2762,19 +2762,105 @@ class MonarchMoney(object):
         """
         query = gql(
             """
-            query Web_GetTransactionsSummaryCard {
-              transactionsSummaryCard {
+            query GetTransactionsListDashboard($offset: Int, $limit: Int, $filters: TransactionFilterInput) {
+              allTransactions(filters: $filters) {
                 totalCount
+                totalSelectableCount
+                results(offset: $offset, limit: $limit) {
+                  id
+                  ...TransactionsListFields
+                  __typename
+                }
+                __typename
+              }
+              transactionRules {
+                id
+                __typename
+              }
+              aggregates(filters: $filters) {
+                summary {
+                  count
+                  __typename
+                }
                 __typename
               }
             }
+
+            fragment TransactionOverviewFields on Transaction {
+              id
+              amount
+              pending
+              date
+              hideFromReports
+              hiddenByAccount
+              plaidName
+              notes
+              isRecurring
+              reviewStatus
+              needsReview
+              isSplitTransaction
+              dataProviderDescription
+              attachments {
+                id
+                __typename
+              }
+              goal {
+                id
+                name
+                __typename
+              }
+              category {
+                id
+                name
+                icon
+                group {
+                  id
+                  type
+                  __typename
+                }
+                __typename
+              }
+              merchant {
+                name
+                id
+                transactionsCount
+                logoUrl
+                recurringTransactionStream {
+                  frequency
+                  isActive
+                  __typename
+                }
+                __typename
+              }
+              tags {
+                id
+                name
+                color
+                order
+                __typename
+              }
+              account {
+                id
+                displayName
+                icon
+                logoUrl
+                __typename
+              }
+              __typename
+            }
+
+            fragment TransactionsListFields on Transaction {
+              id
+              ...TransactionOverviewFields
+              __typename
+            }
             """
         )
-
-        return await self.gql_call(
-            operation="Web_GetTransactionsSummaryCard",
+        response = await self.gql_call(
+            operation="GetTransactionsListDashboard",
             graphql_query=query,
         )
+        return response.get("data", response).get("aggregates")
 
     async def get_transactions(
         self,

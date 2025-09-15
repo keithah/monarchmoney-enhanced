@@ -94,20 +94,20 @@ class TestMonarchMoney(unittest.IsolatedAsyncioTestCase):
         )
 
     @patch.object(Client, "execute_async")
-    async def test_get_transactions_summary_card(self, mock_execute_async):
+    async def test_get_transactions_list_dashboard(self, mock_execute_async):
         """
-        Test the get_transactions_summary_card method.
+        Test the get_transactions_list_dashboard method.
         """
         mock_execute_async.return_value = TestMonarchMoney.loadTestData(
-            filename="get_transactions_summary_card.json",
+            filename="get_transactions_list_dashboard.json",
         )
-        result = await self.monarch_money.get_transactions_summary_card()
+        result = await self.monarch_money.get_transactions_list_dashboard()
         mock_execute_async.assert_called_once()
         self.assertIsNotNone(result, "Expected result to not be None")
         self.assertEqual(
-            result["transactionsSummaryCard"]["totalCount"],
-            41995,
-            "Expected totalCount to be 41995",
+            result[0]["summary"]["count"],
+            41819,
+            "Expected totalCount to be 41819",
         )
 
     @patch.object(Client, "execute_async")

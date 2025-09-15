@@ -2204,3 +2204,333 @@ FileNotFoundError: Session file not found: /tmp/nonexistent.pickle
 2025-09-03 21:49:37,281 - AuthenticationService - INFO - info:62 - Login successful - {'email': 'test@example.com'}
 2025-09-03 21:49:37,281 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
 2025-09-03 21:49:37,304 - AuthenticationService - INFO - info:62 - Session saved successfully - {'session_file': '/private/var/folders/pd/vzt389g972j9mlrm4lwbyf780000gn/T/pytest-of-keith/pytest-17/test_successful_login0/test_session.pickle'}
+2025-09-15 18:23:49,373 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:23:49,423 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,423 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,425 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:23:49,425 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:23:49,432 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:23:49,454 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,454 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,454 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:23:49,454 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:23:49,457 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:23:49,478 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,479 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,479 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:23:49,479 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:23:49,482 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:23:49,503 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,503 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,503 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:23:49,503 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:23:49,505 - AccountService - INFO - info:64 - Fetching accounts
+2025-09-15 18:23:49,506 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:23:49,527 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,527 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,528 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:23:49,528 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:23:49,531 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:23:49,552 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,552 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,553 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:23:49,553 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:23:49,557 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:23:49,593 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,593 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,594 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:23:49,595 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:23:49,598 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:23:49,620 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,620 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,620 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:23:49,620 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:23:49,623 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:23:49,644 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,644 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,644 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:23:49,644 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:23:49,647 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:23:49,668 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,668 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,669 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:23:49,669 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:23:49,671 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:23:49,692 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,692 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,693 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:23:49,693 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:23:49,694 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:23:49,716 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,716 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,716 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:23:49,716 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:23:49,717 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:23:49,738 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,739 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:23:49,739 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:23:49,739 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:33:54,398 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:33:54,424 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,424 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,429 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:33:54,429 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:33:54,436 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:33:54,457 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,457 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,457 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:33:54,457 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:33:54,460 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:33:54,481 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,481 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,482 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:33:54,482 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:33:54,484 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:33:54,505 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,505 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,506 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:33:54,506 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:33:54,507 - AccountService - INFO - info:64 - Fetching accounts
+2025-09-15 18:33:54,508 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:33:54,529 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,529 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,530 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:33:54,530 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:33:54,532 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:33:54,553 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,553 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,554 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:33:54,554 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:33:54,557 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:33:54,579 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,579 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,579 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:33:54,579 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:33:54,581 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:33:54,603 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,603 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,603 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:33:54,603 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:33:54,606 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:33:54,627 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,627 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,628 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:33:54,628 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:33:54,632 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:33:54,653 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,653 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,654 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:33:54,654 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:33:54,656 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:33:54,677 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,677 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,677 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:33:54,677 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:33:54,679 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:33:54,700 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,701 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,701 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:33:54,701 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:33:54,702 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:33:54,724 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,724 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:33:54,724 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:33:54,724 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:44,728 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:44,751 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:44,751 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:44,753 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:44,753 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:44,757 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:44,778 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:44,779 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:44,779 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:44,779 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:44,781 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:44,803 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:44,803 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:44,804 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:44,804 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:44,806 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:44,828 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:44,828 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:44,829 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:44,829 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:44,830 - AccountService - INFO - info:64 - Fetching accounts
+2025-09-15 18:34:44,831 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:44,852 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:44,852 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:44,852 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:44,852 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:44,854 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:44,876 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:44,876 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:44,876 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:44,876 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:44,880 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:44,901 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:44,901 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:44,901 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:44,902 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:44,903 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:44,925 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:44,925 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:44,925 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:44,925 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:44,927 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:44,949 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:44,949 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:44,949 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:44,949 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:44,964 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:44,986 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:44,986 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:44,986 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:44,986 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:44,988 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:45,009 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:45,009 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:45,009 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:45,010 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:45,011 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:45,033 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:45,033 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:45,033 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:45,033 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:45,034 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:45,055 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:45,055 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:45,056 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:45,056 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:57,652 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:57,676 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,676 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,678 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:57,678 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:57,682 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:57,703 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,703 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,704 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:57,704 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:57,706 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:57,728 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,728 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,728 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:57,729 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:57,731 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:57,752 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,752 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,752 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:57,752 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:57,753 - AccountService - INFO - info:64 - Fetching accounts
+2025-09-15 18:34:57,754 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:57,775 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,776 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,776 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:57,776 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:57,778 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:57,800 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,800 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,800 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:57,800 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:57,804 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:57,825 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,825 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,825 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:57,826 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:57,827 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:57,848 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,848 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,849 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:57,849 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:57,851 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:57,872 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,872 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,872 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:57,872 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:57,883 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:57,904 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,904 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,904 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:57,904 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:57,907 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:57,928 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,928 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,928 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:57,929 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:57,930 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:57,951 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,951 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,952 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:57,952 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:34:57,953 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:34:57,974 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,974 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:34:57,974 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:34:57,975 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:35:43,917 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:35:43,940 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:35:43,941 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:35:43,942 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:35:43,943 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:35:43,946 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:35:43,968 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:35:43,968 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:35:43,968 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:35:43,968 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:35:43,970 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:35:43,991 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:35:43,991 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:35:43,992 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:35:43,992 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:35:43,994 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:35:44,015 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:35:44,015 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:35:44,016 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:35:44,016 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:35:44,017 - AccountService - INFO - info:64 - Fetching accounts
+2025-09-15 18:35:44,018 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:35:44,039 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:35:44,039 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:35:44,040 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:35:44,040 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:35:44,042 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:35:44,063 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:35:44,063 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:35:44,064 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:35:44,064 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:35:44,068 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:35:44,089 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:35:44,089 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:35:44,090 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:35:44,090 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:35:44,092 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:35:44,113 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:35:44,113 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:35:44,113 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:35:44,113 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:35:44,115 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:35:44,137 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:35:44,137 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:35:44,137 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:35:44,137 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:35:44,140 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:35:44,162 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:35:44,162 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:35:44,162 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:35:44,162 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:35:44,164 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:35:44,185 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:35:44,185 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:35:44,185 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:35:44,186 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:35:44,187 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:35:44,208 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:35:44,208 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:35:44,209 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:35:44,209 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 18:35:44,210 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 18:35:44,231 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-15 18:35:44,231 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-15 18:35:44,232 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-15 18:35:44,232 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
