@@ -99,7 +99,7 @@ jobs:
                       {
                           'method': 'get_accounts',
                           'args': {},
-                          'expected_fields': ['id', 'displayName', 'type'],
+                          'expected_fields': ['accounts'],
                           'description': 'Get user accounts'
                       }
                   ],
@@ -107,7 +107,7 @@ jobs:
                       {
                           'method': 'get_transaction_categories',
                           'args': {},
-                          'expected_fields': ['id', 'name'],
+                          'expected_fields': ['categories'],
                           'description': 'Get transaction categories'
                       }
                   ],
@@ -115,7 +115,7 @@ jobs:
                       {
                           'method': 'get_security_details',
                           'args': {'ticker': 'AAPL'},
-                          'expected_fields': ['id', 'name', 'ticker'],
+                          'expected_fields': ['securitySearch'],
                           'description': 'Search for security details'
                       }
                   ],
@@ -123,7 +123,7 @@ jobs:
                       {
                           'method': 'get_budgets',
                           'args': {},
-                          'expected_fields': ['id', 'name'],
+                          'expected_fields': ['budgetData', 'categoryGroups'],
                           'description': 'Get budget information'
                       }
                   ]
