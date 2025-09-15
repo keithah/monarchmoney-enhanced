@@ -898,27 +898,25 @@ class InvestmentService(BaseService):
                 updateHolding(input: $input) {
                     holding {
                         id
-                        quantity
-                        costBasisPerShare
-                        currentValue
-                        totalReturn
-                        totalReturnPercent
-                        security {
-                            id
-                            symbol
-                            name
-                            currentPrice
-                            __typename
-                        }
                         __typename
                     }
                     errors {
-                        field
-                        messages
+                        ...PayloadErrorFields
                         __typename
                     }
                     __typename
                 }
+            }
+
+            fragment PayloadErrorFields on PayloadError {
+                fieldErrors {
+                    field
+                    messages
+                    __typename
+                }
+                message
+                code
+                __typename
             }
         """
         )
@@ -957,10 +955,27 @@ class InvestmentService(BaseService):
                     errors=errors,
                     full_result=result
                 )
+
+            # Extract error messages from PayloadErrorFields format
+            error_messages = []
+            for error in errors:
+                if isinstance(error, dict):
+                    # Handle new PayloadErrorFields format
+                    if "message" in error:
+                        error_messages.append(error["message"])
+                    if "fieldErrors" in error:
+                        for field_error in error["fieldErrors"]:
+                            field = field_error.get("field", "unknown")
+                            messages = field_error.get("messages", [])
+                            for msg in messages:
+                                error_messages.append(f"{field}: {msg}")
+                else:
+                    error_messages.append(str(error))
+
             self.logger.error(
-                "Holding update failed", holding_id=holding_id, errors=errors
+                "Holding update failed", holding_id=holding_id, errors=error_messages
             )
-            raise ValueError(f"Failed to update holding: {errors}")
+            raise ValueError(f"Failed to update holding: {error_messages}")
 
         holding = update_result.get("holding")
         if not holding:
@@ -973,4 +988,6 @@ class InvestmentService(BaseService):
             raise ValueError("Failed to update holding: No holding returned")
 
         self.logger.info("Successfully updated holding quantity", holding_id=holding_id)
-        return holding
+
+        # Return minimal holding info since we can't get all the fields anymore
+        return {"id": holding.get("id"), "updated": True}
