@@ -883,6 +883,15 @@ class InvestmentService(BaseService):
         if new_basis_per_share is not None:
             variables["input"]["costBasisPerShare"] = str(new_basis_per_share)
 
+        # Enhanced debug logging when debug flag is enabled
+        if getattr(self.client, '_debug', False):
+            self.logger.debug(
+                "🔍 UpdateHoldingQuantity mutation details",
+                operation="UpdateHoldingQuantity",
+                variables=variables,
+                holding_id=holding_id,
+            )
+
         query = gql(
             """
             mutation UpdateHoldingQuantity($input: UpdateHoldingInput!) {
@@ -914,16 +923,40 @@ class InvestmentService(BaseService):
         """
         )
 
-        result = await self.client.gql_call(
-            operation="UpdateHoldingQuantity",
-            graphql_query=query,
-            variables=variables,
-        )
+        try:
+            if getattr(self.client, '_debug', False):
+                self.logger.debug("🚀 Executing UpdateHoldingQuantity mutation")
+
+            result = await self.client.gql_call(
+                operation="UpdateHoldingQuantity",
+                graphql_query=query,
+                variables=variables,
+            )
+
+            if getattr(self.client, '_debug', False):
+                self.logger.debug("✅ UpdateHoldingQuantity mutation completed", result=result)
+        except Exception as e:
+            if getattr(self.client, '_debug', False):
+                self.logger.error(
+                    "❌ UpdateHoldingQuantity mutation failed",
+                    operation="UpdateHoldingQuantity",
+                    variables=variables,
+                    error=str(e),
+                    error_type=type(e).__name__,
+                )
+            raise
 
         update_result = result.get("updateHolding", {})
         errors = update_result.get("errors", [])
 
         if errors:
+            if getattr(self.client, '_debug', False):
+                self.logger.error(
+                    "🔴 GraphQL mutation returned errors",
+                    holding_id=holding_id,
+                    errors=errors,
+                    full_result=result
+                )
             self.logger.error(
                 "Holding update failed", holding_id=holding_id, errors=errors
             )
@@ -931,6 +964,12 @@ class InvestmentService(BaseService):
 
         holding = update_result.get("holding")
         if not holding:
+            if getattr(self.client, '_debug', False):
+                self.logger.error(
+                    "🔴 No holding returned in successful response",
+                    holding_id=holding_id,
+                    full_result=result
+                )
             raise ValueError("Failed to update holding: No holding returned")
 
         self.logger.info("Successfully updated holding quantity", holding_id=holding_id)

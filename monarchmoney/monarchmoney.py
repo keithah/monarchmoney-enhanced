@@ -183,6 +183,27 @@ async def retry_with_backoff(func, max_retries=3, base_delay=1.0, max_delay=60.0
 
 
 class MonarchMoney(object):
+    """
+    Main MonarchMoney client for accessing Monarch Money API.
+
+    Args:
+        session_file: Path to session file for storing authentication tokens
+        timeout: HTTP request timeout in seconds
+        token: Optional pre-existing authentication token
+        session_password: Password for session encryption
+        use_encryption: Whether to encrypt session files
+        debug: Enable enhanced debug logging for GraphQL requests and responses.
+               When True, logs detailed information about all GraphQL operations
+               including request variables, response data, and error details.
+               Useful for troubleshooting API issues.
+
+    Example:
+        >>> # Enable debug logging for troubleshooting
+        >>> mm = MonarchMoney(debug=True)
+        >>> await mm.login_with_email("user@example.com", "password")
+        >>> # All GraphQL operations will now log detailed debug information
+    """
+
     def __init__(
         self,
         session_file: str = SESSION_FILE,
@@ -190,6 +211,7 @@ class MonarchMoney(object):
         token: Optional[str] = None,
         session_password: Optional[str] = None,
         use_encryption: bool = True,
+        debug: bool = False,
     ) -> None:
         self._headers = {
             "Accept": "application/json",
@@ -213,6 +235,7 @@ class MonarchMoney(object):
         self._last_used = None
         self._session_password = session_password
         self._use_encryption = use_encryption
+        self._debug = debug
 
         # Initialize secure session storage
         self._secure_storage = SecureSessionStorage(session_password, use_encryption)
@@ -5290,11 +5313,39 @@ class MonarchMoney(object):
         """
         Makes a GraphQL call to Monarch Money's API with retry logic.
         """
+        # Enhanced debug logging when debug flag is enabled
+        if self._debug:
+            import json
+            logger.debug(
+                "🚀 GraphQL Request",
+                operation=operation,
+                variables=variables,
+                query_str=str(graphql_query)[:200] + "..." if len(str(graphql_query)) > 200 else str(graphql_query)
+            )
 
         async def _execute():
-            return await self._get_graphql_client().execute_async(
-                graphql_query, variable_values=variables, operation_name=operation
-            )
+            try:
+                result = await self._get_graphql_client().execute_async(
+                    graphql_query, variable_values=variables, operation_name=operation
+                )
+                if self._debug:
+                    logger.debug("✅ GraphQL Response received", operation=operation, result_keys=list(result.keys()) if isinstance(result, dict) else "non-dict")
+                return result
+            except Exception as e:
+                if self._debug:
+                    logger.error(
+                        "❌ GraphQL Request Failed",
+                        operation=operation,
+                        variables=variables,
+                        error=str(e),
+                        error_type=type(e).__name__
+                    )
+                    # Log additional details for specific error types
+                    if hasattr(e, 'response'):
+                        logger.error("HTTP Response details", status=getattr(e.response, 'status', 'unknown'))
+                    if hasattr(e, 'errors') and e.errors:
+                        logger.error("GraphQL Error details", graphql_errors=e.errors)
+                raise
 
         return await retry_with_backoff(_execute)
 
