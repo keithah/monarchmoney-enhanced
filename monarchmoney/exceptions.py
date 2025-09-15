@@ -197,6 +197,29 @@ class ConfigurationError(MonarchMoneyError):
         return f"Configuration error: {self.message}"
 
 
+class SchemaValidationError(MonarchMoneyError):
+    """Raised when GraphQL schema validation fails."""
+
+    def __init__(
+        self,
+        message: str,
+        operation: Optional[str] = None,
+        missing_fields: Optional[list] = None,
+        details: Optional[Dict[str, Any]] = None,
+    ):
+        super().__init__(message, details)
+        self.operation = operation
+        self.missing_fields = missing_fields or []
+
+    def __str__(self):
+        base_msg = super().__str__()
+        if self.operation:
+            base_msg = f"Schema validation error for operation '{self.operation}': {self.message}"
+        if self.missing_fields:
+            return f"{base_msg} (missing fields: {', '.join(self.missing_fields)})"
+        return base_msg
+
+
 # Backward compatibility aliases for existing exception names
 class RequireMFAException(MFARequiredError):
     """Legacy alias for MFARequiredError."""
