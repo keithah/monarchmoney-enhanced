@@ -54,7 +54,7 @@ jobs:
           echo "Schema cache directory created"
 
       - name: Cache schema history
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.monarchmoney/schema_cache
           key: schema-cache-${{ github.ref }}-${{ github.run_number }}
@@ -160,14 +160,14 @@ jobs:
           "
 
       - name: Upload coverage reports
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           file: ./coverage.xml
           flags: schema-monitoring
           name: schema-monitoring-coverage
 
       - name: Upload schema artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: schema-monitoring-results
           path: |
