@@ -65,30 +65,16 @@ jobs:
               print('🔐 Authenticating with MonarchMoney...')
               mm = MonarchMoney(debug=False)
 
-              # Try authentication with MFA if needed
-              try:
-                  await mm.login_with_email(
-                      os.getenv('MM_TEST_EMAIL'),
-                      os.getenv('MM_TEST_PASSWORD')
-                  )
-                  print('✅ Authentication successful')
-              except Exception as e:
-                  if 'mfa' in str(e).lower() or 'multi-factor' in str(e).lower():
-                      print('🔑 MFA required, using TOTP...')
-                      import oathtool
-                      mfa_secret = os.getenv('MM_TEST_MFA_SECRET')
-                      if mfa_secret:
-                          totp_code = oathtool.generate_otp(mfa_secret)
-                          await mm.login_with_email(
-                              os.getenv('MM_TEST_EMAIL'),
-                              os.getenv('MM_TEST_PASSWORD'),
-                              totp_code
-                          )
-                          print('✅ MFA authentication successful')
-                      else:
-                          raise Exception('MFA required but MM_TEST_MFA_SECRET not set')
-                  else:
-                      raise e
+              # Authenticate with MFA secret
+              mfa_secret = os.getenv('MM_TEST_MFA_SECRET')
+              await mm.login(
+                  email=os.getenv('MM_TEST_EMAIL'),
+                  password=os.getenv('MM_TEST_PASSWORD'),
+                  mfa_secret_key=mfa_secret,
+                  use_saved_session=False,
+                  save_session=False
+              )
+              print('✅ Authentication successful')
 
               print('📊 Creating schema monitor...')
               monitor = SchemaMonitor(mm)
