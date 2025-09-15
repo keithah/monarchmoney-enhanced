@@ -1,0 +1,405 @@
+name: Operation Health Check
+
+on:
+  schedule:
+    # Run daily at 6 AM UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      test_level:
+        description: 'Test level (basic, comprehensive)'
+        required: false
+        default: 'basic'
+        type: choice
+        options:
+        - basic
+        - comprehensive
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  operation-health:
+    runs-on: ubuntu-latest
+    name: Test GraphQL Operation Health
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Create health check cache
+        run: |
+          mkdir -p ~/.monarchmoney/health_checks
+          echo "Health check cache directory created"
+
+      - name: Cache health check history
+        uses: actions/cache@v4
+        with:
+          path: ~/.monarchmoney/health_checks
+          key: health-check-${{ github.ref }}-${{ github.run_number }}
+          restore-keys: |
+            health-check-${{ github.ref }}-
+            health-check-main-
+
+      - name: Run operation health checks
+        id: health_check
+        env:
+          MM_TEST_EMAIL: ${{ secrets.MM_TEST_EMAIL }}
+          MM_TEST_PASSWORD: ${{ secrets.MM_TEST_PASSWORD }}
+          MM_TEST_MFA_SECRET: ${{ secrets.MM_TEST_MFA_SECRET }}
+        run: |
+          echo "Running operation health checks..."
+          python -c "
+          import asyncio
+          import json
+          import os
+          import traceback
+          from datetime import datetime
+          from pathlib import Path
+          from monarchmoney import MonarchMoney
+          from monarchmoney.services import InvestmentService, AccountService, TransactionService, BudgetService
+
+          async def test_operation_health():
+              print('🔐 Authenticating with MonarchMoney...')
+              mm = MonarchMoney(debug=False)
+
+              mfa_secret = os.getenv('MM_TEST_MFA_SECRET')
+              await mm.login(
+                  email=os.getenv('MM_TEST_EMAIL'),
+                  password=os.getenv('MM_TEST_PASSWORD'),
+                  mfa_secret_key=mfa_secret,
+                  use_saved_session=False,
+                  save_session=False
+              )
+              print('✅ Authentication successful')
+
+              # Health check results
+              health_results = {
+                  'timestamp': datetime.now().isoformat(),
+                  'services': {},
+                  'overall_status': 'healthy',
+                  'issues_found': [],
+                  'changes_detected': []
+              }
+
+              # Test operations by service
+              test_cases = {
+                  'AccountService': [
+                      {
+                          'method': 'get_accounts',
+                          'args': {},
+                          'expected_fields': ['id', 'displayName', 'type'],
+                          'description': 'Get user accounts'
+                      }
+                  ],
+                  'TransactionService': [
+                      {
+                          'method': 'get_transaction_categories',
+                          'args': {},
+                          'expected_fields': ['id', 'name'],
+                          'description': 'Get transaction categories'
+                      }
+                  ],
+                  'InvestmentService': [
+                      {
+                          'method': 'get_security_details',
+                          'args': {'ticker': 'AAPL'},
+                          'expected_fields': ['id', 'name', 'ticker'],
+                          'description': 'Search for security details'
+                      }
+                  ],
+                  'BudgetService': [
+                      {
+                          'method': 'get_budgets',
+                          'args': {},
+                          'expected_fields': ['id', 'name'],
+                          'description': 'Get budget information'
+                      }
+                  ]
+              }
+
+              services = {
+                  'AccountService': AccountService(mm),
+                  'TransactionService': TransactionService(mm),
+                  'InvestmentService': InvestmentService(mm),
+                  'BudgetService': BudgetService(mm)
+              }
+
+              total_tests = 0
+              passed_tests = 0
+
+              for service_name, test_operations in test_cases.items():
+                  print(f'\\n🧪 Testing {service_name}...')
+                  service = services[service_name]
+                  service_results = {'tests': [], 'status': 'healthy', 'issues': []}
+
+                  for test_case in test_operations:
+                      total_tests += 1
+                      method_name = test_case['method']
+                      args = test_case['args']
+                      expected_fields = test_case['expected_fields']
+                      description = test_case['description']
+
+                      test_result = {
+                          'method': method_name,
+                          'description': description,
+                          'status': 'unknown',
+                          'error': None,
+                          'missing_fields': [],
+                          'available_fields': [],
+                          'is_schema_error': False
+                      }
+
+                      try:
+                          print(f'  Testing {method_name}...')
+                          method = getattr(service, method_name)
+                          result = await method(**args)
+
+                          # Analyze result structure
+                          if isinstance(result, list) and len(result) > 0:
+                              # Check first item for expected fields
+                              first_item = result[0]
+                              if isinstance(first_item, dict):
+                                  available_fields = list(first_item.keys())
+                                  missing_fields = [f for f in expected_fields if f not in available_fields]
+
+                                  test_result['available_fields'] = available_fields
+                                  test_result['missing_fields'] = missing_fields
+
+                                  if missing_fields:
+                                      test_result['status'] = 'degraded'
+                                      issue = f'{service_name}.{method_name}: Missing expected fields {missing_fields}'
+                                      service_results['issues'].append(issue)
+                                      health_results['changes_detected'].append(issue)
+                                      print(f'    ⚠️  {issue}')
+                                  else:
+                                      test_result['status'] = 'passed'
+                                      passed_tests += 1
+                                      print(f'    ✅ {method_name} passed')
+                              else:
+                                  test_result['status'] = 'passed'
+                                  passed_tests += 1
+                                  print(f'    ✅ {method_name} passed (non-dict result)')
+                          elif isinstance(result, dict):
+                              # Single result object
+                              available_fields = list(result.keys())
+                              missing_fields = [f for f in expected_fields if f not in available_fields]
+
+                              test_result['available_fields'] = available_fields
+                              test_result['missing_fields'] = missing_fields
+
+                              if missing_fields:
+                                  test_result['status'] = 'degraded'
+                                  issue = f'{service_name}.{method_name}: Missing expected fields {missing_fields}'
+                                  service_results['issues'].append(issue)
+                                  health_results['changes_detected'].append(issue)
+                                  print(f'    ⚠️  {issue}')
+                              else:
+                                  test_result['status'] = 'passed'
+                                  passed_tests += 1
+                                  print(f'    ✅ {method_name} passed')
+                          else:
+                              # Empty result or unexpected type
+                              test_result['status'] = 'passed'
+                              passed_tests += 1
+                              print(f'    ✅ {method_name} passed (empty/different result type)')
+
+                      except Exception as e:
+                          error_str = str(e).lower()
+                          test_result['error'] = str(e)
+
+                          # Classify error types
+                          if any(indicator in error_str for indicator in [
+                              'something went wrong', 'field', 'cannot query field',
+                              'unknown field', 'schema', 'introspection'
+                          ]):
+                              test_result['is_schema_error'] = True
+                              test_result['status'] = 'schema_error'
+                              issue = f'{service_name}.{method_name}: Schema error - {str(e)}'
+                              service_results['issues'].append(issue)
+                              health_results['issues_found'].append(issue)
+                              print(f'    ❌ {method_name}: SCHEMA ERROR - {e}')
+                          else:
+                              test_result['status'] = 'business_error'
+                              print(f'    ⚠️  {method_name}: Business logic error - {e}')
+                              passed_tests += 1  # Business errors are expected for some operations
+
+                      service_results['tests'].append(test_result)
+
+                  # Determine service health
+                  schema_errors = [t for t in service_results['tests'] if t['status'] == 'schema_error']
+                  if schema_errors:
+                      service_results['status'] = 'unhealthy'
+                      health_results['overall_status'] = 'unhealthy'
+                  elif service_results['issues']:
+                      service_results['status'] = 'degraded'
+                      if health_results['overall_status'] == 'healthy':
+                          health_results['overall_status'] = 'degraded'
+
+                  health_results['services'][service_name] = service_results
+
+              # Summary
+              health_results['summary'] = {
+                  'total_tests': total_tests,
+                  'passed_tests': passed_tests,
+                  'success_rate': (passed_tests / total_tests * 100) if total_tests > 0 else 0,
+                  'schema_errors': len(health_results['issues_found']),
+                  'field_changes': len(health_results['changes_detected'])
+              }
+
+              print(f'\\n📊 Health Check Summary:')
+              print(f'   Overall Status: {health_results[\"overall_status\"].upper()}')
+              print(f'   Tests Passed: {passed_tests}/{total_tests} ({health_results[\"summary\"][\"success_rate\"]:.1f}%)')
+              print(f'   Schema Errors: {health_results[\"summary\"][\"schema_errors\"]}')
+              print(f'   Field Changes: {health_results[\"summary\"][\"field_changes\"]}')
+
+              # Save results
+              cache_dir = Path.home() / '.monarchmoney' / 'health_checks'
+              result_file = cache_dir / f'health_check_{datetime.now().strftime(\"%Y%m%d_%H%M%S\")}.json'
+              with open(result_file, 'w') as f:
+                  json.dump(health_results, f, indent=2)
+
+              latest_file = cache_dir / 'latest_health_check.json'
+              with open(latest_file, 'w') as f:
+                  json.dump(health_results, f, indent=2)
+
+              print(f'\\n💾 Results saved to {result_file}')
+
+              # Set GitHub outputs
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                  f.write(f'overall_status={health_results[\"overall_status\"]}\\n')
+                  f.write(f'schema_errors={health_results[\"summary\"][\"schema_errors\"]}\\n')
+                  f.write(f'field_changes={health_results[\"summary\"][\"field_changes\"]}\\n')
+                  f.write(f'success_rate={health_results[\"summary\"][\"success_rate\"]:.1f}\\n')
+
+              print('🎉 Operation health check completed!')
+
+          asyncio.run(test_operation_health())
+          "
+
+      - name: Upload health check results
+        uses: actions/upload-artifact@v4
+        with:
+          name: operation-health-results
+          path: |
+            ~/.monarchmoney/health_checks/latest_health_check.json
+            ~/.monarchmoney/health_checks/health_check_*.json
+          retention-days: 30
+
+      - name: Create issue for schema errors
+        if: steps.health_check.outputs.schema_errors != '0'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+
+            // Read health check results
+            const healthPath = require('path').join(process.env.HOME, '.monarchmoney/health_checks/latest_health_check.json');
+            let healthData = null;
+
+            if (fs.existsSync(healthPath)) {
+              healthData = JSON.parse(fs.readFileSync(healthPath, 'utf8'));
+            }
+
+            if (!healthData) {
+              console.log('No health check data found');
+              return;
+            }
+
+            const schemaErrors = healthData.issues_found || [];
+            const fieldChanges = healthData.changes_detected || [];
+            const overallStatus = healthData.overall_status;
+
+            const hasBreakingIssues = schemaErrors.length > 0;
+
+            const issueTitle = hasBreakingIssues
+              ? `🚨 GraphQL Schema Errors Detected - ${new Date().toISOString().split('T')[0]}`
+              : `⚠️ GraphQL Operation Issues - ${new Date().toISOString().split('T')[0]}`;
+
+            let issueBody = `# ${hasBreakingIssues ? '🚨 Schema Errors' : '⚠️ Operation Issues'} Detected
+
+            **Detected on:** ${new Date().toISOString()}
+            **Workflow:** [Operation Health Check](${context.payload.repository.html_url}/actions/runs/${context.runId})
+            **Overall Status:** ${overallStatus.toUpperCase()}
+
+            ## Summary
+            - **Success Rate:** ${healthData.summary.success_rate.toFixed(1)}%
+            - **Total Tests:** ${healthData.summary.total_tests}
+            - **Schema Errors:** ${healthData.summary.schema_errors}
+            - **Field Changes:** ${healthData.summary.field_changes}
+            `;
+
+            if (schemaErrors.length > 0) {
+              issueBody += `\n## 🚨 Schema Errors\n`;
+              schemaErrors.forEach(error => {
+                issueBody += `- ${error}\n`;
+              });
+            }
+
+            if (fieldChanges.length > 0) {
+              issueBody += `\n## ⚠️ Field Changes Detected\n`;
+              fieldChanges.forEach(change => {
+                issueBody += `- ${change}\n`;
+              });
+            }
+
+            // Service details
+            issueBody += `\n## Service Status\n`;
+            for (const [serviceName, serviceData] of Object.entries(healthData.services)) {
+              const statusEmoji = serviceData.status === 'healthy' ? '✅' :
+                                 serviceData.status === 'degraded' ? '⚠️' : '❌';
+              issueBody += `- **${serviceName}**: ${statusEmoji} ${serviceData.status}\n`;
+
+              if (serviceData.issues.length > 0) {
+                serviceData.issues.forEach(issue => {
+                  issueBody += `  - ${issue}\n`;
+                });
+              }
+            }
+
+            issueBody += `\n## Next Steps
+            1. Review the operation health check results in the workflow artifacts
+            2. Test affected operations manually
+            3. Update robust operation field specifications if needed
+            4. Consider updating service methods for new field requirements
+
+            ## Recommendations
+            - Use the robust GraphQL operations to handle field changes gracefully
+            - Update field specifications in operation classes when schema changes are confirmed
+            - Monitor for patterns in "Something went wrong" errors
+
+            ---
+            *This issue was automatically created by the Operation Health Check workflow.*
+            `;
+
+            const labels = hasBreakingIssues
+              ? ['schema-change', 'operation-error', 'urgent', 'api']
+              : ['schema-change', 'field-change', 'monitoring'];
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: issueTitle,
+              body: issueBody,
+              labels: labels
+            });
+
+      - name: Summary
+        run: |
+          echo "## Operation Health Check Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Workflow completed:** $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Overall Status:** ${{ steps.health_check.outputs.overall_status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Success Rate:** ${{ steps.health_check.outputs.success_rate }}%" >> $GITHUB_STEP_SUMMARY
+          echo "- **Schema Errors:** ${{ steps.health_check.outputs.schema_errors }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Field Changes:** ${{ steps.health_check.outputs.field_changes }}" >> $GITHUB_STEP_SUMMARY
