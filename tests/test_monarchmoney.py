@@ -111,6 +111,23 @@ class TestMonarchMoney(unittest.IsolatedAsyncioTestCase):
         )
 
     @patch.object(Client, "execute_async")
+    async def test_get_transactions_list_dashboard(self, mock_execute_async):
+        """
+        Test the get_transactions_list_dashboard method.
+        """
+        mock_execute_async.return_value = TestMonarchMoney.loadTestData(
+            filename="get_transactions_list_dashboard.json",
+        )
+        result = await self.monarch_money.get_transactions_list_dashboard()
+        mock_execute_async.assert_called_once()
+        self.assertIsNotNone(result, "Expected result to not be None")
+        self.assertEqual(
+            result[0]["summary"]["count"],
+            41819,
+            "Expected count to be 41819",
+        )
+
+    @patch.object(Client, "execute_async")
     async def test_delete_account(self, mock_execute_async):
         """
         Test the delete_account method.

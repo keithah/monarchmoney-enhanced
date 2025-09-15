@@ -1,0 +1,11 @@
+{
+    "aggregates": [
+        {
+            "summary": {
+                "count": 41819,
+                "__typename": "TransactionsSummary"
+            },
+            "__typename": "AggregateData"
+        }
+    ]
+}
