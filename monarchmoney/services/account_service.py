@@ -44,6 +44,16 @@ class AccountService(BaseService):
                     id
                     displayName
                     currentBalance
+                    type {
+                        name
+                        display
+                        __typename
+                    }
+                    subtype {
+                        name
+                        display
+                        __typename
+                    }
                     __typename
                 }
             }

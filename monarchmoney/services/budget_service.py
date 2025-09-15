@@ -56,51 +56,31 @@ class BudgetService(BaseService):
             category_count=len(category_ids) if category_ids else 0,
         )
 
-        variables = {}
-        if start_date:
-            variables["startDate"] = start_date
-        if end_date:
-            variables["endDate"] = end_date
-        if category_ids:
-            variables["categoryIds"] = category_ids
+        # Set default dates if not provided (required for this query)
+        if not start_date:
+            from datetime import datetime, timedelta
+            today = datetime.now()
+            start_date = (today.replace(day=1) - timedelta(days=1)).replace(day=1).strftime("%Y-%m-%d")
+        if not end_date:
+            from datetime import datetime, timedelta
+            today = datetime.now()
+            next_month = today.replace(day=28) + timedelta(days=4)
+            end_date = next_month.replace(day=1).strftime("%Y-%m-%d")
+
+        variables = {
+            "startDate": start_date,
+            "endDate": end_date
+        }
 
         query = gql(
             """
-            query Common_GetJointPlanningData(
-                $startDate: String,
-                $endDate: String,
-                $categoryIds: [String]
-            ) {
-                budgets(
-                    startDate: $startDate,
-                    endDate: $endDate,
-                    categoryIds: $categoryIds
-                ) {
-                    id
-                    name
-                    period
-                    startDate
-                    endDate
-                    totalBudgeted
-                    totalSpent
-                    totalRemaining
-                    categories {
-                        id
-                        name
-                        icon
-                        color
-                        budgetAmount
-                        spentAmount
-                        remainingAmount
-                        percentSpent
-                        transactions {
+            query Common_GetJointPlanningData($startDate: Date!, $endDate: Date!) {
+                budgetSystem
+                budgetData(startMonth: $startDate, endMonth: $endDate) {
+                    monthlyAmountsByCategory {
+                        category {
                             id
-                            amount
-                            date
-                            merchant {
-                                name
-                                __typename
-                            }
+                            name
                             __typename
                         }
                         __typename
@@ -110,16 +90,11 @@ class BudgetService(BaseService):
                 categoryGroups {
                     id
                     name
-                    type
-                    budgetAmount
-                    spentAmount
-                    categories {
-                        id
-                        name
-                        budgetAmount
-                        spentAmount
-                        __typename
-                    }
+                    __typename
+                }
+                goalsV2 {
+                    id
+                    name
                     __typename
                 }
             }

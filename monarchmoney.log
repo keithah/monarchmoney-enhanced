@@ -2285,3 +2285,71 @@ FileNotFoundError: Session file not found: /tmp/nonexistent.pickle
 2025-09-15 16:00:41,545 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
 2025-09-15 16:00:41,545 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
 2025-09-15 16:00:41,545 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 16:15:33,356 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 16:15:33,404 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 16:15:33,404 - TransactionService - INFO - info:64 - Fetching transaction categories
+2025-09-15 16:15:37,561 - TransactionService - ERROR - error:76 - GraphQL operation failed - {'operation': 'GetCategories', 'error': 'Authentication failed'}
+2025-09-15 16:15:37,561 - ErrorHandlers - WARNING - warning:69 - Operation failed, attempting recovery - {'operation': '_execute_query', 'attempt': 0, 'error_type': 'AuthenticationError', 'error_message': 'Authentication failed'}
+2025-09-15 16:15:37,561 - ErrorHandlers - INFO - info:62 - Attempting authentication recovery - {'operation': '_execute_query'}
+2025-09-15 16:15:37,561 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 16:15:37,584 - AuthenticationService - INFO - info:62 - Session loaded successfully - {'session_file': '.mm/mm_session.pickle'}
+2025-09-15 16:15:40,042 - GraphQLClient - WARNING - warning:69 - Slow GraphQL operation detected - {'operation': 'ValidateSession', 'duration': 2.4581031799316406, 'variables': None}
+2025-09-15 16:15:40,042 - ErrorHandlers - INFO - info:64 - Authentication recovered via session reload
+2025-09-15 16:15:40,043 - ErrorHandlers - INFO - info:62 - Error recovery successful - {'strategy': 'AuthenticationRecoveryStrategy', 'operation': '_execute_query'}
+2025-09-15 16:15:42,429 - GraphQLClient - WARNING - warning:69 - Slow GraphQL operation detected - {'operation': 'GetCategories', 'duration': 2.3866379261016846, 'variables': None}
+2025-09-15 16:16:09,865 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 16:16:09,893 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 16:16:09,894 - BudgetService - INFO - info:62 - Fetching budgets - {'start_date': None, 'end_date': None, 'category_count': 0}
+2025-09-15 16:19:05,985 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 16:19:06,014 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 16:19:06,014 - TransactionService - INFO - info:64 - Fetching transaction categories
+2025-09-15 16:19:08,795 - TransactionService - ERROR - error:76 - GraphQL operation failed - {'operation': 'GetCategories', 'error': 'Authentication failed'}
+2025-09-15 16:19:08,795 - ErrorHandlers - WARNING - warning:69 - Operation failed, attempting recovery - {'operation': '_execute_query', 'attempt': 0, 'error_type': 'AuthenticationError', 'error_message': 'Authentication failed'}
+2025-09-15 16:19:08,795 - ErrorHandlers - INFO - info:62 - Attempting authentication recovery - {'operation': '_execute_query'}
+2025-09-15 16:19:08,795 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 16:19:08,818 - AuthenticationService - INFO - info:62 - Session loaded successfully - {'session_file': '.mm/mm_session.pickle'}
+2025-09-15 16:19:11,653 - GraphQLClient - WARNING - warning:69 - Slow GraphQL operation detected - {'operation': 'ValidateSession', 'duration': 2.834595203399658, 'variables': None}
+2025-09-15 16:19:11,654 - ErrorHandlers - INFO - info:64 - Authentication recovered via session reload
+2025-09-15 16:19:11,654 - ErrorHandlers - INFO - info:62 - Error recovery successful - {'strategy': 'AuthenticationRecoveryStrategy', 'operation': '_execute_query'}
+2025-09-15 16:19:14,787 - GraphQLClient - WARNING - warning:69 - Slow GraphQL operation detected - {'operation': 'GetCategories', 'duration': 3.133726119995117, 'variables': None}
+2025-09-15 16:19:14,788 - BudgetService - INFO - info:62 - Fetching budgets - {'start_date': None, 'end_date': None, 'category_count': 0}
+2025-09-15 16:20:26,473 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 16:20:26,501 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 16:20:26,501 - TransactionService - INFO - info:64 - Fetching transaction categories
+2025-09-15 16:20:29,222 - TransactionService - ERROR - error:76 - GraphQL operation failed - {'operation': 'GetCategories', 'error': 'Authentication failed'}
+2025-09-15 16:20:29,227 - ErrorHandlers - WARNING - warning:69 - Operation failed, attempting recovery - {'operation': '_execute_query', 'attempt': 0, 'error_type': 'AuthenticationError', 'error_message': 'Authentication failed'}
+2025-09-15 16:20:29,227 - ErrorHandlers - INFO - info:62 - Attempting authentication recovery - {'operation': '_execute_query'}
+2025-09-15 16:20:29,228 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 16:20:29,254 - AuthenticationService - INFO - info:62 - Session loaded successfully - {'session_file': '.mm/mm_session.pickle'}
+2025-09-15 16:20:33,493 - GraphQLClient - WARNING - warning:69 - Slow GraphQL operation detected - {'operation': 'ValidateSession', 'duration': 4.238391876220703, 'variables': None}
+2025-09-15 16:20:33,494 - ErrorHandlers - INFO - info:64 - Authentication recovered via session reload
+2025-09-15 16:20:33,494 - ErrorHandlers - INFO - info:62 - Error recovery successful - {'strategy': 'AuthenticationRecoveryStrategy', 'operation': '_execute_query'}
+2025-09-15 16:20:37,207 - GraphQLClient - WARNING - warning:69 - Slow GraphQL operation detected - {'operation': 'GetCategories', 'duration': 3.7131340503692627, 'variables': None}
+2025-09-15 16:20:37,207 - ErrorHandlers - INFO - info:62 - Operation succeeded after retry - {'operation': '_execute_query', 'attempt': 1}
+2025-09-15 16:20:37,208 - BudgetService - INFO - info:62 - Fetching budgets - {'start_date': None, 'end_date': None, 'category_count': 0}
+2025-09-15 16:21:19,653 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 16:21:19,682 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 16:21:19,682 - AccountService - INFO - info:64 - Fetching accounts
+2025-09-15 16:21:23,320 - AccountService - ERROR - error:76 - GraphQL operation failed - {'operation': 'GetAccounts', 'error': 'Authentication failed'}
+2025-09-15 16:21:23,320 - ErrorHandlers - WARNING - warning:69 - Operation failed, attempting recovery - {'operation': '_execute_query', 'attempt': 0, 'error_type': 'AuthenticationError', 'error_message': 'Authentication failed'}
+2025-09-15 16:21:23,320 - ErrorHandlers - INFO - info:62 - Attempting authentication recovery - {'operation': '_execute_query'}
+2025-09-15 16:21:23,320 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 16:21:23,361 - AuthenticationService - INFO - info:62 - Session loaded successfully - {'session_file': '.mm/mm_session.pickle'}
+2025-09-15 16:21:27,284 - GraphQLClient - WARNING - warning:69 - Slow GraphQL operation detected - {'operation': 'ValidateSession', 'duration': 3.921943187713623, 'variables': None}
+2025-09-15 16:21:27,285 - ErrorHandlers - INFO - info:64 - Authentication recovered via session reload
+2025-09-15 16:21:27,285 - ErrorHandlers - INFO - info:62 - Error recovery successful - {'strategy': 'AuthenticationRecoveryStrategy', 'operation': '_execute_query'}
+2025-09-15 16:21:31,161 - GraphQLClient - WARNING - warning:69 - Slow GraphQL operation detected - {'operation': 'GetAccounts', 'duration': 3.8761730194091797, 'variables': None}
+2025-09-15 16:21:31,162 - ErrorHandlers - INFO - info:62 - Operation succeeded after retry - {'operation': '_execute_query', 'attempt': 1}
+2025-09-15 16:23:16,723 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 16:23:16,751 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-15 16:23:16,751 - AccountService - INFO - info:64 - Fetching accounts
+2025-09-15 16:23:23,623 - AccountService - ERROR - error:76 - GraphQL operation failed - {'operation': 'GetAccounts', 'error': 'Authentication failed'}
+2025-09-15 16:23:23,624 - ErrorHandlers - WARNING - warning:69 - Operation failed, attempting recovery - {'operation': '_execute_query', 'attempt': 0, 'error_type': 'AuthenticationError', 'error_message': 'Authentication failed'}
+2025-09-15 16:23:23,624 - ErrorHandlers - INFO - info:62 - Attempting authentication recovery - {'operation': '_execute_query'}
+2025-09-15 16:23:23,624 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-15 16:23:23,646 - AuthenticationService - INFO - info:62 - Session loaded successfully - {'session_file': '.mm/mm_session.pickle'}
+2025-09-15 16:23:33,650 - GraphQLClient - WARNING - warning:69 - Slow GraphQL operation detected - {'operation': 'ValidateSession', 'duration': 10.003354787826538, 'variables': None}
+2025-09-15 16:23:33,651 - AuthenticationService - INFO - info:62 - Session deleted - {'session_file': '.mm/mm_session.pickle'}
+2025-09-15 16:23:33,651 - ErrorHandlers - WARNING - warning:71 - Authentication recovery failed - manual login required
+2025-09-15 16:23:33,652 - ErrorHandlers - WARNING - warning:69 - No recovery strategy succeeded - {'error_type': 'AuthenticationError'}
+2025-09-15 16:23:33,652 - ErrorHandlers - ERROR - error:76 - Error recovery failed, aborting retries - {'operation': '_execute_query', 'attempt': 0}

@@ -1857,21 +1857,19 @@ class TransactionService(BaseService):
                     ...CategoryFields
                     __typename
                 }
-                categoryGroups {
-                    id
-                    name
-                    type
-                    __typename
-                }
             }
-
             fragment CategoryFields on Category {
                 id
+                order
                 name
-                icon
-                color
+                systemCategory
+                isSystemCategory
+                isDisabled
+                updatedAt
+                createdAt
                 group {
                     id
+                    name
                     type
                     __typename
                 }
@@ -2292,48 +2290,6 @@ class TransactionService(BaseService):
         )
 
     # Categories and Merchants API Methods
-    async def get_transaction_categories(self) -> Dict[str, Any]:
-        """
-        Get all available transaction categories.
-
-        This method retrieves the complete list of transaction categories
-        available in Monarch Money, including custom categories.
-
-        Returns:
-            List of categories with IDs, names, icons, colors, and group information
-        """
-        self.logger.info("Fetching transaction categories")
-
-        query = gql(
-            """
-            query GetTransactionCategories {
-                categories {
-                    id
-                    name
-                    icon
-                    color
-                    isSystemCategory
-                    group {
-                        id
-                        name
-                        type
-                        __typename
-                    }
-                    __typename
-                }
-                categoryGroups {
-                    id
-                    name
-                    type
-                    __typename
-                }
-            }
-        """
-        )
-
-        return await self._execute_query(
-            operation="GetTransactionCategories", query=query
-        )
 
     async def get_merchants(
         self,
