@@ -52,9 +52,13 @@ jobs:
                   'min_fields': 3,
                   'required_fields': ['budgetData', 'categoryGroups', 'goalsV2']
               },
-              'get_transaction_categories': {
+              'get_goals': {
                   'min_fields': 1,
-                  'required_fields': ['categories']
+                  'required_fields': ['goals']
+              },
+              'get_bills': {
+                  'min_fields': 1,
+                  'required_fields': ['bills']
               }
           }
 
@@ -149,16 +153,7 @@ jobs:
                   else:
                       print(f'✅ get_accounts: Correct structure with {len(data[\"accounts\"])} accounts')
 
-              # Check get_transaction_categories returns {categories: [...]} structure
-              categories_file = 'tests/get_transaction_categories.json'
-              if Path(categories_file).exists():
-                  with open(categories_file) as f:
-                      data = json.load(f)
-
-                  if 'categories' not in data:
-                      issues.append('get_transaction_categories: Missing top-level \"categories\" key')
-                  else:
-                      print(f'✅ get_transaction_categories: Correct structure')
+              # Check other structure validations can be added here as needed
 
               return issues
 
