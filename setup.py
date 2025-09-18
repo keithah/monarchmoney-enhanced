@@ -15,7 +15,7 @@ except FileNotFoundError:
 
 setup(
     name="monarchmoney-enhanced",
-    version="0.9.8",
+    version="0.9.9",
     description="Enhanced Monarch Money API with bulk transaction operations, service-oriented architecture, performance optimizations, and advanced error recovery",
     long_description=open("README.md", "r").read(),
     long_description_content_type="text/markdown",

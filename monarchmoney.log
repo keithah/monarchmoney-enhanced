@@ -2353,3 +2353,23 @@ FileNotFoundError: Session file not found: /tmp/nonexistent.pickle
 2025-09-15 16:23:33,651 - ErrorHandlers - WARNING - warning:71 - Authentication recovery failed - manual login required
 2025-09-15 16:23:33,652 - ErrorHandlers - WARNING - warning:69 - No recovery strategy succeeded - {'error_type': 'AuthenticationError'}
 2025-09-15 16:23:33,652 - ErrorHandlers - ERROR - error:76 - Error recovery failed, aborting retries - {'operation': '_execute_query', 'attempt': 0}
+2025-09-18 08:49:20,600 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-18 08:49:20,626 - monarchmoney - ERROR - error:76 - Session file corrupted (invalid JSON) - {'session_file': 'temp_session.json'}
+Traceback (most recent call last):
+  File "/Users/keith/src/monarchmoney-enhanced/monarchmoney/session_storage.py", line 176, in load_session
+    session_data = json.loads(json_data)
+  File "/opt/homebrew/Cellar/python@3.13/3.13.7/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.7/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.7/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+2025-09-18 08:49:45,404 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-18 08:49:45,430 - monarchmoney - WARNING - warning:69 - Detected legacy pickle session file. Migrating to secure format. - {'session_file': 'temp_session.pickle'}
+2025-09-18 08:49:45,430 - monarchmoney - WARNING - warning:69 - Loading pickle file for migration - this is the last time! - {'pickle_file': 'temp_session.pickle'}
+2025-09-18 08:49:45,443 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
+2025-09-18 08:49:45,443 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
+2025-09-18 08:49:45,449 - AccountService - INFO - info:64 - Fetching accounts
