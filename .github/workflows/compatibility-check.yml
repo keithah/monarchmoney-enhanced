@@ -54,7 +54,7 @@ jobs:
               },
               'get_goals': {
                   'min_fields': 1,
-                  'required_fields': ['goals']
+                  'required_fields': ['goalsV2']
               },
               'get_bills': {
                   'min_fields': 1,
