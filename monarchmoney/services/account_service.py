@@ -41,21 +41,67 @@ class AccountService(BaseService):
             """
             query GetAccounts {
                 accounts {
+                    ...AccountFields
+                }
+            }
+            fragment AccountFields on Account {
+                id
+                displayName
+                syncDisabled
+                deactivatedAt
+                isHidden
+                isAsset
+                mask
+                createdAt
+                updatedAt
+                displayLastUpdatedAt
+                currentBalance
+                displayBalance
+                includeInNetWorth
+                hideFromList
+                hideTransactionsFromReports
+                includeBalanceInNetWorth
+                includeInGoalBalance
+                dataProvider
+                dataProviderAccountId
+                isManual
+                transactionsCount
+                holdingsCount
+                manualInvestmentsTrackingMethod
+                order
+                logoUrl
+                type {
+                    name
+                    display
+                    __typename
+                }
+                subtype {
+                    name
+                    display
+                    __typename
+                }
+                credential {
                     id
-                    displayName
-                    currentBalance
-                    type {
+                    updateRequired
+                    disconnectedFromDataProviderAt
+                    dataProvider
+                    institution {
+                        id
+                        plaidInstitutionId
                         name
-                        display
-                        __typename
-                    }
-                    subtype {
-                        name
-                        display
+                        status
                         __typename
                     }
                     __typename
                 }
+                institution {
+                    id
+                    name
+                    primaryColor
+                    url
+                    __typename
+                }
+                __typename
             }
         """
         )
