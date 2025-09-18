@@ -1,0 +1,216 @@
+name: Backwards Compatibility Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run weekly on Sundays at 8 AM UTC
+    - cron: '0 8 * * 0'
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  field-completeness:
+    runs-on: ubuntu-latest
+    name: Check Field Completeness
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Check field completeness
+        run: |
+          python -c "
+          import json
+          import sys
+          from pathlib import Path
+
+          # Expected field counts based on original package
+          EXPECTED_FIELDS = {
+              'get_accounts': {
+                  'min_fields': 30,  # Should have at least 30 fields
+                  'required_fields': [
+                      'id', 'displayName', 'currentBalance', 'syncDisabled',
+                      'deactivatedAt', 'isHidden', 'isAsset', 'mask',
+                      'createdAt', 'updatedAt', 'institution', 'type'
+                  ]
+              },
+              'get_budgets': {
+                  'min_fields': 3,
+                  'required_fields': ['budgetData', 'categoryGroups', 'goalsV2']
+              },
+              'get_transaction_categories': {
+                  'min_fields': 1,
+                  'required_fields': ['categories']
+              }
+          }
+
+          def check_test_data_completeness():
+              issues = []
+
+              for method, expectations in EXPECTED_FIELDS.items():
+                  test_file = f'tests/{method}.json'
+                  if Path(test_file).exists():
+                      with open(test_file) as f:
+                          data = json.load(f)
+
+                      # Extract fields from test data
+                      if method == 'get_accounts' and 'accounts' in data:
+                          if data['accounts']:
+                              fields = list(data['accounts'][0].keys())
+                              field_count = len(fields)
+                          else:
+                              fields = []
+                              field_count = 0
+                      else:
+                          fields = list(data.keys())
+                          field_count = len(fields)
+
+                      # Check minimum field count
+                      if field_count < expectations['min_fields']:
+                          issues.append(f'{method}: Only {field_count} fields, expected at least {expectations[\"min_fields\"]}')
+
+                      # Check required fields
+                      missing_required = [f for f in expectations['required_fields'] if f not in fields]
+                      if missing_required:
+                          issues.append(f'{method}: Missing required fields: {missing_required}')
+
+                      print(f'✅ {method}: {field_count} fields present')
+                  else:
+                      issues.append(f'{method}: Test data file {test_file} not found')
+
+              return issues
+
+          issues = check_test_data_completeness()
+
+          if issues:
+              print('❌ Field completeness issues found:')
+              for issue in issues:
+                  print(f'  • {issue}')
+              sys.exit(1)
+          else:
+              print('✅ All methods have expected field completeness')
+          "
+
+  response-structure:
+    runs-on: ubuntu-latest
+    name: Check Response Structure
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Check response structure consistency
+        run: |
+          python -c "
+          import json
+          import sys
+          from pathlib import Path
+
+          def check_response_structures():
+              '''Check that our test data matches expected response structures.'''
+              issues = []
+
+              # Check get_accounts returns {accounts: [...]} structure
+              accounts_file = 'tests/get_accounts.json'
+              if Path(accounts_file).exists():
+                  with open(accounts_file) as f:
+                      data = json.load(f)
+
+                  if 'accounts' not in data:
+                      issues.append('get_accounts: Missing top-level \"accounts\" key')
+                  elif not isinstance(data['accounts'], list):
+                      issues.append('get_accounts: \"accounts\" should be a list')
+                  elif len(data['accounts']) == 0:
+                      issues.append('get_accounts: \"accounts\" list is empty (cannot verify field structure)')
+                  else:
+                      print(f'✅ get_accounts: Correct structure with {len(data[\"accounts\"])} accounts')
+
+              # Check get_transaction_categories returns {categories: [...]} structure
+              categories_file = 'tests/get_transaction_categories.json'
+              if Path(categories_file).exists():
+                  with open(categories_file) as f:
+                      data = json.load(f)
+
+                  if 'categories' not in data:
+                      issues.append('get_transaction_categories: Missing top-level \"categories\" key')
+                  else:
+                      print(f'✅ get_transaction_categories: Correct structure')
+
+              return issues
+
+          issues = check_response_structures()
+
+          if issues:
+              print('❌ Response structure issues found:')
+              for issue in issues:
+                  print(f'  • {issue}')
+              sys.exit(1)
+          else:
+              print('✅ All response structures are correct')
+          "
+
+  create-issue-on-failure:
+    runs-on: ubuntu-latest
+    name: Create Issue on Compatibility Failure
+    needs: [field-completeness, response-structure]
+    if: failure() && github.event_name == 'schedule'
+
+    steps:
+      - name: Create compatibility issue
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const issueTitle = `🚨 Backwards Compatibility Issue Detected - ${new Date().toISOString().split('T')[0]}`;
+
+            const issueBody = `# 🚨 Backwards Compatibility Issue Detected
+
+            **Detected on:** ${new Date().toISOString()}
+            **Workflow:** [Compatibility Check](${context.payload.repository.html_url}/actions/runs/${context.runId})
+
+            ## Issue
+            The automated backwards compatibility check has detected issues with field completeness or response structure.
+
+            ## Next Steps
+            1. Review the workflow logs to identify specific issues
+            2. Compare against the original monarchmoney package behavior
+            3. Update GraphQL queries to include missing fields
+            4. Verify test data matches expected response structures
+
+            ## Prevention
+            This issue was automatically detected by our compatibility monitoring to ensure the enhanced package maintains full backwards compatibility with the original.
+
+            ---
+            *This issue was automatically created by the Compatibility Check workflow.*
+            `;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: issueTitle,
+              body: issueBody,
+              labels: ['compatibility', 'backwards-compatibility', 'automated-issue']
+            });
