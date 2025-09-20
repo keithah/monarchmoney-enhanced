@@ -4,6 +4,7 @@ Account service for MonarchMoney Enhanced.
 Handles all account operations including CRUD, balances, and refresh coordination.
 """
 
+from datetime import date, timedelta
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from gql import gql
@@ -426,13 +427,27 @@ class AccountService(BaseService):
         """
         Get recent balance history for accounts.
 
+        Note: This method uses the same GraphQL query as the MonarchMoney.get_recent_account_balances()
+        but provides additional filtering capabilities. The end_date parameter is not supported
+        by the MonarchMoney GraphQL schema and will be ignored with a warning.
+
         Args:
             account_id: Specific account ID (optional, gets all if not provided)
-            start_date: Start date for balance history (YYYY-MM-DD)
-            end_date: End date for balance history (YYYY-MM-DD)
+            start_date: Start date for balance history (YYYY-MM-DD), defaults to 31 days ago
+            end_date: End date for balance history (YYYY-MM-DD) - NOT SUPPORTED, will be ignored
 
         Returns:
-            Recent balance data for accounts
+            Recent balance data for accounts with structure:
+            {
+                "accounts": [
+                    {
+                        "id": "account_id",
+                        "displayName": "Account Name",
+                        "recentBalances": [...],
+                        "__typename": "Account"
+                    }
+                ]
+            }
         """
         if account_id:
             account_id = InputValidator.validate_account_id(account_id)
@@ -456,39 +471,61 @@ class AccountService(BaseService):
         if end_date:
             variables["endDate"] = end_date
 
-        query = gql(
-            """
-            query GetAccountRecentBalances(
-                $accountId: String,
-                $startDate: String,
-                $endDate: String
-            ) {
-                accountBalanceHistory(
-                    accountId: $accountId,
-                    startDate: $startDate,
-                    endDate: $endDate
-                ) {
-                    account {
+        # Note: MonarchMoney GraphQL only supports recentBalances on accounts
+        # The accountBalanceHistory field does not exist in the schema
+        if account_id:
+            # For specific account, filter the results
+            query = gql(
+                """
+                query GetAccountRecentBalances($startDate: Date!) {
+                    accounts {
                         id
                         displayName
+                        recentBalances(startDate: $startDate)
                         __typename
                     }
-                    balances {
-                        date
-                        balance
-                        __typename
-                    }
-                    __typename
                 }
-            }
-        """
-        )
+                """
+            )
+            variables = {"startDate": start_date or (date.today() - timedelta(days=31)).isoformat()}
+        else:
+            # For all accounts
+            query = gql(
+                """
+                query GetAccountRecentBalances($startDate: Date!) {
+                    accounts {
+                        id
+                        displayName
+                        recentBalances(startDate: $startDate)
+                        __typename
+                    }
+                }
+                """
+            )
+            variables = {"startDate": start_date or (date.today() - timedelta(days=31)).isoformat()}
 
-        return await self.client.gql_call(
+        result = await self.client.gql_call(
             operation="GetAccountRecentBalances",
             graphql_query=query,
             variables=variables,
         )
+
+        # Filter by account_id if specified
+        if account_id and "accounts" in result:
+            result["accounts"] = [
+                account for account in result["accounts"]
+                if account.get("id") == account_id
+            ]
+
+        # Note: end_date filtering would need to be done client-side
+        # as the GraphQL schema doesn't support end_date parameter
+        if end_date and "accounts" in result:
+            self.logger.warning(
+                "end_date filtering not supported by MonarchMoney GraphQL schema - ignoring parameter",
+                end_date=end_date
+            )
+
+        return result
 
     async def get_account_history(
         self,
