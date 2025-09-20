@@ -240,7 +240,10 @@ class AuthenticationService(BaseService):
             "token": self.client._token,
             "csrf_token": self.client._csrf_token,
             "last_used": time.time(),
+            "created_at": self.client._session_created_at or time.time(),
+            "last_validated": self.client._session_last_validated or time.time(),
             "headers": dict(self.client._headers),
+            "version": "0.10.1",
         }
 
         try:
@@ -308,10 +311,18 @@ class AuthenticationService(BaseService):
         self.client._csrf_token = session_data.get("csrf_token")
         self.client._last_used = session_data.get("last_used")
 
-        # Update headers with session data
+        # Load session metadata if available
+        if "created_at" in session_data:
+            self.client._session_created_at = session_data["created_at"]
+        if "last_validated" in session_data:
+            self.client._session_last_validated = session_data["last_validated"]
+
+        # Set Authorization header from token (essential for API calls)
+        if self.client._token:
+            self.client._headers["Authorization"] = f"Token {self.client._token}"
+
+        # Update headers with additional session data
         headers = session_data.get("headers", {})
-        if "Authorization" in headers:
-            self.client._headers["Authorization"] = headers["Authorization"]
         if "csrftoken" in headers:
             self.client._headers["csrftoken"] = headers["csrftoken"]
 

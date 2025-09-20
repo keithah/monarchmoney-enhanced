@@ -5540,11 +5540,30 @@ class MonarchMoney(object):
         try:
             loop = asyncio.get_event_loop()
             if loop.is_running():
-                # If we're already in an async context, fall back to legacy method
+                # If we're already in an async context, fall back to legacy method with enhanced loading
                 try:
                     data = self._secure_storage.load_session(filename)
-                    # Use the enhanced _load_session_data method from auth service
-                    asyncio.create_task(auth_service._load_session_data(data))
+                    # Manually load session data using the enhanced method
+                    # We can't await here since we're in a sync context, so do it synchronously
+                    self._token = data.get("token")
+                    self._csrf_token = data.get("csrf_token")
+                    self._last_used = data.get("last_used")
+
+                    # Load session metadata
+                    if "created_at" in data:
+                        self._session_created_at = data["created_at"]
+                    if "last_validated" in data:
+                        self._session_last_validated = data["last_validated"]
+
+                    # Set Authorization header (essential for API calls)
+                    if self._token:
+                        self._headers["Authorization"] = f"Token {self._token}"
+
+                    # Update headers with additional session data
+                    headers = data.get("headers", {})
+                    if "csrftoken" in headers:
+                        self._headers["csrftoken"] = headers["csrftoken"]
+
                     logger.info("Session loaded securely (legacy mode)", session_file=filename)
                 except FileNotFoundError:
                     raise FileNotFoundError(f"Session file not found: {filename}")
