@@ -2373,3 +2373,5 @@ json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
 2025-09-18 08:49:45,443 - monarchmoney - INFO - info:62 - Successfully migrated pickle session to secure format - {'from_file': 'temp_session.pickle', 'to_file': 'temp_session.json'}
 2025-09-18 08:49:45,443 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': 'temp_session.json'}
 2025-09-18 08:49:45,449 - AccountService - INFO - info:64 - Fetching accounts
+2025-09-20 17:35:29,194 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-20 17:35:29,218 - AccountService - INFO - info:62 - Fetching recent account balances - {'account_id': None, 'start_date': None, 'end_date': None}

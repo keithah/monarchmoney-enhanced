@@ -208,6 +208,8 @@ This enhanced library provides **comprehensive financial data access**:
 - `upload_account_balance_history(account_id, csv_file)` - Upload balance history
 - `request_accounts_refresh()` - **Non-blocking** account sync refresh
 - `request_accounts_refresh_and_wait()` - **Blocking** account sync refresh
+- `get_recent_account_balances(start_date)` - Get balance history for all accounts
+  - Note: AccountService also provides `get_recent_account_balances()` with account filtering
 
 ### 💳 **Transaction Management**
 - `create_transaction(account_id, amount, date, **kwargs)` - Create transactions
