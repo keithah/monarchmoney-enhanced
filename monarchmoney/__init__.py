@@ -46,5 +46,5 @@ try:
 except ImportError:
     _OPTIMIZATIONS_AVAILABLE = False
 
-__version__ = "0.10.0"
+__version__ = "0.10.1"
 __author__ = "keithah"
