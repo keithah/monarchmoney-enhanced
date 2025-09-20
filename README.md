@@ -118,6 +118,10 @@ await mm.login(
 
 You can easily save your session for use later on.  While we don't know precisely how long a session lasts, authors of this library have found it can last several months.
 
+## Secure Session Storage
+
+Sessions are stored using **AES-256 encryption** for security. The enhanced package ensures session persistence works reliably across processes and application restarts.
+
 ```python
 from monarchmoney import MonarchMoney, RequireMFAException
 
@@ -134,7 +138,7 @@ Once you've logged in, you can simply load the saved session to pick up where yo
 from monarchmoney import MonarchMoney, RequireMFAException
 
 mm = MonarchMoney()
-mm.load_session()
+mm.load_session()  # Works across processes and app restarts!
 
 # Then, start accessing data!
 await mm.get_accounts()

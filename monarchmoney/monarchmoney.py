@@ -5464,25 +5464,48 @@ class MonarchMoney(object):
         """
         Saves the auth token and session metadata needed to access a Monarch Money account.
         Uses secure JSON storage instead of unsafe pickle format.
+
+        Note: This method is synchronous for backward compatibility but delegates to
+        the authentication service internally.
         """
         if filename is None:
             filename = self._session_file
-        filename = os.path.abspath(filename)
 
-        session_data = {
-            "token": self._token,
-            "created_at": self._session_created_at or time.time(),
-            "last_validated": self._session_last_validated or time.time(),
-            "version": "0.3.6",
-        }
+        # Use authentication service for comprehensive session saving
+        from .services.authentication_service import AuthenticationService
+        auth_service = AuthenticationService(self)
 
-        self._secure_storage.save_session(session_data, filename)
-        logger.info("Session saved securely", session_file=filename)
+        # Run the async method synchronously for backward compatibility
+        import asyncio
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # If we're already in an async context, we can't use run_until_complete
+                # Fall back to the legacy method to avoid blocking
+                filename = os.path.abspath(filename)
+                session_data = {
+                    "token": self._token,
+                    "csrf_token": self._csrf_token,  # Include CSRF token
+                    "created_at": self._session_created_at or time.time(),
+                    "last_validated": self._session_last_validated or time.time(),
+                    "headers": dict(self._headers),
+                    "version": "0.10.0",
+                }
+                self._secure_storage.save_session(session_data, filename)
+                logger.info("Session saved securely (legacy mode)", session_file=filename)
+            else:
+                loop.run_until_complete(auth_service.save_session(filename))
+        except RuntimeError:
+            # If no event loop exists, create one
+            asyncio.run(auth_service.save_session(filename))
 
     def load_session(self, filename: Optional[str] = None) -> None:
         """
         Loads pre-existing auth token from session file.
         Supports both new secure JSON format and legacy pickle format (with migration).
+
+        Note: This method is synchronous for backward compatibility but delegates to
+        the authentication service internally for comprehensive session loading.
         """
         if filename is None:
             filename = self._session_file
@@ -5508,16 +5531,30 @@ class MonarchMoney(object):
                 self._load_session_data(data)
                 return
 
-        # Load secure JSON session
-        try:
-            data = self._secure_storage.load_session(filename)
-            self._load_session_data(data)
-            logger.info("Session loaded securely", session_file=filename)
+        # Use authentication service for comprehensive session loading
+        from .services.authentication_service import AuthenticationService
+        auth_service = AuthenticationService(self)
 
-        except FileNotFoundError:
-            raise FileNotFoundError(f"Session file not found: {filename}")
-        except ValueError as e:
-            raise ValueError(f"Invalid session file format: {e}")
+        # Run the async method synchronously for backward compatibility
+        import asyncio
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # If we're already in an async context, fall back to legacy method
+                try:
+                    data = self._secure_storage.load_session(filename)
+                    # Use the enhanced _load_session_data method from auth service
+                    asyncio.create_task(auth_service._load_session_data(data))
+                    logger.info("Session loaded securely (legacy mode)", session_file=filename)
+                except FileNotFoundError:
+                    raise FileNotFoundError(f"Session file not found: {filename}")
+                except ValueError as e:
+                    raise ValueError(f"Invalid session file format: {e}")
+            else:
+                loop.run_until_complete(auth_service.load_session(filename))
+        except RuntimeError:
+            # If no event loop exists, create one
+            asyncio.run(auth_service.load_session(filename))
 
     def _resolve_session_file(self, session_file: str) -> str:
         """

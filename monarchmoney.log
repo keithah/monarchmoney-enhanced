@@ -2375,3 +2375,21 @@ json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
 2025-09-18 08:49:45,449 - AccountService - INFO - info:64 - Fetching accounts
 2025-09-20 17:35:29,194 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
 2025-09-20 17:35:29,218 - AccountService - INFO - info:62 - Fetching recent account balances - {'account_id': None, 'start_date': None, 'end_date': None}
+2025-09-20 17:40:36,498 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-20 17:40:36,534 - monarchmoney - INFO - info:62 - Session saved securely - {'session_file': '/var/folders/pd/vzt389g972j9mlrm4lwbyf780000gn/T/tmpa_tspb00.json'}
+2025-09-20 17:40:36,535 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-20 17:40:36,557 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': '/var/folders/pd/vzt389g972j9mlrm4lwbyf780000gn/T/tmpa_tspb00.json'}
+2025-09-20 17:41:03,795 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-20 17:41:03,829 - monarchmoney - INFO - info:62 - Session saved securely - {'session_file': '/var/folders/pd/vzt389g972j9mlrm4lwbyf780000gn/T/tmp8zk13xht.json'}
+2025-09-20 17:41:03,830 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-20 17:41:03,852 - monarchmoney - INFO - info:62 - Session loaded securely - {'session_file': '/var/folders/pd/vzt389g972j9mlrm4lwbyf780000gn/T/tmp8zk13xht.json'}
+2025-09-20 17:42:11,767 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-20 17:42:11,796 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-20 17:42:11,827 - AuthenticationService - INFO - info:62 - Session saved successfully - {'session_file': '/var/folders/pd/vzt389g972j9mlrm4lwbyf780000gn/T/tmpuuycw7jo.json'}
+2025-09-20 17:42:11,828 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-20 17:42:11,854 - AuthenticationService - INFO - info:62 - Session loaded successfully - {'session_file': '/var/folders/pd/vzt389g972j9mlrm4lwbyf780000gn/T/tmpuuycw7jo.json'}
+2025-09-20 17:44:02,555 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-20 17:44:02,592 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-20 17:44:02,638 - AuthenticationService - INFO - info:62 - Session saved successfully - {'session_file': '/var/folders/pd/vzt389g972j9mlrm4lwbyf780000gn/T/tmpsfex05xt.json'}
+2025-09-20 17:44:02,638 - monarchmoney - WARNING - warning:71 - Using default password for session encryption. Consider providing explicit password for better security.
+2025-09-20 17:44:02,668 - AuthenticationService - INFO - info:62 - Session loaded successfully - {'session_file': '/var/folders/pd/vzt389g972j9mlrm4lwbyf780000gn/T/tmpsfex05xt.json'}

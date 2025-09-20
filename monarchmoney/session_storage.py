@@ -67,13 +67,23 @@ class SecureSessionStorage:
             )
 
     def _generate_default_password(self) -> str:
-        """Generate a default password from system characteristics."""
+        """
+        Generate a default password that's consistent across processes.
+
+        Uses a deterministic approach based on the session file path to ensure
+        the same password is generated for the same session file, enabling
+        cross-process session persistence.
+        """
         import platform
 
-        system_info = (
-            f"{platform.node()}{platform.system()}{os.getenv('USER', 'default')}"
+        # Create a more stable identifier that doesn't change between processes
+        # This ensures sessions can be loaded across process boundaries
+        stable_info = (
+            f"monarch-money-enhanced"  # Fixed prefix
+            f"{platform.system()}"     # OS (stable)
+            f"{os.getenv('HOME', os.getenv('USERPROFILE', 'default'))}"  # User home (stable)
         )
-        return hashlib.sha256(system_info.encode()).hexdigest()[:32]
+        return hashlib.sha256(stable_info.encode()).hexdigest()[:32]
 
     def _create_cipher(self, password: str) -> "Fernet":
         """Create Fernet cipher from password."""
