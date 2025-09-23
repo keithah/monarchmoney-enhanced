@@ -242,8 +242,7 @@ class MonarchMoney(object):
         # Session metadata for validation and refresh
         self._session_created_at: Optional[float] = None
         self._session_last_validated: Optional[float] = None
-        self._session_validation_interval = 14400  # Validate every 4 hours (optimized)
-        self._last_successful_api_call: Optional[float] = None
+        self._session_validation_interval = 3600  # Validate every hour
 
         # Initialize services for service-oriented architecture
         from .services import (
@@ -5442,9 +5441,6 @@ class MonarchMoney(object):
                 result = await self._get_graphql_client().execute_async(
                     graphql_query, variable_values=variables, operation_name=operation
                 )
-                # Track successful API call for smart session validation
-                self._last_successful_api_call = time.time()
-
                 if self._debug:
                     logger.debug("✅ GraphQL Response received", operation=operation, result_keys=list(result.keys()) if isinstance(result, dict) else "non-dict")
                 return result
@@ -5656,7 +5652,6 @@ class MonarchMoney(object):
     def is_session_stale(self) -> bool:
         """
         Checks if the session needs validation based on time elapsed.
-        Uses smart validation based on recent successful API calls.
 
         Returns:
             True if session should be validated, False if recently validated
@@ -5664,16 +5659,7 @@ class MonarchMoney(object):
         if not self._session_last_validated:
             return True
 
-        current_time = time.time()
-        elapsed = current_time - self._session_last_validated
-
-        # If we have a recent successful API call, extend validation interval
-        if self._last_successful_api_call:
-            recent_success_elapsed = current_time - self._last_successful_api_call
-            # If we had a successful API call in the last 30 minutes, extend validation
-            if recent_success_elapsed < 1800:  # 30 minutes
-                return elapsed > (self._session_validation_interval * 2)  # Double the interval
-
+        elapsed = time.time() - self._session_last_validated
         return elapsed > self._session_validation_interval
 
     async def ensure_valid_session(self) -> None:
