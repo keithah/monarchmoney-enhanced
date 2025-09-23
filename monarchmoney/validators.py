@@ -5,6 +5,7 @@ Provides comprehensive validation for user inputs and API parameters.
 """
 
 import re
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from .exceptions import ValidationError
@@ -216,8 +217,6 @@ class InputValidator:
 
         # Additional validation could include checking if date is valid
         try:
-            from datetime import datetime
-
             datetime.strptime(date_str, "%Y-%m-%d")
         except ValueError:
             raise ValidationError(

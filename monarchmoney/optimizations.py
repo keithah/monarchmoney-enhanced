@@ -68,7 +68,7 @@ class CacheMetrics:
         total = self.hits + self.misses
         if total == 0:
             return 0.0
-        return (self.hits / total) * 100
+        return round((self.hits / total) * 100, 2)
     
     def to_dict(self) -> Dict[str, Any]:
         """Export metrics as a dictionary."""

@@ -27,6 +27,14 @@ from .monarchmoney import (  # Legacy exceptions for backward compatibility
     RequestFailedException,
     RequireMFAException,
 )
+from .utils import (
+    batch_items,
+    flatten_dict,
+    format_date_for_api,
+    normalize_amount,
+    safe_get,
+    truncate_string,
+)
 
 # GraphQL Optimizations (optional)
 try:
