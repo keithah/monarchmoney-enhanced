@@ -162,7 +162,7 @@ class CachePreloader:
     async def _preload_accounts_basic(self):
         """Preload basic account data."""
         try:
-            await self.client.get_accounts(detail_level="basic")
+            await self.client.get_accounts()
         except Exception as e:
             self.logger.debug("Failed to preload basic accounts", error=str(e))
             raise

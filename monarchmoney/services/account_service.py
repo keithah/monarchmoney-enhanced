@@ -29,148 +29,83 @@ class AccountService(BaseService):
     - Account type management
     """
 
-    async def get_accounts(self, detail_level: str = "full") -> Dict[str, Any]:
+    async def get_accounts(self) -> Dict[str, Any]:
         """
         Get the list of accounts configured in the Monarch Money account.
-
-        Args:
-            detail_level: Level of detail to fetch ("basic", "balance", "full")
-                - basic: Just id, name, type, balance
-                - balance: Basic + detailed balance info
-                - full: All fields (default for backward compatibility)
 
         Returns:
             List of accounts with balances, types, and institution info
         """
-        self.logger.info("Fetching accounts", detail_level=detail_level)
+        self.logger.info("Fetching accounts")
 
-        # Use optimized query based on detail level
-        if detail_level == "basic":
-            query = gql(
-                """
-                query GetAccountsBasic {
-                    accounts {
-                        id
-                        displayName
-                        currentBalance
-                        displayBalance
-                        isAsset
-                        includeInNetWorth
-                        isHidden
-                        type {
-                            name
-                            display
-                        }
-                        subtype {
-                            name
-                            display
-                        }
-                    }
+        query = gql(
+            """
+            query GetAccounts {
+                accounts {
+                    ...AccountFields
                 }
-                """
-            )
-        elif detail_level == "balance":
-            query = gql(
-                """
-                query GetAccountsBalance {
-                    accounts {
-                        id
-                        displayName
-                        currentBalance
-                        displayBalance
-                        isAsset
-                        includeInNetWorth
-                        includeBalanceInNetWorth
-                        includeInGoalBalance
-                        isHidden
-                        isManual
-                        transactionsCount
-                        holdingsCount
-                        type {
-                            name
-                            display
-                        }
-                        subtype {
-                            name
-                            display
-                        }
-                        institution {
-                            id
-                            name
-                        }
-                    }
+            }
+            fragment AccountFields on Account {
+                id
+                displayName
+                syncDisabled
+                deactivatedAt
+                isHidden
+                isAsset
+                mask
+                createdAt
+                updatedAt
+                displayLastUpdatedAt
+                currentBalance
+                displayBalance
+                includeInNetWorth
+                hideFromList
+                hideTransactionsFromReports
+                includeBalanceInNetWorth
+                includeInGoalBalance
+                dataProvider
+                dataProviderAccountId
+                isManual
+                transactionsCount
+                holdingsCount
+                manualInvestmentsTrackingMethod
+                order
+                logoUrl
+                type {
+                    name
+                    display
+                    __typename
                 }
-                """
-            )
-        else:  # full detail
-            query = gql(
-                """
-                query GetAccounts {
-                    accounts {
-                        ...AccountFields
-                    }
+                subtype {
+                    name
+                    display
+                    __typename
                 }
-                fragment AccountFields on Account {
+                credential {
                     id
-                    displayName
-                    syncDisabled
-                    deactivatedAt
-                    isHidden
-                    isAsset
-                    mask
-                    createdAt
-                    updatedAt
-                    displayLastUpdatedAt
-                    currentBalance
-                    displayBalance
-                    includeInNetWorth
-                    hideFromList
-                    hideTransactionsFromReports
-                    includeBalanceInNetWorth
-                    includeInGoalBalance
+                    updateRequired
+                    disconnectedFromDataProviderAt
                     dataProvider
-                    dataProviderAccountId
-                    isManual
-                    transactionsCount
-                    holdingsCount
-                    manualInvestmentsTrackingMethod
-                    order
-                    logoUrl
-                    type {
-                        name
-                        display
-                        __typename
-                    }
-                    subtype {
-                        name
-                        display
-                        __typename
-                    }
-                    credential {
-                        id
-                        updateRequired
-                        disconnectedFromDataProviderAt
-                        dataProvider
-                        institution {
-                            id
-                            plaidInstitutionId
-                            name
-                            status
-                            __typename
-                        }
-                        __typename
-                    }
                     institution {
                         id
+                        plaidInstitutionId
                         name
-                        primaryColor
-                        url
+                        status
                         __typename
                     }
                     __typename
                 }
-                """
-            )
+                institution {
+                    id
+                    name
+                    primaryColor
+                    url
+                    __typename
+                }
+                __typename
+            }
+        """
+        )
 
         return await self._execute_query(operation="GetAccounts", query=query)
 
