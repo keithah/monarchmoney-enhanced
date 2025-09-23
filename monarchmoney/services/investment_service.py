@@ -4,6 +4,7 @@ Investment service for MonarchMoney Enhanced.
 Handles investment holdings, securities, and performance tracking.
 """
 
+from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from gql import gql
@@ -191,7 +192,6 @@ class InvestmentService(BaseService):
         # Get all holdings in one call using the get_account_holdings without specific account
         try:
             # Use the existing portfolio endpoint but process all accounts at once
-            from datetime import datetime
             variables = {"portfolioInput": {}}
 
             query = gql(

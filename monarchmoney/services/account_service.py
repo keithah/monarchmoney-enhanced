@@ -238,7 +238,6 @@ class AccountService(BaseService):
             """
         )
 
-        from datetime import date, timedelta
         start_date = (date.today() - timedelta(days=days)).strftime("%Y-%m-%d")
 
         variables = {
