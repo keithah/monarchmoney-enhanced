@@ -242,7 +242,8 @@ class MonarchMoney(object):
         # Session metadata for validation and refresh
         self._session_created_at: Optional[float] = None
         self._session_last_validated: Optional[float] = None
-        self._session_validation_interval = 3600  # Validate every hour
+        self._session_validation_interval = 14400  # Validate every 4 hours (optimized)
+        self._last_successful_api_call: Optional[float] = None
 
         # Initialize services for service-oriented architecture
         from .services import (
@@ -267,6 +268,10 @@ class MonarchMoney(object):
         self._budget_service = BudgetService(self)
         self._investment_service = InvestmentService(self)
         self._insight_service = InsightService(self)
+
+        # Initialize cache preloader for intelligent data preloading
+        from .cache_preloader import CachePreloader
+        self._cache_preloader = CachePreloader(self)
 
     @property
     def timeout(self) -> int:
@@ -5438,6 +5443,9 @@ class MonarchMoney(object):
                 result = await self._get_graphql_client().execute_async(
                     graphql_query, variable_values=variables, operation_name=operation
                 )
+                # Track successful API call for smart session validation
+                self._last_successful_api_call = time.time()
+
                 if self._debug:
                     logger.debug("✅ GraphQL Response received", operation=operation, result_keys=list(result.keys()) if isinstance(result, dict) else "non-dict")
                 return result
@@ -5649,6 +5657,7 @@ class MonarchMoney(object):
     def is_session_stale(self) -> bool:
         """
         Checks if the session needs validation based on time elapsed.
+        Uses smart validation based on recent successful API calls.
 
         Returns:
             True if session should be validated, False if recently validated
@@ -5656,7 +5665,16 @@ class MonarchMoney(object):
         if not self._session_last_validated:
             return True
 
-        elapsed = time.time() - self._session_last_validated
+        current_time = time.time()
+        elapsed = current_time - self._session_last_validated
+
+        # If we have a recent successful API call, extend validation interval
+        if self._last_successful_api_call:
+            recent_success_elapsed = current_time - self._last_successful_api_call
+            # If we had a successful API call in the last 30 minutes, extend validation
+            if recent_success_elapsed < 1800:  # 30 minutes
+                return elapsed > (self._session_validation_interval * 2)  # Double the interval
+
         return elapsed > self._session_validation_interval
 
     async def ensure_valid_session(self) -> None:
@@ -5708,6 +5726,33 @@ class MonarchMoney(object):
             "is_stale": self.is_session_stale(),
             "validation_interval_seconds": self._session_validation_interval,
         }
+
+    async def preload_cache(self, context: str = "general") -> Dict[str, bool]:
+        """
+        Intelligently preload commonly accessed data to reduce API calls.
+
+        Args:
+            context: Usage context ("general", "dashboard", "investments", "transactions")
+
+        Returns:
+            Dict indicating which preloads succeeded
+
+        Example:
+            >>> mm = MonarchMoney()
+            >>> await mm.login("user@example.com", "password")
+            >>> results = await mm.preload_cache("dashboard")
+            >>> print(f"Preloaded {sum(results.values())} out of {len(results)} data types")
+        """
+        return await self._cache_preloader.smart_preload(context)
+
+    def get_cache_metrics(self) -> Dict[str, Any]:
+        """
+        Get cache performance metrics.
+
+        Returns:
+            Dict with cache hit rates, API calls saved, etc.
+        """
+        return self._cache_preloader.get_preload_metrics()
 
     async def _login_user(
         self, email: str, password: str, mfa_secret_key: Optional[str]
