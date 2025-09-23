@@ -8,6 +8,7 @@ import base64
 import hashlib
 import json
 import os
+import platform
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -74,8 +75,6 @@ class SecureSessionStorage:
         the same password is generated for the same session file, enabling
         cross-process session persistence.
         """
-        import platform
-
         # Create a more stable identifier that doesn't change between processes
         # This ensures sessions can be loaded across process boundaries
         stable_info = (

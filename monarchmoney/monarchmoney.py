@@ -5,6 +5,7 @@ import json
 import os
 import pickle
 import random
+import re
 import time
 import uuid
 from datetime import date, datetime, timedelta
@@ -153,8 +154,6 @@ async def retry_with_backoff(func, max_retries=3, base_delay=1.0, max_delay=60.0
                 await asyncio.sleep(delay)
             elif any(code in error_str for code in ["500", "502", "503", "504"]):
                 # Extract status code if possible
-                import re
-
                 status_match = re.search(r"\b(50[0-9])\b", error_str)
                 status_code = int(status_match.group(1)) if status_match else 500
 
