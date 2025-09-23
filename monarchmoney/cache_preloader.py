@@ -129,44 +129,73 @@ class CachePreloader:
 
     async def _preload_categories(self):
         """Preload transaction categories."""
-        await self.client.get_transaction_categories()
+        try:
+            await self.client.get_transaction_categories()
+        except Exception as e:
+            self.logger.debug("Failed to preload categories", error=str(e))
+            raise
 
     async def _preload_account_types(self):
         """Preload account type options."""
-        await self.client.get_account_type_options()
+        try:
+            await self.client.get_account_type_options()
+        except Exception as e:
+            self.logger.debug("Failed to preload account types", error=str(e))
+            raise
 
     async def _preload_user_profile(self):
         """Preload user profile data."""
-        await self.client.get_me()
+        try:
+            await self.client.get_me()
+        except Exception as e:
+            self.logger.debug("Failed to preload user profile", error=str(e))
+            raise
 
     async def _preload_institutions(self):
         """Preload financial institutions."""
-        await self.client.get_institutions()
+        try:
+            await self.client.get_institutions()
+        except Exception as e:
+            self.logger.debug("Failed to preload institutions", error=str(e))
+            raise
 
     async def _preload_accounts_basic(self):
         """Preload basic account data."""
-        await self.client.get_accounts(detail_level="basic")
+        try:
+            await self.client.get_accounts(detail_level="basic")
+        except Exception as e:
+            self.logger.debug("Failed to preload basic accounts", error=str(e))
+            raise
 
     async def _preload_recent_transactions(self):
         """Preload recent transactions for quick dashboard display."""
-        from datetime import date, timedelta
+        try:
+            from datetime import date, timedelta
 
-        start_date = (date.today() - timedelta(days=7)).strftime("%Y-%m-%d")
-        await self.client.get_transactions(
-            start_date=start_date,
-            limit=50  # Just recent transactions for quick loading
-        )
+            start_date = (date.today() - timedelta(days=7)).strftime("%Y-%m-%d")
+            await self.client.get_transactions(
+                start_date=start_date,
+                limit=50  # Just recent transactions for quick loading
+            )
+        except Exception as e:
+            self.logger.debug("Failed to preload recent transactions", error=str(e))
+            raise
 
     async def _preload_merchants(self):
         """Preload merchant data."""
-        await self.client.get_merchants()
+        try:
+            await self.client.get_merchants()
+        except Exception as e:
+            self.logger.debug("Failed to preload merchants", error=str(e))
+            raise
 
     async def _preload_transaction_rules(self):
         """Preload transaction rules if user has any."""
         try:
             await self.client.get_transaction_rules()
-        except Exception:
-            # Rules might not be available for all users
+        except Exception as e:
+            # Rules might not be available for all users, or client not authenticated
+            self.logger.debug("Failed to preload transaction rules", error=str(e))
             pass
 
     async def smart_preload(self, context: str = "general") -> Dict[str, bool]:

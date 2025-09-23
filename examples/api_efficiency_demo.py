@@ -11,7 +11,13 @@ Demonstrates the new efficiency features in MonarchMoney Enhanced:
 
 import asyncio
 import time
-from monarchmoney import MonarchMoney
+
+# Only import when running directly, not when being imported by tests
+try:
+    from monarchmoney import MonarchMoney
+except ImportError as e:
+    print(f"Warning: Could not import MonarchMoney: {e}")
+    MonarchMoney = None
 
 
 async def demo_query_variants():
@@ -188,6 +194,10 @@ async def main():
     print("🏎️  MonarchMoney Enhanced - API Efficiency Demonstrations")
     print("=" * 70)
     print()
+
+    if MonarchMoney is None:
+        print("❌ MonarchMoney not available. Please install dependencies.")
+        return
 
     # Initialize client (you'll need to provide credentials)
     mm = MonarchMoney()
