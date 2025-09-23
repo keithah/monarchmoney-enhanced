@@ -389,7 +389,7 @@ class TestSessionManagement:
         assert info["session_age_seconds"] is not None
         assert info["time_since_validation_seconds"] is not None
         assert "is_stale" in info
-        assert info["validation_interval_seconds"] == 3600
+        assert info["validation_interval_seconds"] == 7200  # Updated for optimized session validation
 
     def test_is_session_stale(self, tmp_path):
         """Test session staleness detection."""

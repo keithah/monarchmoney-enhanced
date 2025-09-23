@@ -99,33 +99,44 @@ class QueryCache:
         self._enable_metrics = enable_metrics
         self._metrics = CacheMetrics() if enable_metrics else None
         
-        # Default TTLs for each strategy (in seconds)
+        # Optimized TTLs for each strategy (in seconds)
         self._ttls = {
             CacheStrategy.STATIC: None,  # Never expires
-            CacheStrategy.SHORT: 300,    # 5 minutes
-            CacheStrategy.MEDIUM: 3600,  # 1 hour
-            CacheStrategy.LONG: 86400,   # 24 hours
+            CacheStrategy.SHORT: 120,    # 2 minutes (account balances)
+            CacheStrategy.MEDIUM: 14400, # 4 hours (merchants, institutions)
+            CacheStrategy.LONG: 604800,  # 7 days (user profile, categories)
         }
         
         # Map operations to cache strategies
         self._operation_strategies = {
             # Static data (rarely changes)
             "GetAccountTypeOptions": CacheStrategy.STATIC,
-            "GetTransactionCategories": CacheStrategy.STATIC,
-            "GetTransactionCategoryGroups": CacheStrategy.STATIC,
-            
+            "GetTransactionCategories": CacheStrategy.LONG,  # Categories change rarely
+            "GetTransactionCategoryGroups": CacheStrategy.LONG,
+            "GetTransactionTags": CacheStrategy.MEDIUM,  # Tags added occasionally
+            "GetSubscriptionDetails": CacheStrategy.LONG,
+
             # Short-lived data (frequently changes)
-            "GetAccounts": CacheStrategy.SHORT,
+            "GetAccounts": CacheStrategy.SHORT,  # Balance updates
+            "GetAccountsBasic": CacheStrategy.MEDIUM,  # Basic info changes less frequently
+            "GetAccountsBalance": CacheStrategy.SHORT,  # Balance updates
             "GetTransactions": CacheStrategy.SHORT,
             "GetAccountBalances": CacheStrategy.SHORT,
-            
-            # Medium-lived data
+            "GetRecurringTransactions": CacheStrategy.SHORT,
+            "GetCashflow": CacheStrategy.SHORT,
+
+            # Medium-lived data (changes occasionally)
             "GetMerchants": CacheStrategy.MEDIUM,
             "GetInstitutions": CacheStrategy.MEDIUM,
-            
-            # Long-lived data
+            "GetTransactionRules": CacheStrategy.MEDIUM,  # Rules updated occasionally
+            "GetGoals": CacheStrategy.MEDIUM,  # Goals updated periodically
+            "GetBudgets": CacheStrategy.MEDIUM,  # Budget adjustments
+            "GetBills": CacheStrategy.MEDIUM,  # Bill schedules
+
+            # Long-lived data (rarely changes)
             "GetMe": CacheStrategy.LONG,
             "GetSettings": CacheStrategy.LONG,
+            "GetNetWorthHistory": CacheStrategy.MEDIUM,  # Historical data
         }
     
     def get(self, cache_key: str) -> Optional[Dict[str, Any]]:

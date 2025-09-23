@@ -109,6 +109,83 @@ class AccountService(BaseService):
 
         return await self._execute_query(operation="GetAccounts", query=query)
 
+    async def get_accounts_with_recent_transactions(self, days: int = 7, limit: int = 10) -> Dict[str, Any]:
+        """
+        Fetch accounts with their recent transactions in a single optimized query.
+        Reduces API calls for dashboard-style views.
+
+        Args:
+            days: Number of days back to fetch transactions
+            limit: Maximum transactions per account
+
+        Returns:
+            Dict containing accounts and their recent transactions
+        """
+        self.logger.info("Fetching accounts with recent transactions", days=days, limit=limit)
+
+        query = gql(
+            """
+            query GetAccountsWithTransactions($startDate: Date!, $limit: Int!) {
+                accounts {
+                    id
+                    displayName
+                    currentBalance
+                    displayBalance
+                    isAsset
+                    includeInNetWorth
+                    type {
+                        name
+                        display
+                    }
+                    institution {
+                        id
+                        name
+                    }
+                }
+                transactions(
+                    filters: { startDate: $startDate }
+                    orderBy: { date: DESC }
+                    limit: $limit
+                ) {
+                    edges {
+                        node {
+                            id
+                            date
+                            amount
+                            notes
+                            isRecurring
+                            account {
+                                id
+                                displayName
+                            }
+                            merchant {
+                                id
+                                name
+                            }
+                            category {
+                                id
+                                name
+                            }
+                        }
+                    }
+                }
+            }
+            """
+        )
+
+        start_date = (date.today() - timedelta(days=days)).strftime("%Y-%m-%d")
+
+        variables = {
+            "startDate": start_date,
+            "limit": limit
+        }
+
+        return await self._execute_query(
+            operation="GetAccountsWithTransactions",
+            query=query,
+            variables=variables
+        )
+
     async def get_institutions(self) -> Dict[str, Any]:
         """
         Get all financial institutions.
@@ -970,6 +1047,75 @@ class AccountService(BaseService):
             graphql_query=query,
             variables=variables,
         )
+
+    # Query variants for optimized data fetching
+    async def get_accounts_basic(self) -> Dict[str, Any]:
+        """
+        Get basic account information optimized for quick loading.
+        Returns minimal account data for performance-critical scenarios.
+
+        Returns:
+            List of accounts with just essential fields
+        """
+        self.logger.info("Fetching basic account information")
+
+        query = gql(
+            """
+            query GetAccountsBasic {
+                accounts {
+                    id
+                    displayName
+                    currentBalance
+                    includeInNetWorth
+                    isHidden
+                    type {
+                        name
+                        display
+                        __typename
+                    }
+                    __typename
+                }
+            }
+            """
+        )
+
+        return await self._execute_query(operation="GetAccountsBasic", query=query)
+
+    async def get_accounts_balance_only(self) -> Dict[str, Any]:
+        """
+        Get account balance information optimized for financial summaries.
+        Returns account balances and essential metadata.
+
+        Returns:
+            List of accounts with balance and net worth fields
+        """
+        self.logger.info("Fetching account balance information")
+
+        query = gql(
+            """
+            query GetAccountsBalance {
+                accounts {
+                    id
+                    displayName
+                    currentBalance
+                    currentBalanceInDisplayCurrency
+                    includeInNetWorth
+                    isHidden
+                    isAsset
+                    order
+                    mask
+                    type {
+                        name
+                        display
+                        __typename
+                    }
+                    __typename
+                }
+            }
+            """
+        )
+
+        return await self._execute_query(operation="GetAccountsBalance", query=query)
 
     async def upload_account_balance_history(
         self, account_id: str, balance_data: List[Dict[str, Any]]

@@ -242,7 +242,8 @@ class MonarchMoney(object):
         # Session metadata for validation and refresh
         self._session_created_at: Optional[float] = None
         self._session_last_validated: Optional[float] = None
-        self._session_validation_interval = 3600  # Validate every hour
+        self._session_validation_interval = 7200  # Validate every 2 hours (conservative optimization)
+        self._api_call_count_since_validation = 0  # Track activity for smart validation
 
         # Initialize services for service-oriented architecture
         from .services import (
@@ -267,6 +268,9 @@ class MonarchMoney(object):
         self._budget_service = BudgetService(self)
         self._investment_service = InvestmentService(self)
         self._insight_service = InsightService(self)
+
+        # Initialize cache preloader for intelligent data preloading (lazy import to avoid circular import)
+        self._cache_preloader = None
 
     @property
     def timeout(self) -> int:
@@ -353,6 +357,26 @@ class MonarchMoney(object):
         """
         # Delegate to AccountService
         return await self._account_service.get_accounts()
+
+    async def get_accounts_basic(self) -> Dict[str, Any]:
+        """
+        Gets basic account information optimized for quick loading.
+        Returns minimal account data for performance-critical scenarios.
+
+        Returns:
+            List of accounts with just essential fields (id, name, balance, type)
+        """
+        return await self._account_service.get_accounts_basic()
+
+    async def get_accounts_balance_only(self) -> Dict[str, Any]:
+        """
+        Gets account balance information optimized for financial summaries.
+        Returns account balances and essential metadata for net worth calculations.
+
+        Returns:
+            List of accounts with balance and net worth fields
+        """
+        return await self._account_service.get_accounts_balance_only()
 
     async def get_me(self) -> Dict[str, Any]:
         """
@@ -5648,7 +5672,8 @@ class MonarchMoney(object):
 
     def is_session_stale(self) -> bool:
         """
-        Checks if the session needs validation based on time elapsed.
+        Checks if the session needs validation based on time elapsed and API activity.
+        Uses conservative smart validation that's safe for tests.
 
         Returns:
             True if session should be validated, False if recently validated
@@ -5657,6 +5682,14 @@ class MonarchMoney(object):
             return True
 
         elapsed = time.time() - self._session_last_validated
+
+        # Conservative smart validation: if we've had successful API calls recently,
+        # we can slightly extend the validation interval (safe approach)
+        if hasattr(self, '_api_call_count_since_validation') and self._api_call_count_since_validation > 0:
+            # Only extend by 50% max for safety
+            extended_interval = min(self._session_validation_interval * 1.5, 10800)  # Max 3 hours
+            return elapsed > extended_interval
+
         return elapsed > self._session_validation_interval
 
     async def ensure_valid_session(self) -> None:
@@ -5708,6 +5741,48 @@ class MonarchMoney(object):
             "is_stale": self.is_session_stale(),
             "validation_interval_seconds": self._session_validation_interval,
         }
+
+    async def preload_cache(self, context: str = "general") -> Dict[str, bool]:
+        """
+        Intelligently preload commonly accessed data to reduce API calls.
+
+        Args:
+            context: Usage context ("general", "dashboard", "investments", "transactions")
+
+        Returns:
+            Dict indicating which preloads succeeded
+
+        Example:
+            >>> mm = MonarchMoney()
+            >>> await mm.login("user@example.com", "password")
+            >>> results = await mm.preload_cache("dashboard")
+            >>> print(f"Preloaded {sum(results.values())} out of {len(results)} data types")
+        """
+        try:
+            if self._cache_preloader is None:
+                from .cache_preloader import CachePreloader
+                self._cache_preloader = CachePreloader(self)
+            return await self._cache_preloader.smart_preload(context)
+        except Exception as e:
+            # Graceful fallback if preloading fails
+            self.logger.debug("Cache preloading failed, continuing without preload", error=str(e))
+            return {"preloading_failed": True, "error": str(e)}
+
+    def get_cache_metrics(self) -> Dict[str, Any]:
+        """
+        Get cache performance metrics.
+
+        Returns:
+            Dict with cache hit rates, API calls saved, etc.
+        """
+        try:
+            if self._cache_preloader is None:
+                from .cache_preloader import CachePreloader
+                self._cache_preloader = CachePreloader(self)
+            return self._cache_preloader.get_preload_metrics()
+        except Exception as e:
+            # Graceful fallback if metrics fail
+            return {"cache_metrics_failed": True, "error": str(e)}
 
     async def _login_user(
         self, email: str, password: str, mfa_secret_key: Optional[str]

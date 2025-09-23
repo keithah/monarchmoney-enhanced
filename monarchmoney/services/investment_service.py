@@ -4,6 +4,7 @@ Investment service for MonarchMoney Enhanced.
 Handles investment holdings, securities, and performance tracking.
 """
 
+from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from gql import gql
@@ -173,6 +174,114 @@ class InvestmentService(BaseService):
                 "holdings": account_holdings,
                 "__typename": "Account"
             }
+        }
+
+    async def get_all_holdings_batch(self, account_ids: Optional[List[str]] = None) -> Dict[str, Any]:
+        """
+        Get holdings for multiple accounts in a single optimized query.
+        Eliminates N+1 pattern when fetching holdings across accounts.
+
+        Args:
+            account_ids: Optional list of specific account IDs to include
+
+        Returns:
+            All holdings data organized by account
+        """
+        self.logger.info("Fetching all holdings in batch", account_count=len(account_ids) if account_ids else "all")
+
+        # Get all holdings in one call using the get_account_holdings without specific account
+        try:
+            # Use the existing portfolio endpoint but process all accounts at once
+            variables = {"portfolioInput": {}}
+
+            query = gql(
+                """
+                query Web_GetAllHoldings($portfolioInput: PortfolioInput) {
+                    portfolio(input: $portfolioInput) {
+                        aggregateHoldings {
+                            edges {
+                                node {
+                                    id
+                                    quantity
+                                    basis
+                                    totalValue
+                                    account {
+                                        id
+                                        displayName
+                                        type {
+                                            name
+                                        }
+                                    }
+                                    security {
+                                        id
+                                        symbol
+                                        name
+                                        cusip
+                                        priceChangeDollars
+                                        priceChangeDollarsToday
+                                        priceChangePercentToday
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                """
+            )
+
+            result = await self._execute_query(operation="GetAllHoldings", query=query, variables=variables)
+
+            # Organize holdings by account for easy access
+            holdings_by_account = {}
+            if result and "portfolio" in result:
+                edges = result["portfolio"].get("aggregateHoldings", {}).get("edges", [])
+                for edge in edges:
+                    node = edge.get("node", {})
+                    account = node.get("account", {})
+                    account_id = account.get("id")
+
+                    if account_id and (not account_ids or account_id in account_ids):
+                        if account_id not in holdings_by_account:
+                            holdings_by_account[account_id] = {
+                                "account": account,
+                                "holdings": []
+                            }
+                        holdings_by_account[account_id]["holdings"].append(node)
+
+            return {
+                "holdings_by_account": holdings_by_account,
+                "total_accounts": len(holdings_by_account)
+            }
+
+        except Exception as e:
+            self.logger.error("Failed to fetch holdings in batch", error=str(e))
+            # Fallback to individual calls if batch fails
+            return await self._fallback_individual_holdings(account_ids)
+
+    async def _fallback_individual_holdings(self, account_ids: Optional[List[str]] = None) -> Dict[str, Any]:
+        """Fallback method for individual holdings fetching if batch fails."""
+        self.logger.warning("Using fallback individual holdings fetching")
+
+        if not account_ids:
+            # Get all investment account IDs
+            accounts = await self.client.get_accounts()
+            account_ids = [
+                acc["id"] for acc in accounts.get("accounts", [])
+                if acc.get("type", {}).get("name") in ["investment", "retirement"]
+            ]
+
+        holdings_by_account = {}
+        for account_id in account_ids:
+            try:
+                holdings_data = await self.get_account_holdings(account_id)
+                holdings_by_account[account_id] = holdings_data
+            except Exception as e:
+                self.logger.debug("Failed to get holdings for account", account_id=account_id, error=str(e))
+                continue
+
+        return {
+            "holdings_by_account": holdings_by_account,
+            "total_accounts": len(holdings_by_account)
         }
 
     async def create_manual_holding(
@@ -625,29 +734,17 @@ class InvestmentService(BaseService):
             "Searching for holding by ticker", ticker=ticker, account_id=account_id
         )
 
-        # Get all holdings
+        # Get all holdings using optimized batch method
         if account_id:
             holdings_data = await self.get_account_holdings(account_id)
             holdings = holdings_data.get("holdings", [])
         else:
-            # Get holdings from all investment accounts
-            accounts = await self.client.get_accounts()
+            # Use batch method to get all holdings efficiently (eliminates N+1 pattern)
+            batch_data = await self.get_all_holdings_batch()
             all_holdings = []
 
-            for account in accounts.get("accounts", []):
-                if account.get("type", {}).get("name") in ["investment", "retirement"]:
-                    try:
-                        account_holdings = await self.get_account_holdings(
-                            account["id"]
-                        )
-                        all_holdings.extend(account_holdings.get("holdings", []))
-                    except Exception as e:
-                        self.logger.debug(
-                            "Failed to get holdings for account",
-                            account_id=account["id"],
-                            error=str(e),
-                        )
-                        continue
+            for account_holdings_data in batch_data.get("holdings_by_account", {}).values():
+                all_holdings.extend(account_holdings_data.get("holdings", []))
             holdings = all_holdings
 
         # Search for ticker in holdings
