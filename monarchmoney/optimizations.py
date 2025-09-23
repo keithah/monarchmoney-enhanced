@@ -118,6 +118,8 @@ class QueryCache:
 
             # Short-lived data (frequently changes)
             "GetAccounts": CacheStrategy.SHORT,  # Balance updates
+            "GetAccountsBasic": CacheStrategy.MEDIUM,  # Basic info changes less frequently
+            "GetAccountsBalance": CacheStrategy.SHORT,  # Balance updates
             "GetTransactions": CacheStrategy.SHORT,
             "GetAccountBalances": CacheStrategy.SHORT,
             "GetRecurringTransactions": CacheStrategy.SHORT,

@@ -15,6 +15,7 @@ from graphql import DocumentNode
 
 from ..exceptions import GraphQLError, NetworkError, RateLimitError, ServerError
 from ..logging_config import MonarchLogger
+from ..request_deduplicator import RequestDeduplicator
 from .base_service import BaseService
 
 if TYPE_CHECKING:
@@ -22,26 +23,57 @@ if TYPE_CHECKING:
 
 
 class GraphQLCache:
-    """Simple in-memory cache for GraphQL responses."""
+    """Enhanced in-memory cache for GraphQL responses with operation-specific TTLs."""
 
-    def __init__(self, max_size: int = 1000, ttl: int = 300):
-        self.cache: Dict[str, Tuple[Any, float]] = {}
+    def __init__(self, max_size: int = 1000, default_ttl: int = 300):
+        self.cache: Dict[str, Tuple[Any, float, str]] = {}  # value, timestamp, operation
         self.max_size = max_size
-        self.ttl = ttl
+        self.default_ttl = default_ttl
+        self._metrics = {
+            "hits": 0,
+            "misses": 0,
+            "evictions": 0,
+            "expirations": 0,
+        }
+        # Operation-specific TTLs (in seconds)
+        self._operation_ttls = {
+            # Static data - long cache times
+            "GetTransactionCategories": 3600,  # 1 hour
+            "GetInstitutions": 3600,  # 1 hour
+            "GetAccountTypeOptions": 3600,  # 1 hour
+            "GetMe": 1800,  # 30 minutes
 
-    def _is_expired(self, timestamp: float) -> bool:
-        return time.time() - timestamp > self.ttl
+            # Semi-static data - medium cache times
+            "GetAccountsBasic": 900,  # 15 minutes (basic info changes less)
+            "GetMerchants": 900,  # 15 minutes
+            "GetTransactionRules": 900,  # 15 minutes
+
+            # Dynamic data - short cache times
+            "GetAccounts": 300,  # 5 minutes (balances change)
+            "GetAccountsBalance": 300,  # 5 minutes
+            "GetTransactions": 180,  # 3 minutes
+            "GetHoldings": 180,  # 3 minutes
+        }
+
+    def _get_ttl_for_operation(self, operation: str) -> int:
+        """Get TTL for a specific operation."""
+        return self._operation_ttls.get(operation, self.default_ttl)
+
+    def _is_expired(self, timestamp: float, operation: str) -> bool:
+        """Check if cache entry is expired based on operation-specific TTL."""
+        ttl = self._get_ttl_for_operation(operation)
+        return time.time() - timestamp > ttl
 
     def _cleanup_expired(self) -> None:
         """Remove expired entries from cache."""
-        current_time = time.time()
-        expired_keys = [
-            key
-            for key, (_, timestamp) in self.cache.items()
-            if current_time - timestamp > self.ttl
-        ]
+        expired_keys = []
+        for key, (_, timestamp, operation) in self.cache.items():
+            if self._is_expired(timestamp, operation):
+                expired_keys.append(key)
+
         for key in expired_keys:
             del self.cache[key]
+            self._metrics["expirations"] += 1
 
     def _make_key(
         self, operation: str, query: DocumentNode, variables: Optional[Dict[str, Any]]
@@ -58,11 +90,15 @@ class GraphQLCache:
         """Get cached result if available and not expired."""
         key = self._make_key(operation, query, variables)
         if key in self.cache:
-            result, timestamp = self.cache[key]
-            if not self._is_expired(timestamp):
+            result, timestamp, cached_operation = self.cache[key]
+            if not self._is_expired(timestamp, cached_operation):
+                self._metrics["hits"] += 1
                 return result
             else:
                 del self.cache[key]
+                self._metrics["expirations"] += 1
+
+        self._metrics["misses"] += 1
         return None
 
     def set(
@@ -72,7 +108,7 @@ class GraphQLCache:
         variables: Optional[Dict[str, Any]],
         result: Any,
     ) -> None:
-        """Cache a result."""
+        """Cache a result with operation-specific TTL."""
         # Cleanup if cache is getting too large
         if len(self.cache) >= self.max_size:
             self._cleanup_expired()
@@ -80,13 +116,39 @@ class GraphQLCache:
             if len(self.cache) >= self.max_size:
                 oldest_key = min(self.cache.keys(), key=lambda k: self.cache[k][1])
                 del self.cache[oldest_key]
+                self._metrics["evictions"] += 1
 
         key = self._make_key(operation, query, variables)
-        self.cache[key] = (result, time.time())
+        self.cache[key] = (result, time.time(), operation)
 
     def clear(self) -> None:
         """Clear all cached entries."""
         self.cache.clear()
+        # Reset metrics except for cumulative counters
+        self._metrics = {
+            "hits": 0,
+            "misses": 0,
+            "evictions": 0,
+            "expirations": 0,
+        }
+
+    def get_metrics(self) -> Dict[str, Any]:
+        """Get cache performance metrics."""
+        total_requests = self._metrics["hits"] + self._metrics["misses"]
+        hit_rate = 0.0
+        if total_requests > 0:
+            hit_rate = (self._metrics["hits"] / total_requests) * 100
+
+        return {
+            "size": len(self.cache),
+            "max_size": self.max_size,
+            "hits": self._metrics["hits"],
+            "misses": self._metrics["misses"],
+            "hit_rate_percent": round(hit_rate, 2),
+            "evictions": self._metrics["evictions"],
+            "expirations": self._metrics["expirations"],
+            "total_requests": total_requests,
+        }
 
 
 class PerformanceMonitor:
@@ -156,23 +218,41 @@ class GraphQLClient(BaseService):
         self.cache = GraphQLCache()
         self.performance_monitor = PerformanceMonitor()
 
+        # Request deduplication for concurrent identical requests
+        self.request_deduplicator = RequestDeduplicator(timeout=30.0)
+
         # Rate limiting
         self.last_request_time = 0.0
         self.min_request_interval = 0.1  # seconds between requests
 
-        # Connection pooling
+        # Enhanced connection pooling
         self._gql_client: Optional[Client] = None
         self._transport: Optional[AIOHTTPTransport] = None
+        self._connection_pool_size = 10  # Maximum concurrent connections
+        self._connection_timeout = 30  # Connection timeout in seconds
+        self._keepalive_timeout = 30  # Keep connections alive for reuse
 
     async def _get_client(self) -> Client:
         """Get or create GraphQL client with connection pooling."""
         if self._gql_client is None:
             from ..monarchmoney import MonarchMoneyEndpoints
+            import aiohttp
+
+            # Create connector with optimized connection pooling
+            connector = aiohttp.TCPConnector(
+                limit=self._connection_pool_size,
+                limit_per_host=self._connection_pool_size,
+                keepalive_timeout=self._keepalive_timeout,
+                enable_cleanup_closed=True,
+                force_close=False,
+                ttl_dns_cache=300,  # DNS cache for 5 minutes
+            )
 
             self._transport = AIOHTTPTransport(
                 url=MonarchMoneyEndpoints.getGraphQL(),
                 headers=self.client._headers,
-                timeout=self.client._timeout,
+                timeout=self._connection_timeout,
+                connector=connector,
             )
 
             self._gql_client = Client(
@@ -180,7 +260,11 @@ class GraphQLClient(BaseService):
                 fetch_schema_from_transport=False,
             )
 
-            self.logger.debug("Created new GraphQL client")
+            self.logger.debug(
+                "Created GraphQL client with connection pooling",
+                pool_size=self._connection_pool_size,
+                keepalive_timeout=self._keepalive_timeout,
+            )
 
         return self._gql_client
 
@@ -252,35 +336,43 @@ class GraphQLClient(BaseService):
             # Rate limiting
             await self._rate_limit()
 
-            # Execute query
-            client = await self._get_client()
+            # Use request deduplication for concurrent identical requests
+            async def _execute_request():
+                client = await self._get_client()
 
-            # Update timeout if specified
-            if timeout and self._transport:
-                original_timeout = self._transport.timeout
-                self._transport.timeout = timeout
-
-            try:
-                self.logger.debug("Executing GraphQL operation", operation=operation)
-
-                if variables:
-                    result = await client.execute_async(
-                        query, variable_values=variables
-                    )
-                else:
-                    result = await client.execute_async(query)
-
-                # Cache successful read-only results
-                if use_cache and self._should_cache(operation):
-                    self.cache.set(operation, query, variables, result)
-
-                self.logger.debug("GraphQL operation completed", operation=operation)
-                return result
-
-            finally:
-                # Restore original timeout
+                # Update timeout if specified
                 if timeout and self._transport:
-                    self._transport.timeout = original_timeout
+                    original_timeout = self._transport.timeout
+                    self._transport.timeout = timeout
+
+                try:
+                    self.logger.debug("Executing GraphQL operation", operation=operation)
+
+                    if variables:
+                        result = await client.execute_async(
+                            query, variable_values=variables
+                        )
+                    else:
+                        result = await client.execute_async(query)
+
+                    self.logger.debug("GraphQL operation completed", operation=operation)
+                    return result
+
+                finally:
+                    # Restore original timeout
+                    if timeout and self._transport:
+                        self._transport.timeout = original_timeout
+
+            # Deduplicate the request
+            result = await self.request_deduplicator.deduplicate_request(
+                operation, _execute_request, variables
+            )
+
+            # Cache successful read-only results
+            if use_cache and self._should_cache(operation):
+                self.cache.set(operation, query, variables, result)
+
+            return result
 
         except Exception as e:
             error_msg = str(e).lower()
@@ -360,10 +452,22 @@ class GraphQLClient(BaseService):
         for operation in self.performance_monitor.operations:
             stats[operation] = self.performance_monitor.get_stats(operation)
 
+        connection_stats = {}
+        if self._transport and hasattr(self._transport, '_session'):
+            connector = getattr(self._transport._session, '_connector', None)
+            if connector:
+                connection_stats = {
+                    "total_connections": len(connector._conns),
+                    "pool_size": self._connection_pool_size,
+                    "keepalive_timeout": self._keepalive_timeout,
+                }
+
         return {
             "operations": stats,
             "slow_operations": self.performance_monitor.get_slow_operations(),
-            "cache_size": len(self.cache.cache),
+            "cache": self.cache.get_metrics(),
+            "deduplication": self.request_deduplicator.get_stats(),
+            "connection_pool": connection_stats,
         }
 
     def clear_cache(self) -> None:
@@ -372,9 +476,11 @@ class GraphQLClient(BaseService):
         self.logger.info("GraphQL cache cleared")
 
     async def close(self) -> None:
-        """Close the GraphQL client and cleanup resources."""
+        """Clean up resources including connection pool."""
         if self._transport:
+            # Close the transport which will close the underlying session and connector
             await self._transport.close()
-            self._transport = None
-            self._gql_client = None
-            self.logger.debug("GraphQL client closed")
+            self.logger.debug("Closed GraphQL client and connection pool")
+
+        self._gql_client = None
+        self._transport = None
