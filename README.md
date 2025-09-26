@@ -1,3 +1,8 @@
+## ⚠️ **WARNING: Maintenance Notice**
+
+**This repository is no longer actively maintained. Development and support have shifted to the TypeScript/JavaScript library at [https://github.com/keithah/monarchmoney-ts](https://github.com/keithah/monarchmoney-ts).**  
+**Please use that repo for the most up-to-date code and support.**
+
 # Monarch Money
 
 Python library for accessing [Monarch Money](https://www.monarchmoney.com/referral/jtfazovwp9) data.
