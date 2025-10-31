@@ -1,9 +1,6 @@
 name: Operation Health Check
 
 on:
-  schedule:
-    # Run daily at 6 AM UTC
-    - cron: '0 6 * * *'
   workflow_dispatch:
     inputs:
       test_level:
