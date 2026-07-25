@@ -51,7 +51,7 @@ SESSION_FILE = f"{SESSION_DIR}/mm_session.pickle"
 
 
 class MonarchMoneyEndpoints(object):
-    BASE_URL = "https://api.monarchmoney.com"
+    BASE_URL = "https://api.monarch.com"
 
     @classmethod
     def getLoginEndpoint(cls) -> str:
@@ -218,7 +218,7 @@ class MonarchMoney(object):
             "Content-Type": "application/json",
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
             "device-uuid": str(uuid.uuid4()),
-            "Origin": "https://app.monarchmoney.com",
+            "Origin": "https://app.monarch.com",
             "x-cio-client-platform": "web",
             "x-cio-site-id": "2598be4aa410159198b2",
             "x-gist-user-anonymous": "false",

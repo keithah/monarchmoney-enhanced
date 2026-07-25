@@ -252,7 +252,14 @@ class GraphQLClient(BaseService):
                 url=MonarchMoneyEndpoints.getGraphQL(),
                 headers=self.client._headers,
                 timeout=self._connection_timeout,
-                connector=connector,
+                # gql's AIOHTTPTransport takes a custom connector via
+                # client_session_args, not a top-level `connector` kwarg -- the
+                # latter raises TypeError on every query. It also defaults to NOT
+                # verifying TLS certificates, so pin ssl=True (matching the other
+                # transports in this library) since every request carries the
+                # auth token.
+                ssl=True,
+                client_session_args={"connector": connector},
             )
 
             self._gql_client = Client(
