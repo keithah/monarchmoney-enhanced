@@ -188,71 +188,55 @@ class TransactionService(BaseService):
             abs_amount_range=abs_amount_range,
         )
 
-        variables = {
-            "limit": validated_limit,
-            "offset": validated_offset,
-        }
-
+        # The current API takes all of these as a single TransactionFilterInput
+        # (not top-level allTransactions args), with offset/limit/orderBy on the
+        # nested results() connection.
+        filters: Dict[str, Any] = {}
         if start_date:
-            variables["startDate"] = start_date
+            filters["startDate"] = start_date
         if end_date:
-            variables["endDate"] = end_date
+            filters["endDate"] = end_date
         if category_ids:
-            variables["categoryIds"] = category_ids
+            filters["categories"] = category_ids
         if account_ids:
-            variables["accountIds"] = account_ids
+            filters["accounts"] = account_ids
         if tag_ids:
-            variables["tagIds"] = tag_ids
+            filters["tags"] = tag_ids
         if merchant_ids:
-            variables["merchantIds"] = merchant_ids
+            filters["merchants"] = merchant_ids
         if search:
-            variables["search"] = search
+            filters["search"] = search
         if is_credit is not None:
-            variables["isCredit"] = is_credit
+            # current schema key is `creditsOnly` (True=credits, False=debits);
+            # the old `isCredit` key is rejected
+            filters["creditsOnly"] = is_credit
         if abs_amount_range is not None:
-            variables["minAmount"] = abs_amount_range[0]
-            variables["maxAmount"] = abs_amount_range[1]
+            if abs_amount_range[0] is not None:
+                filters["absAmountGte"] = abs_amount_range[0]
+            if abs_amount_range[1] is not None:
+                filters["absAmountLte"] = abs_amount_range[1]
+
+        variables = {
+            "offset": validated_offset,
+            "limit": validated_limit,
+            "orderBy": "date",
+            "filters": filters,
+        }
 
         query = gql(
             """
             query GetTransactionsList(
-                $limit: Int!,
-                $offset: Int!,
-                $startDate: String,
-                $endDate: String,
-                $categoryIds: [String],
-                $accountIds: [String],
-                $tagIds: [String],
-                $merchantIds: [String],
-                $search: String,
-                $isCredit: Boolean,
-                $minAmount: Float,
-                $maxAmount: Float
+                $offset: Int,
+                $limit: Int,
+                $filters: TransactionFilterInput,
+                $orderBy: TransactionOrdering
             ) {
-                allTransactions(
-                    first: $limit,
-                    offset: $offset,
-                    startDate: $startDate,
-                    endDate: $endDate,
-                    categoryIds: $categoryIds,
-                    accountIds: $accountIds,
-                    tagIds: $tagIds,
-                    merchantIds: $merchantIds,
-                    search: $search,
-                    isCredit: $isCredit,
-                    minAmount: $minAmount,
-                    maxAmount: $maxAmount
-                ) {
+                allTransactions(filters: $filters) {
                     totalCount
-                    results {
+                    results(offset: $offset, limit: $limit, orderBy: $orderBy) {
                         ...TransactionFields
                         __typename
                     }
-                    __typename
-                }
-                accounts {
-                    id
-                    displayName
                     __typename
                 }
             }
@@ -268,8 +252,7 @@ class TransactionService(BaseService):
                 reviewStatus
                 needsReview
                 dataProviderDescription
-                originalDescription
-                isChild
+                isSplitTransaction
                 merchant {
                     id
                     name
@@ -279,7 +262,6 @@ class TransactionService(BaseService):
                     id
                     name
                     icon
-                    color
                     __typename
                 }
                 account {
@@ -2326,12 +2308,7 @@ class TransactionService(BaseService):
                     name
                     logoUrl
                     transactionCount
-                    lastTransactionDate
-                    categories {
-                        id
-                        name
-                        __typename
-                    }
+                    createdAt
                     __typename
                 }
             }
