@@ -227,7 +227,7 @@ This enhanced library provides **comprehensive financial data access**:
 - `update_transaction_splits(transaction_id, splits)` - Modify transaction splits
 - `create_transaction_category(name, **kwargs)` - Create transaction categories
 - `update_transaction_category(category_id, **kwargs)` - Update categories
-- `delete_transaction_category(category_id)` - Delete single category
+- `delete_transaction_category(category_id, move_to_category_id=None)` - Delete a single category; pass `move_to_category_id` to reassign its transactions (otherwise they are left uncategorized)
 - `delete_transaction_categories(category_ids)` - Delete multiple categories
 - `create_transaction_tag(name)` - Create transaction tags
 - `set_transaction_tags(transaction_id, tag_ids)` - Set tags on transactions
