@@ -3596,7 +3596,12 @@ class MonarchMoney(object):
             variables=variables,
         )
 
-        return result.get("deleteTransactionRule", {}).get("deleted", False)
+        # NOTE: the deleteTransactionRule (V2) mutation returns `deleted: false`
+        # even on a successful delete, so we can't trust that flag. A genuine
+        # failure raises (e.g. "Not found") or comes back with `errors`; a
+        # returned payload with no errors means the rule was deleted.
+        payload = result.get("deleteTransactionRule") or {}
+        return not payload.get("errors")
 
     async def reorder_transaction_rules(
         self, rule_id: str, new_order: int

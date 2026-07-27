@@ -1792,11 +1792,11 @@ class TransactionService(BaseService):
             self.logger.error("Rule deletion failed", rule_id=rule_id, errors=errors)
             return False
 
-        success = delete_result.get("deleted", False)
-        if success:
-            self.logger.info("Transaction rule deleted successfully", rule_id=rule_id)
-
-        return success
+        # The deleteTransactionRule (V2) mutation returns `deleted: false` even on
+        # a successful delete, so that flag is unreliable. Reaching here with no
+        # errors means the delete succeeded (genuine failures raise or set errors).
+        self.logger.info("Transaction rule deleted successfully", rule_id=rule_id)
+        return True
 
     async def delete_all_transaction_rules(self) -> bool:
         """
