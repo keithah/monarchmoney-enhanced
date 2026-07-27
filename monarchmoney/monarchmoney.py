@@ -4010,7 +4010,17 @@ class MonarchMoney(object):
         )
         return await self.gql_call(operation="GetCategories", graphql_query=query)
 
-    async def delete_transaction_category(self, category_id: str) -> bool:
+    async def delete_transaction_category(
+        self, category_id: str, move_to_category_id: Optional[str] = None
+    ) -> bool:
+        """
+        Deletes the given transaction category.
+
+        :param category_id: the ID of the category to delete.
+        :param move_to_category_id: optional ID of a category to reassign the
+            deleted category's transactions to. If omitted, those transactions
+            are left uncategorized (the API default).
+        """
         query = gql(
             """
           mutation Web_DeleteCategory($id: UUID!, $moveToCategoryId: UUID) {
@@ -4040,6 +4050,8 @@ class MonarchMoney(object):
         variables = {
             "id": category_id,
         }
+        if move_to_category_id is not None:
+            variables["moveToCategoryId"] = move_to_category_id
 
         response = await self.gql_call(
             operation="Web_DeleteCategory", graphql_query=query, variables=variables
