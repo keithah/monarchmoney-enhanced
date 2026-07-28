@@ -3304,6 +3304,8 @@ class MonarchMoney(object):
     async def create_transaction_rule(
         self,
         merchant_criteria: Optional[List[Dict[str, str]]] = None,
+        merchant_name_criteria: Optional[List[Dict[str, str]]] = None,
+        original_statement_criteria: Optional[List[Dict[str, str]]] = None,
         amount_criteria: Optional[Dict[str, Any]] = None,
         category_ids: Optional[List[str]] = None,
         account_ids: Optional[List[str]] = None,
@@ -3385,6 +3387,27 @@ class MonarchMoney(object):
             "applyToExistingTransactions": apply_to_existing_transactions,
             "setCategoryAction": set_category_action,
         }
+        # These criteria/actions are accepted by the mutation but were previously
+        # never forwarded, so e.g. merchant-name rules and set-merchant / hide
+        # actions silently did nothing ("Transaction rule must have one action").
+        if merchant_name_criteria is not None:
+            rule_input["merchantNameCriteria"] = merchant_name_criteria
+        if original_statement_criteria is not None:
+            rule_input["originalStatementCriteria"] = original_statement_criteria
+        if set_merchant_action is not None:
+            rule_input["setMerchantAction"] = set_merchant_action
+        if set_hide_from_reports_action is not None:
+            rule_input["setHideFromReportsAction"] = set_hide_from_reports_action
+        if needs_review_by_user_action is not None:
+            rule_input["needsReviewByUserAction"] = needs_review_by_user_action
+        if unassign_needs_review_by_user_action is not None:
+            rule_input["unassignNeedsReviewByUserAction"] = unassign_needs_review_by_user_action
+        if send_notification_action is not None:
+            rule_input["sendNotificationAction"] = send_notification_action
+        if review_status_action is not None:
+            rule_input["reviewStatusAction"] = review_status_action
+        if link_goal_action is not None:
+            rule_input["linkGoalAction"] = link_goal_action
 
         variables = {"input": rule_input}
 
