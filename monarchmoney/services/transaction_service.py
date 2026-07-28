@@ -128,6 +128,7 @@ class TransactionService(BaseService):
             search: Search term for transaction description/merchant
             is_credit: Filter by transaction type (True=credits/income, False=debits/expenses)
             abs_amount_range: Filter by absolute amount range [min, max]. Use None for open-ended ranges.
+            order_by: Sort order for results (defaults to "date").
 
         Returns:
             Paginated transaction list with total count and filtering metadata
