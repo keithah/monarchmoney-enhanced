@@ -111,6 +111,7 @@ class TransactionService(BaseService):
         search: Optional[str] = None,
         is_credit: Optional[bool] = None,
         abs_amount_range: Optional[List[Optional[float]]] = None,
+        order_by: str = "date",
     ) -> Dict[str, Any]:
         """
         Get paginated list of transactions with filtering options.
@@ -219,7 +220,7 @@ class TransactionService(BaseService):
         variables = {
             "offset": validated_offset,
             "limit": validated_limit,
-            "orderBy": "date",
+            "orderBy": order_by,
             "filters": filters,
         }
 
