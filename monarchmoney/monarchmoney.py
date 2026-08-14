@@ -3215,6 +3215,16 @@ class MonarchMoney(object):
                     value
                     __typename
                 }
+                merchantNameCriteria {
+                    operator
+                    value
+                    __typename
+                }
+                originalStatementCriteria {
+                    operator
+                    value
+                    __typename
+                }
                 amountCriteria {
                     operator
                     isExpense
