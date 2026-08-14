@@ -48,7 +48,7 @@ All major MonarchMoney API functionality is now available, including advanced tr
 | `Web_DeleteAllTransactionRulesMutation` | `delete_all_transaction_rules()` | ✅ | Delete all transaction rules |
 | **Categories & Tags** | | | |
 | `GetCategories` | `get_transaction_categories()` | ✅ | Get all transaction categories |
-| `Web_DeleteCategory` | `delete_transaction_category()` | ✅ | Delete a transaction category |
+| `Web_DeleteCategory` | `delete_transaction_category()` | ✅ | Delete a transaction category (optionally reassign its transactions via `move_to_category_id`) |
 | `ManageGetCategoryGroups` | `get_transaction_category_groups()` | ✅ | Get category groups |
 | `Web_CreateCategory` | `create_transaction_category()` | ✅ | Create new transaction category |
 | `Web_UpdateCategory` | `update_transaction_category()` | ✅ | Update existing transaction category |
